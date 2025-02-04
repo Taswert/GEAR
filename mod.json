@@ -1,0 +1,19 @@
+{
+	"geode": "4.2.0",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "taswert.editorrevamped-modules",
+	"name": "EditorRevamped-Modules",
+	"version": "v1.0.0",
+	"developer": "Taswert",
+	"description": "",
+	"resources": {
+		"files": [
+			"resources/imgui-fonts/Karla-Regular.ttf"
+		]
+	}
+}
