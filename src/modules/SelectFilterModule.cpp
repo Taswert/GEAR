@@ -1,114 +1,199 @@
 #pragma once
 #include "SelectFilterModule.hpp"
 
+
 void ErGui::renderSelectFilter() {
 	ImGui::Begin("SelectFilter-Module");
 
-	ImGui::Checkbox("Object Filter", &filterByObjects);
-	ImGui::Checkbox("Color Filter", &filterByMainColors);
-	ImGui::Checkbox("Group Filter", &filterByGroups);
-	ImGui::Checkbox("Or Modifier", &filterOr);
 
-	if (GameObject* obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject) {
-		ImGui::Text("ObjectID: %d", obj->m_objectID);
+	ImGui::Checkbox("Object", &filterByObjects);
+
+	ImGui::SameLine(120.f);
+	ImGui::Checkbox("Group", &filterByGroups);
+
+
+	ImGui::Checkbox("MainColor", &filterByMainColors);
+
+	ImGui::SameLine(120.f);
+	ImGui::Checkbox("DetailColor", &filterByDetailColors);
+
+
+	ImGui::Checkbox("Channel", &filterByChannel);
+
+	//ImGui::Checkbox("Or Modifier", &filterOr);
+
+	if (ImGui::CollapsingHeader("Object Filter")) {
+		if (GameObject* obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject) {
+			ImGui::Text("ObjectID: %d", obj->m_objectID);
+			ImGui::SameLine();
+			if (ImGui::Button("Add##OBJ")) {
+				objectsFilterSet.insert(obj->m_objectID);
+			}
+
+		}
+		else {
+			ImGui::Text("ObjectID: -");
+		}
+
+		if (GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObjects->count() > 0) {
+			auto objArr = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObjects;
+
+			//std::string objectsIdString = "ObjectIDs: ";
+			//ImGui::Text(objectsIdString.c_str());
+
+			if (ImGui::Button("Add All##OBJ")) {
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					objectsFilterSet.insert(obj->m_objectID);
+				}
+			}
+		}
+
+
+		ImGui::Text("-----| Filter |-----");
+		int i = 1;
+		for (auto objId : objectsFilterSet) {
+			std::string btnStr = std::to_string(objId);
+			btnStr += "##OBJ-FILTER";
+			if (ImGui::Button(btnStr.c_str())) {
+				objectsFilterSet.erase(objId);
+			}
+			if (i % 10 != 0) ImGui::SameLine();
+			i++;
+		}
+		if (i - 1 % 10 != 0) ImGui::NewLine();
+	}
+
+
+	if (ImGui::CollapsingHeader("Main Color Filter")) {
+		ImGui::InputInt("ColorID##MCOL", &chosenMainColorSFM);
+		setMin(chosenMainColorSFM, 1);
+		ImGui::InputInt("Offset##MCOL", &offsetMainColorSFM);
+		setMin(offsetMainColorSFM, 1);
+		if (ImGui::Button("Add##MCOL") && chosenMainColorSFM > 0) {
+			mainColorsFilterSet.insert(chosenMainColorSFM);
+		}
 		ImGui::SameLine();
-		if (ImGui::Button("Add##OBJ")) {
-			bool foundSame = false;
-			for (int i = 0; i < objectsFilterArr.size(); i++) {
-				if (objectsFilterArr[i] == obj->m_objectID) {
-					foundSame = true;
+		if (ImGui::Button("Next Free##MCOL")) {
+			for (int i = offsetMainColorSFM; i < 10000; i++) {
+				if (!mainColorsFilterSet.contains(i)) {
+					chosenMainColorSFM = i;
 					break;
 				}
 			}
-			if (!foundSame) objectsFilterArr.push_back(obj->m_objectID);
 		}
 
-	}
-	else {
-		ImGui::Text("ObjectID: -");
-	}
-
-	if (GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObjects->count() > 0) {
-		auto objArr = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObjects;
-		std::string objectsIdString = "ObjectIDs: ";
-
-		std::vector<int> selectedObjsArr;
-
-		//for (int i = 0; i < objArr->count(); i++) {
-		//	bool foundSame = false;
-		//	for (int j = 0; j < selectedObjsArr.size(); j++) {
-		//		if (selectedObjsArr[j] == static_cast<GameObject*>(objArr->objectAtIndex(i))->m_objectID) {
-		//			foundSame = true;
-		//			break;
-		//		}
-		//	}
-		//	if (!foundSame) selectedObjsArr.push_back(static_cast<GameObject*>(objArr->objectAtIndex(i))->m_objectID);
-		//}
-
-		//for (int i = 0; i < selectedObjsArr.size(); i++) {
-		//	objectsIdString += std::to_string(selectedObjsArr[i]);
-		//	objectsIdString += ", ";
-		//}
-
-		ImGui::Text(objectsIdString.c_str());
+		ImGui::Text("-----| Filter |-----");
+		int i = 1;
+		for (auto colId : mainColorsFilterSet) {
+			std::string btnStr = std::to_string(colId);
+			btnStr += "##MCOL-FILTER";
+			if (ImGui::Button(btnStr.c_str())) {
+				mainColorsFilterSet.erase(colId);
+			}
+			if (i % 10 != 0) ImGui::SameLine();
+			i++;
+		}
+		if (i - 1 % 10 != 0) ImGui::NewLine();
 	}
 
 
-	ImGui::InputInt("ColorID", &chosenColorSFM);
-	if (ImGui::Button("Add##COL")) {
-		bool foundSame = false;
-		for (int i = 0; i < mainColorsFilterArr.size(); i++) {
-			if (mainColorsFilterArr[i] == chosenColorSFM) {
-				foundSame = true;
-				break;
+	if (ImGui::CollapsingHeader("Detail Color Filter")) {
+		ImGui::InputInt("ColorID##DCOL", &chosenDetailColorSFM);
+		setMin(chosenDetailColorSFM, 1);
+		ImGui::InputInt("Offset##DCOL", &offsetDetailColorSFM);
+		setMin(offsetDetailColorSFM, 1);
+		if (ImGui::Button("Add##DCOL") && chosenDetailColorSFM > 0) {
+			detailColorsFilterSet.insert(chosenDetailColorSFM);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Next Free##DCOL")) {
+			for (int i = offsetDetailColorSFM; i < 10000; i++) {
+				if (!detailColorsFilterSet.contains(i)) {
+					chosenDetailColorSFM = i;
+					break;
+				}
 			}
 		}
-		if (!foundSame) mainColorsFilterArr.push_back(chosenColorSFM);
+
+		ImGui::Text("-----| Filter |-----");
+		int i = 1;
+		for (auto colId : detailColorsFilterSet) {
+			std::string btnStr = std::to_string(colId);
+			btnStr += "##DCOL-FILTER";
+			if (ImGui::Button(btnStr.c_str())) {
+				detailColorsFilterSet.erase(colId);
+			}
+			if (i % 10 != 0) ImGui::SameLine();
+			i++;
+		}
+		if (i - 1 % 10 != 0) ImGui::NewLine();
 	}
 
-	ImGui::InputInt("GroupID", &chosenGroupSFM);
-	if (ImGui::Button("Add##GRP")) {
-		bool foundSame = false;
-		for (int i = 0; i < groupsFilterArr.size(); i++) {
-			if (groupsFilterArr[i] == chosenGroupSFM) {
-				foundSame = true;
-				break;
+
+	if (ImGui::CollapsingHeader("GroupID Filter")) {
+		ImGui::InputInt("GroupID", &chosenGroupSFM);
+		setMin(chosenGroupSFM, 1);
+		ImGui::InputInt("Offset##GROUP", &offsetGroupSFM);
+		setMin(offsetGroupSFM, 1);
+		if (ImGui::Button("Add##GROUP") && chosenGroupSFM > 0) {
+			groupsFilterSet.insert(chosenGroupSFM);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Next Free##GROUP")) {
+			for (int i = offsetGroupSFM; i < 10000; i++) {
+				if (!groupsFilterSet.contains(i)) {
+					chosenGroupSFM = i;
+					break;
+				}
 			}
 		}
-		if (!foundSame) groupsFilterArr.push_back(chosenGroupSFM);
+
+		ImGui::Text("-----| Filter |-----");
+		int i = 1;
+		for (auto grpId : groupsFilterSet) {
+			std::string btnStr = std::to_string(grpId);
+			btnStr += "##GROUP-FILTER";
+			if (ImGui::Button(btnStr.c_str())) {
+				groupsFilterSet.erase(grpId);
+			}
+			if (i % 10 != 0) ImGui::SameLine();
+			i++;
+		}
+		if (i - 1 % 10 != 0) ImGui::NewLine();
+	}
+	
+
+	if (ImGui::CollapsingHeader("Channel Filter")) {
+		ImGui::InputInt("ChannelID", &chosenChannelSFM);
+		setMin(chosenChannelSFM, 0);
+		ImGui::InputInt("Offset##CHAN", &offsetChannelSFM);
+		setMin(offsetChannelSFM, 0);
+		if (ImGui::Button("Add##CHAN") && chosenChannelSFM > -1) {
+			channelFilterSet.insert(chosenChannelSFM);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Next Free##CHAN")) {
+			for (int i = offsetChannelSFM; i < 10000; i++) {
+				if (!channelFilterSet.contains(i)) {
+					chosenChannelSFM = i;
+					break;
+				}
+			}
+		}
+
+		ImGui::Text("-----| Filter |-----");
+		int i = 1;
+		for (auto chnlId : channelFilterSet) {
+			std::string btnStr = std::to_string(chnlId);
+			btnStr += "##CHAN-FILTER";
+			if (ImGui::Button(btnStr.c_str())) {
+				channelFilterSet.erase(chnlId);
+			}
+			if (i % 10 != 0) ImGui::SameLine();
+			i++;
+		}
+		if (i - 1 % 10 != 0) ImGui::NewLine();
 	}
 
-	ImGui::Text("-----| Objects Filter |-----");
-	for (int i = 0; i < objectsFilterArr.size(); i++) {
-		ImGui::Text("%d", objectsFilterArr[i]);
-		ImGui::SameLine();
-		std::string btnStr = "Remove##OBJ";
-		btnStr += std::to_string(objectsFilterArr[i]);
-		if (ImGui::Button(btnStr.c_str())) {
-			objectsFilterArr.erase(objectsFilterArr.begin() + i);
-		}
-	}
-
-	ImGui::Text("-----| Main Colors Filter |-----");
-	for (int i = 0; i < mainColorsFilterArr.size(); i++) {
-		ImGui::Text("%d", mainColorsFilterArr[i]);
-		ImGui::SameLine();
-		std::string btnStr = "Remove##COL";
-		btnStr += std::to_string(mainColorsFilterArr[i]);
-		if (ImGui::Button(btnStr.c_str())) {
-			mainColorsFilterArr.erase(mainColorsFilterArr.begin() + i);
-		}
-	}
-
-	ImGui::Text("-----| Groups Filter |-----");
-	for (int i = 0; i < groupsFilterArr.size(); i++) {
-		ImGui::Text("%d", groupsFilterArr[i]);
-		ImGui::SameLine();
-		std::string btnStr = "Remove##GRP";
-		btnStr += std::to_string(groupsFilterArr[i]);
-		if (ImGui::Button(btnStr.c_str())) {
-			groupsFilterArr.erase(groupsFilterArr.begin() + i);
-		}
-	}
 	ImGui::End();
 }

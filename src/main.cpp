@@ -11,6 +11,7 @@
 #include "modules/TransformObjectModule.hpp"
 #include "modules/FooterModule.hpp"
 #include "modules/SelectModule.hpp"
+#include "modules/CameraSettings.hpp"
 
 using namespace geode::prelude;
 
@@ -30,38 +31,38 @@ bool filterSingleObj(bool filterBool, int objParameter, std::vector<int> vec) {
 
 class $modify(EditorUI) {
 	void selectObject(GameObject* obj, bool p1) {
-		if ((!ErGui::objectsFilterArr.empty() && ErGui::filterByObjects)) {
-			for (int i = 0; i < ErGui::objectsFilterArr.size(); i++) {
-				if (obj->m_objectID == ErGui::objectsFilterArr[i]) {
-					EditorUI::selectObject(obj, p1);
-					return;
-				}
-			}
-			if (!ErGui::filterOr) return;
-		}
-
-		if ((!ErGui::mainColorsFilterArr.empty() && ErGui::filterByMainColors)) {
-			for (int i = 0; i < ErGui::mainColorsFilterArr.size(); i++) {
-				if (obj->m_activeMainColorID == ErGui::mainColorsFilterArr[i]) {
-					EditorUI::selectObject(obj, p1);
-					return;
-				}
-			}
-			return;
-		}
-
-		if ((!ErGui::groupsFilterArr.empty() && ErGui::filterByGroups)) {
-			if (!obj->m_groups) return;
-			for (int i = 0; i < ErGui::groupsFilterArr.size(); i++) {
-				for (int j = 0; j < obj->m_groups->size(); j++) {
-					if (obj->m_groups->at(j) == ErGui::groupsFilterArr[i]) {
-						EditorUI::selectObject(obj, p1);
-						return;
-					}
-				}
-			}
-			return;
-		}
+		//if ((!ErGui::objectsFilterArr.empty() && ErGui::filterByObjects)) {
+		//	for (int i = 0; i < ErGui::objectsFilterArr.size(); i++) {
+		//		if (obj->m_objectID == ErGui::objectsFilterArr[i]) {
+		//			EditorUI::selectObject(obj, p1);
+		//			return;
+		//		}
+		//	}
+		//	if (!ErGui::filterOr) return;
+		//}
+		//
+		//if ((!ErGui::mainColorsFilterArr.empty() && ErGui::filterByMainColors)) {
+		//	for (int i = 0; i < ErGui::mainColorsFilterArr.size(); i++) {
+		//		if (obj->m_activeMainColorID == ErGui::mainColorsFilterArr[i]) {
+		//			EditorUI::selectObject(obj, p1);
+		//			return;
+		//		}
+		//	}
+		//	return;
+		//}
+		//
+		//if ((!ErGui::groupsFilterArr.empty() && ErGui::filterByGroups)) {
+		//	if (!obj->m_groups) return;
+		//	for (int i = 0; i < ErGui::groupsFilterArr.size(); i++) {
+		//		for (int j = 0; j < obj->m_groups->size(); j++) {
+		//			if (obj->m_groups->at(j) == ErGui::groupsFilterArr[i]) {
+		//				EditorUI::selectObject(obj, p1);
+		//				return;
+		//			}
+		//		}
+		//	}
+		//	return;
+		//}
 
 
 		//if ((!objectsFilterArr.empty() && filterByObjects) ||
@@ -244,11 +245,19 @@ class $modify(EditorUI) {
 	bool init(LevelEditorLayer* lel) {
 		ErGui::editorUIDrawNode = CCDrawNode::create();
 		this->addChild(ErGui::editorUIDrawNode);
+		auto ret = EditorUI::init(lel);
+		//ErGui::originalCameraPosition = lel->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
 
-		return EditorUI::init(lel);
+		ErGui::og_prevMode = lel->m_previewMode;
+		ErGui::og_prevShad = lel->m_previewShaders;
+		ErGui::og_prevPart = lel->m_previewParticles;
+		ErGui::og_prevAnim = lel->m_previewAnimations;
+
+		return ret;
 	}
 
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
+		std::cout << "CCTouch: X=" << touch->m_point.x << " Y=" << touch->m_point.y << "\n";
 		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled) {
 			ErGui::editorUILassoPoints.clear();
 			CCPoint pt = touch->getLocation();
@@ -330,7 +339,9 @@ class $modify(EditorUI) {
 //};
 
 
-
+static bool touchHasBegan = false;
+static bool touchHasBegan2 = false;
+static float winMultiplier = 1.5f;
 
 $on_mod(Loaded) {
 	AllocConsole();
@@ -338,20 +349,213 @@ $on_mod(Loaded) {
 
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
-
-		io.Fonts->Clear();
-		io.Fonts->AddFontFromFileTTF("Karla-Regular.ttf", 16.f);
-		io.Fonts->Build();
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
+		//io.Fonts->Clear();
+		//io.Fonts->AddFontFromFileTTF("Karla-Regular.ttf", 16.f);
+		//io.Fonts->Build();
 
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}).draw([] {
 
-			if (GameManager::sharedState()->getEditorLayer()) {
+			if (auto lel = GameManager::sharedState()->getEditorLayer()) {
+				// В начале каждого кадра: создание основного окна на весь экран
+				//ImGui::SetNextWindowPos(ImVec2(0, 0));
+				//ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+				//ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
+				//ImGui::Begin("MainWindow", nullptr, mainWindowFlags);
+
+				//ImGui::End(); // Завершаем "MainWindow"
+				// Можно добавить сюда дополнительные элементы ImGui для управления интерфейсом
+
+
 				ErGui::renderEditGroupModule();
 				ErGui::renderSelectFilter();
 				ErGui::renderTransformation();
 				ErGui::renderFooter();
 				ErGui::renderSelectModule();
+				ErGui::renderCameraSettings();
+
+
+				//ErGui::editorUIDrawNode->setPosition({ 0.f, 0.f });
+				if (ImGui::Begin("Geometry Dash-1")) {
+					
+
+					//ErGui::editorUIDrawNode->setPosition({ 0.f, 0.f });
+					lel->getChildByID("main-node")->getChildByID("batch-layer")->setPosition(ErGui::originalCameraPosition);
+					//lel->m_previewAnimations =	ErGui::og_prevAnim;
+					//lel->m_previewMode =		ErGui::og_prevMode;
+					//lel->m_previewParticles =	ErGui::og_prevPart;
+					//lel->m_previewShaders =		ErGui::og_prevShad;
+					lel->update(1.f);
+
+					auto winWidth = CCDirector::sharedDirector()->getWinSize().width;
+					auto winHeight = CCDirector::sharedDirector()->getWinSize().height;
+
+					auto renderTexture = CCRenderTexture::create(winWidth, winHeight);
+
+					renderTexture->begin();
+					glPushAttrib(GL_ALL_ATTRIB_BITS);
+					CCDirector::sharedDirector()->getRunningScene()->visit();
+					glPopAttrib();
+					renderTexture->end();
+
+					GLuint gameTexture = renderTexture->getSprite()->getTexture()->getName();
+
+
+					ImGui::Image(static_cast<ImTextureID>(gameTexture), ImVec2(winWidth * winMultiplier, winHeight * winMultiplier), ImVec2(0, 1), ImVec2(1, 0));
+
+
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDown(0))
+					{
+						ImVec2 clickPos = ImGui::GetIO().MousePos;
+						ImVec2 windowPos = ImGui::GetItemRectMin();
+						std::cout << "win: X=" << winWidth << " Y=" << winHeight << "\n";
+						std::cout << "clickPos: X=" << clickPos.x << " Y=" << clickPos.y << "\n";
+						std::cout << "windowPos: X=" << windowPos.x << " Y=" << windowPos.y << "\n";
+
+						float localX = (clickPos.x - windowPos.x) / winMultiplier;
+						float localY = (clickPos.y - windowPos.y) / winMultiplier;
+
+						CCTouch* touch = new CCTouch;
+						touch->setTouchInfo(0, localX, localY);
+
+						std::cout << "Locals: X=" << localX << " Y=" << localY << "\n";
+
+						CCSet* touches = CCSet::create();
+						touches->addObject(touch);
+						touch->release();  // CCSet берет владение объектом
+
+						CCEvent* event = new CCEvent();
+						if (!touchHasBegan) {
+							lel->m_editorUI->ccTouchBegan(touch, event);
+							touchHasBegan = true;
+						}
+						else {
+							lel->m_editorUI->ccTouchMoved(touch, event);
+							ErGui::originalCameraPosition = lel->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
+						}
+
+
+						CC_SAFE_RELEASE(event);
+						//CCDirector::sharedDirector()->getTouchDispatcher()->touchesBegan(touches, nullptr);
+						std::cout << "\n";
+					}
+					else if (touchHasBegan) {
+						ImVec2 clickPos = ImGui::GetIO().MousePos;
+						ImVec2 windowPos = ImGui::GetItemRectMin();
+
+						float localX = clickPos.x - windowPos.x;
+						float localY = clickPos.y - windowPos.y;
+
+						CCTouch* touch = new CCTouch;
+						touch->setTouchInfo(0, localX, localY);
+
+						CCEvent* event = new CCEvent();
+
+						lel->m_editorUI->ccTouchEnded(touch, event);
+						touchHasBegan = false;
+						CC_SAFE_RELEASE(event);
+						CC_SAFE_RELEASE(event);
+					}
+				}
+
+				ImGui::End();
+
+
+
+
+
+
+
+
+				if (ImGui::Begin("Geometry Dash-2")) {
+					
+					lel->getChildByID("main-node")->getChildByID("batch-layer")->setPosition({ 
+						ErGui::originalCameraPosition.x + ErGui::cam2_offsetX,
+						ErGui::originalCameraPosition.y + ErGui::cam2_offsetY
+						});
+					//lel->m_previewAnimations =	ErGui::cam2_prevAnim;
+					//lel->m_previewMode =		false;
+					//lel->m_previewParticles =	ErGui::cam2_prevPart;
+					//lel->m_previewShaders =		ErGui::cam2_prevShad;
+					lel->update(1.f);
+
+					auto winWidth = CCDirector::sharedDirector()->getWinSize().width;
+					auto winHeight = CCDirector::sharedDirector()->getWinSize().height;
+
+					auto renderTexture = CCRenderTexture::create(winWidth, winHeight);
+
+					renderTexture->begin();
+					glPushAttrib(GL_ALL_ATTRIB_BITS);
+					CCDirector::sharedDirector()->getRunningScene()->visit();
+					glPopAttrib();
+					renderTexture->end();
+
+					GLuint gameTexture = renderTexture->getSprite()->getTexture()->getName();
+
+
+					ImGui::Image(static_cast<ImTextureID>(gameTexture), ImVec2(winWidth * winMultiplier, winHeight * winMultiplier), ImVec2(0, 1), ImVec2(1, 0));
+
+
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDown(0))
+					{
+						ImVec2 clickPos = ImGui::GetIO().MousePos;
+						ImVec2 windowPos = ImGui::GetItemRectMin();
+						std::cout << "win: X=" << winWidth << " Y=" << winHeight << "\n";
+						std::cout << "clickPos: X=" << clickPos.x << " Y=" << clickPos.y << "\n";
+						std::cout << "windowPos: X=" << windowPos.x << " Y=" << windowPos.y << "\n";
+
+						float localX = (clickPos.x - windowPos.x) / winMultiplier;
+						float localY = (clickPos.y - windowPos.y) / winMultiplier;
+
+						CCTouch* touch = new CCTouch;
+						touch->setTouchInfo(0, localX, localY);
+
+						std::cout << "Locals: X=" << localX << " Y=" << localY << "\n";
+
+						CCSet* touches = CCSet::create();
+						touches->addObject(touch);
+						touch->release();  // CCSet берет владение объектом
+
+						CCEvent* event = new CCEvent();
+						if (!touchHasBegan2) {
+							lel->m_editorUI->ccTouchBegan(touch, event);
+							touchHasBegan2 = true;
+						}
+						else {
+							lel->m_editorUI->ccTouchMoved(touch, event);
+							ErGui::originalCameraPosition = lel->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
+							ErGui::originalCameraPosition.x -= ErGui::cam2_offsetX;
+							ErGui::originalCameraPosition.y -= ErGui::cam2_offsetY;
+						}
+
+						CC_SAFE_RELEASE(event);
+						//CCDirector::sharedDirector()->getTouchDispatcher()->touchesBegan(touches, nullptr);
+						std::cout << "\n";
+					}
+					else if (touchHasBegan2) {
+						ImVec2 clickPos = ImGui::GetIO().MousePos;
+						ImVec2 windowPos = ImGui::GetItemRectMin();
+
+						float localX = clickPos.x - windowPos.x;
+						float localY = clickPos.y - windowPos.y;
+
+						CCTouch* touch = new CCTouch;
+						touch->setTouchInfo(0, localX, localY);
+
+						CCEvent* event = new CCEvent();
+
+						lel->m_editorUI->ccTouchEnded(touch, event);
+						touchHasBegan2 = false;
+						CC_SAFE_RELEASE(event);
+						CC_SAFE_RELEASE(event);
+					}
+
+				}
+
+				ImGui::End();
+
+				
 			}
 			});
 }

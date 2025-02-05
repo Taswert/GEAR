@@ -251,8 +251,6 @@ void renderForArray(CCArray* objArr) {
 				}
 			}
 		}
-
-		
 	}
 
 	if (ImGui::CollapsingHeader("-----| Skew |-----")) {
