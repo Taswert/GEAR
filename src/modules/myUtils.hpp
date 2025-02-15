@@ -1,5 +1,6 @@
 #pragma once
 #include <imgui.h>
+#include <imgui-cocos.hpp>
 #include <Geode/Geode.hpp>
 
 //class LevelEditorLayer {
@@ -20,4 +21,6 @@ namespace ErGui {
 	int deltaInputIntImproved(const char* label, int max, int min, int step);
 
 	inline auto lassoPatch = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
+
+	void enableClicks();
 };

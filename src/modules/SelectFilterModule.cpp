@@ -4,23 +4,26 @@
 
 void ErGui::renderSelectFilter() {
 	ImGui::Begin("SelectFilter-Module");
+	ErGui::enableClicks();
 
 
-	ImGui::Checkbox("Object", &filterByObjects);
+	if (ImGui::CollapsingHeader("Main Settings")) {
+		ImGui::Checkbox("Object", &filterByObjects);
+		ImGui::SameLine(120.f);
+		ImGui::Checkbox("Group", &filterByGroups);
 
-	ImGui::SameLine(120.f);
-	ImGui::Checkbox("Group", &filterByGroups);
+		ImGui::Checkbox("MainColor", &filterByMainColors);
+		ImGui::SameLine(120.f);
+		ImGui::Checkbox("DetailColor", &filterByDetailColors);
+
+		ImGui::Checkbox("Channel", &filterByChannel);
 
 
-	ImGui::Checkbox("MainColor", &filterByMainColors);
-
-	ImGui::SameLine(120.f);
-	ImGui::Checkbox("DetailColor", &filterByDetailColors);
-
-
-	ImGui::Checkbox("Channel", &filterByChannel);
-
-	//ImGui::Checkbox("Or Modifier", &filterOr);
+		ImGui::Text("---| Modifier |---");
+		ImGui::RadioButton("Or", &filterModifier, 0);
+		ImGui::SameLine(120.f);
+		ImGui::RadioButton("And", &filterModifier, 1);
+	}
 
 	if (ImGui::CollapsingHeader("Object Filter")) {
 		if (GameObject* obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject) {
@@ -29,6 +32,12 @@ void ErGui::renderSelectFilter() {
 			if (ImGui::Button("Add##OBJ")) {
 				objectsFilterSet.insert(obj->m_objectID);
 			}
+
+
+			auto bc = obj->m_baseColor;
+			auto dc = obj->m_detailColor;
+			if (bc) ImGui::Text("MainColorID: %d", bc->m_colorID);
+			if (dc) ImGui::Text("DetailColorID: %d", dc->m_colorID);
 
 		}
 		else {
@@ -66,9 +75,9 @@ void ErGui::renderSelectFilter() {
 
 	if (ImGui::CollapsingHeader("Main Color Filter")) {
 		ImGui::InputInt("ColorID##MCOL", &chosenMainColorSFM);
-		setMin(chosenMainColorSFM, 1);
+		setMin(chosenMainColorSFM, 0);
 		ImGui::InputInt("Offset##MCOL", &offsetMainColorSFM);
-		setMin(offsetMainColorSFM, 1);
+		setMin(offsetMainColorSFM, 0);
 		if (ImGui::Button("Add##MCOL") && chosenMainColorSFM > 0) {
 			mainColorsFilterSet.insert(chosenMainColorSFM);
 		}
@@ -81,7 +90,7 @@ void ErGui::renderSelectFilter() {
 				}
 			}
 		}
-
+	
 		ImGui::Text("-----| Filter |-----");
 		int i = 1;
 		for (auto colId : mainColorsFilterSet) {
@@ -95,26 +104,26 @@ void ErGui::renderSelectFilter() {
 		}
 		if (i - 1 % 10 != 0) ImGui::NewLine();
 	}
-
-
+	
+	
 	if (ImGui::CollapsingHeader("Detail Color Filter")) {
 		ImGui::InputInt("ColorID##DCOL", &chosenDetailColorSFM);
-		setMin(chosenDetailColorSFM, 1);
+		setMin(chosenDetailColorSFM, 0);
 		ImGui::InputInt("Offset##DCOL", &offsetDetailColorSFM);
-		setMin(offsetDetailColorSFM, 1);
+		setMin(offsetDetailColorSFM, 0);
 		if (ImGui::Button("Add##DCOL") && chosenDetailColorSFM > 0) {
 			detailColorsFilterSet.insert(chosenDetailColorSFM);
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##DCOL")) {
-			for (int i = offsetDetailColorSFM; i < 10000; i++) {
+			for (int i = offsetDetailColorSFM; i < 1000; i++) {
 				if (!detailColorsFilterSet.contains(i)) {
 					chosenDetailColorSFM = i;
 					break;
 				}
 			}
 		}
-
+	
 		ImGui::Text("-----| Filter |-----");
 		int i = 1;
 		for (auto colId : detailColorsFilterSet) {
@@ -140,7 +149,7 @@ void ErGui::renderSelectFilter() {
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##GROUP")) {
-			for (int i = offsetGroupSFM; i < 10000; i++) {
+			for (int i = offsetGroupSFM; i < 1000; i++) {
 				if (!groupsFilterSet.contains(i)) {
 					chosenGroupSFM = i;
 					break;

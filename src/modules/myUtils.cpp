@@ -78,4 +78,10 @@ namespace ErGui {
 		ImGui::PopID();
 		return result;
 	}
+
+	void enableClicks() {
+		if (ImGui::IsItemHovered() || ImGui::IsWindowHovered()) {
+			ImGuiCocos::get().setShouldPassClicks(false);
+		}
+	}
 }

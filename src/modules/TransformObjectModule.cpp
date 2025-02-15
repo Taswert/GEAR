@@ -286,6 +286,9 @@ void renderForArray(CCArray* objArr) {
 
 void ErGui::renderTransformation() {
 	ImGui::Begin("Transformation-Module");
+	ErGui::enableClicks();
+
+
 	auto obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject;
 	auto objArr = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObjects;
 	if (obj) {

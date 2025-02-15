@@ -12,6 +12,9 @@ int getLengthKey(int time, bool isPlat) {
 
 void ErGui::renderFooter() {
 	ImGui::Begin("Footer");
+	ErGui::enableClicks();
+
+
 	auto lel = GameManager::sharedState()->getEditorLayer();
 	
 	//Time + Level Length
