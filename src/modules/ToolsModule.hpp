@@ -11,5 +11,5 @@ namespace ErGui {
 
 	inline bool isLassoEnabled = false;
 
-	void renderSelectModule();
+	void renderToolsModule();
 }

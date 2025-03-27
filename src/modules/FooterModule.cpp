@@ -40,10 +40,12 @@ void ErGui::renderFooter() {
 
 	//Particles
 	int maxParticleCount = 0;
-	for (auto particle : CCArrayExt<ParticleGameObject*>(lel->m_unkArr12)) {
+	for (auto particle : CCArrayExt<ParticleGameObject*>(lel->m_particleObjects)) {
 		std::string particleSize = particle->m_particleData;
-		particleSize = particleSize.erase(particleSize.find_first_of('a'));
-		maxParticleCount += std::atoi(particleSize.c_str());
+		if (particleSize != "") {
+			particleSize = particleSize.erase(particleSize.find_first_of('a'));
+			maxParticleCount += std::atoi(particleSize.c_str());
+		}
 	}
 
 

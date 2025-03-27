@@ -122,4 +122,5 @@ namespace ErGui {
 
 
 	void renderEditGroupModule();
+	void groupInfoUpdate();
 }

@@ -80,8 +80,8 @@ namespace ErGui {
 	}
 
 	void enableClicks() {
-		if (ImGui::IsItemHovered() || ImGui::IsWindowHovered()) {
-			ImGuiCocos::get().setShouldPassClicks(false);
-		}
+		//if (ImGui::IsItemHovered() || ImGui::IsWindowHovered()) {
+		//	ImGuiCocos::get().setShouldPassClicks(false);
+		//}
 	}
 }

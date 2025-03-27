@@ -30,4 +30,7 @@ namespace ErGui {
 	inline int filterModifier = 0;
 
 	void renderSelectFilter();
+
+	bool selectFilterRealization(GameObject* obj);
+	CCArray* selectFilterRealization(CCArray* objArrInRect);
 }

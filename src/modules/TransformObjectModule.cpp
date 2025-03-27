@@ -296,7 +296,10 @@ void ErGui::renderTransformation() {
 	}
 	else if (objArr->count() > 0) {
 		renderForArray(objArr);
-	} 
+	}
+	else {
+		ImGui::Text("Object is not selected...");
+	}
 		
 
 	ImGui::End();
