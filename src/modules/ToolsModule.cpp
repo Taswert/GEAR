@@ -118,6 +118,24 @@ namespace ErGui {
 		//	}
 		//}
 
+		if (ImGui::Button("{")) {
+			std::cout << "{";
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cout Obj Id")) {
+			if (auto obj = editorUI->m_selectedObject) {
+				std::cout << obj->m_objectID << ", ";
+			}
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("}")) {
+			std::cout << "}\n\n";
+		}
+
 		//if (ImGui::Button("Parse Objects")) {
 		//	std::cout << "std::set<int> blocksSet = { ";
 		//	parseObjects("block-tab-bar", editorUI);
