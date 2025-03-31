@@ -47,6 +47,15 @@ class $modify(ObjectToolbox) {
 };
 
 class $modify(EditorUI) {
+	void scrollWheel(float p0, float p1) {
+		std::cout << p0 << " " << p1 << "\n";
+		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())
+			EditorUI::scrollWheel(p1, p0);
+		else
+			EditorUI::scrollWheel(p0, p1);
+	}
+
+
 	GameObject* createObject(int p0, CCPoint p1) {
 		bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
 		bool enableColorBuild2 = Mod::get()->getSavedValue<bool>("enable-build-color-2");
@@ -561,3 +570,23 @@ $on_mod(Loaded) {
 // Pololak		/ Moral Support
 // 
 //
+
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!
+//TURN OFF SELECT FILTER!!!

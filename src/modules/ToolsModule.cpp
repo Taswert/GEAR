@@ -203,7 +203,36 @@ void ErGui::renderToolsModule2() {
 	switch (editorUI->m_selectedMode) {
 		case 1: //Delete
 		{
+			if (ImGui::Button("DeleteAllSP")) {
+				editorUI->onDeleteStartPos(nullptr);
+			}
 
+			if (auto obj = editorUI->m_selectedObject) {
+				std::string buttonStr = "DeleteAll-" + std::to_string(obj->m_objectID);
+				if (ImGui::Button(buttonStr.c_str())) {
+					editorUI->onDeleteSelectedType(nullptr);
+				}
+			}
+
+			ImGui::Button("##OBJECT", { 30.f, 30.f });
+
+			std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(editorUI->m_selectedObjectIndex);
+			if (!newFrameName.empty()) {
+				CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
+				if (frame)
+					ErGui::drawImageInImGui(frame);
+			}
+
+			int deleteFilterMode = GameManager::sharedState()->getIntGameVariable("0005");
+			GameManager::sharedState()->setIntGameVariable("0006", editorUI->m_selectedObjectIndex);
+			std::string customObjectStr = "Custom-" + std::to_string(GameManager::sharedState()->getIntGameVariable("0006")) + std::string("##RADIO");
+
+			ImGui::RadioButton("None##RADIO",			&deleteFilterMode, 0);
+			ImGui::RadioButton("Details##RADIO",		&deleteFilterMode, 1);
+			ImGui::RadioButton("Static##RADIO",			&deleteFilterMode, 2);
+			ImGui::RadioButton(customObjectStr.c_str(), &deleteFilterMode, 3);
+
+			GameManager::sharedState()->setIntGameVariable("0005", deleteFilterMode);
 			break;
 		}
 		case 2: //Build
