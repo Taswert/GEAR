@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include <imgui-cocos.hpp>
 #include <Geode/Geode.hpp>
-
+using namespace cocos2d;
 //class LevelEditorLayer {
 //	gd::string getSFXIDs(LevelEditorLayer* lel);
 //	gd::string getSongIDs(LevelEditorLayer* lel, bool* idk);
@@ -21,6 +21,8 @@ namespace ErGui {
 	int deltaInputIntImproved(const char* label, int max, int min, int step);
 
 	inline auto lassoPatch = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
+
+	void drawImageInImGui(CCSpriteFrame* frame);
 
 	void enableClicks();
 };

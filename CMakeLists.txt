@@ -6,7 +6,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(EditorRevamped-Modules VERSION 1.0.0)
 
-add_library(${PROJECT_NAME} SHARED src/main.cpp "src/ErGui.cpp" "src/modules/FooterModule.cpp" "src/modules/TransformObjectModule.cpp" "src/modules/EditGroupModule.cpp" "src/modules/SelectFilterModule.cpp" "src/includes/myUtils.cpp" "src/modules/ToolsModule.cpp" "src/modules/CameraSettings.cpp" "src/modules/ObjectListModule.cpp" "src/includes/ObjectCategories.cpp")
+add_library(${PROJECT_NAME} SHARED src/main.cpp "src/ErGui.cpp" "src/modules/FooterModule.cpp" "src/modules/TransformObjectModule.cpp" "src/modules/EditGroupModule.cpp" "src/modules/SelectFilterModule.cpp" "src/includes/myUtils.cpp" "src/modules/ToolsModule.cpp" "src/modules/CameraSettings.cpp" "src/modules/ObjectListModule.cpp" "src/includes/ObjectCategories.cpp" "src/modules/LayerModule.cpp")
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")

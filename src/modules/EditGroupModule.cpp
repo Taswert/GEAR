@@ -744,6 +744,7 @@ void ErGui::renderEditGroupModule() {
 
 void ErGui::groupInfoUpdate() {
 	auto objArr = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObjects;
+	if (objArr->count() == 0) return;
 
 	ErGui::groupsFromObjArr.clear();
 

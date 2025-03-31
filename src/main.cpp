@@ -8,6 +8,7 @@
 #include <Geode/modify/CustomSongLayer.hpp>
 #include <Geode/modify/CustomSongWidget.hpp>
 #include <Geode/modify/CCTouchDispatcher.hpp>
+#include <Geode/modify/ObjectToolbox.hpp>
 
 #include <IconsMaterialDesignIcons.h>
 #include "modules/EditGroupModule.hpp"
@@ -17,6 +18,7 @@
 #include "modules/ToolsModule.hpp"
 #include "modules/CameraSettings.hpp"
 #include "modules/ObjectListModule.hpp"
+#include "modules/LayerModule.hpp"
 
 using namespace geode::prelude;
 
@@ -34,7 +36,31 @@ bool filterSingleObj(bool filterBool, int objParameter, std::vector<int> vec) {
 	return false;
 }
 
+class $modify(ObjectToolbox) {
+	float gridNodeSizeForKey(int id) {
+		auto size = Mod::get()->template getSavedValue<float>("grid-size");
+		if (size < 1 || roundf(size) == 30) {
+			return ObjectToolbox::gridNodeSizeForKey(id);
+		}
+		return size;
+	}
+};
+
 class $modify(EditorUI) {
+	GameObject* createObject(int p0, CCPoint p1) {
+		bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
+		bool enableColorBuild2 = Mod::get()->getSavedValue<bool>("enable-build-color-2");
+
+		int color1 = Mod::get()->template getSavedValue<int>("build-color-1");
+		int color2 = Mod::get()->template getSavedValue<int>("build-color-2");
+		auto obj = EditorUI::createObject(p0, p1);
+		if (obj->m_baseColor && enableColorBuild1) 
+			obj->m_baseColor->m_colorID = color1;
+		if (obj->m_detailColor && enableColorBuild2)
+			obj->m_detailColor->m_colorID = color2;
+		return obj;
+	}
+
 	void selectObject(GameObject* obj, bool p1) {
 		if (ErGui::selectFilterRealization(obj))
 			EditorUI::selectObject(obj, p1);
@@ -43,9 +69,35 @@ class $modify(EditorUI) {
 
 	void selectObjects(CCArray* objArrInRect, bool p1) {
 		
+		int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+
 		//orig
-		EditorUI::selectObjects(ErGui::selectFilterRealization(objArrInRect), p1);
-		
+		switch (selectMode)
+		{
+			case 3: {
+				CCArray objArr;
+				for (auto obj : CCArrayExt<GameObject*>(ErGui::selectFilterRealization(objArrInRect))) {
+					if (obj->m_isSelected) {
+						objArr.addObject(obj);
+					}
+				}
+				EditorUI::deselectAll();
+				if (objArr.count() > 0)
+					EditorUI::selectObjects(&objArr, p1);
+				break;
+			}
+			case 2: {
+				for (auto obj : CCArrayExt<GameObject*>(ErGui::selectFilterRealization(objArrInRect))) {
+					EditorUI::deselectObject(obj);
+				}
+				break;
+			}
+			case 1:
+			default: {
+				EditorUI::selectObjects(ErGui::selectFilterRealization(objArrInRect), p1);
+				break;
+			}
+		}
 		ErGui::groupInfoUpdate();
 	}
 
@@ -63,21 +115,55 @@ class $modify(EditorUI) {
 		return ret;
 	}
 
+	virtual void keyDown(cocos2d::enumKeyCodes p0) {
+		if (p0 == cocos2d::enumKeyCodes::KEY_Four) {
+			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
+		}
+
+		if (p0 == cocos2d::enumKeyCodes::KEY_Five) {
+			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 5;
+		}
+		EditorUI::keyDown(p0);
+	}
+
+	void updateGridNodeSize() {
+		auto actualMode = m_selectedMode;
+		m_selectedMode = 2;
+		EditorUI::updateGridNodeSize();
+		m_selectedMode = actualMode;
+	}
+
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
-		//std::cout << "CCTouch: X=" << touch->m_point.x << " Y=" << touch->m_point.y << "\n";
-		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled) {
+
+
+		//LASSO
+		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && m_swipeEnabled) {
 			ErGui::editorUILassoPoints.clear();
 			CCPoint pt = touch->getLocation();
 			ErGui::editorUILassoPoints.push_back(pt);
 			ErGui::editorUIDrawNode->clear();
-
-			//this->m_unk244 = true;
+			return true;
 		}
 		return EditorUI::ccTouchBegan(touch, event);
 	}
 
+
 	void ccTouchMoved(CCTouch* touch, CCEvent* event) {
-		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled) {
+		//ZOOM MODE
+		if (this->m_selectedMode == 4) {
+			auto editorUI = GameManager::sharedState()->getEditorLayer()->m_editorUI;
+			float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
+			editorUI->m_editorZoom += (touch->getLocation().x - touch->getPreviousLocation().x) * 0.01f * zoomMul;
+			if (editorUI->m_editorZoom > 4.f) editorUI->m_editorZoom = 4.f;
+			if (editorUI->m_editorZoom < 0.1f) editorUI->m_editorZoom = 0.1f;
+			editorUI->updateZoom(editorUI->m_editorZoom);
+			//GameManager::sharedState()->getEditorLayer()->m_editorUI->m_editorZoom;
+			//EditorUI::get()->m_editorZoom += touch->getLocation().x - touch->getPreviousLocation().x;
+			return;
+		}
+
+		//LASSO
+		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && m_swipeEnabled) {
 			CCPoint pt = touch->getLocation();
 			ErGui::editorUILassoPoints.push_back(pt);
 			ErGui::editorUIDrawNode->clear();
@@ -85,12 +171,16 @@ class $modify(EditorUI) {
 			if (ErGui::editorUILassoPoints.size() > 1) {
 				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUILassoPoints.data(), ErGui::editorUILassoPoints.size(), { 0, 0, 0, 0 }, 0.2f, { 0, 0.7f, 0, 1.f });
 			}
+			return;
 		}
 		EditorUI::ccTouchMoved(touch, event);
 	}
 
 	void ccTouchEnded(CCTouch* touch, CCEvent* event) {
-		if (ErGui::editorUILassoPoints.size() > 2 && this->m_selectedMode == 3 && ErGui::isLassoEnabled) {
+
+
+		//LASSO
+		if (ErGui::editorUILassoPoints.size() > 2 && this->m_selectedMode == 3 && ErGui::isLassoEnabled && m_swipeEnabled) {
 			ErGui::editorUIDrawNode->clear();
 			ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUILassoPoints.data(), ErGui::editorUILassoPoints.size(), { 0, 0, 0, 0 }, 0.2f, { 0, 1.f, 0, 1.f });
 
@@ -106,9 +196,6 @@ class $modify(EditorUI) {
 					(objPos.x * cameraScale) + cameraPos.x,
 					(objPos.y * cameraScale) + cameraPos.y
 				);
-
-				//std::cout << objPos.x << " " << objPos.y << "\n";
-				//std::cout << newPos.x << " " << newPos.y << "\n\n";
 
 				if (ErGui::isPointInPolygon(newPos, ErGui::editorUILassoPoints)) {
 					objArr->addObject(obj);
@@ -197,6 +284,14 @@ $on_mod(Loaded) {
 	AllocConsole();
 	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
+	if (Mod::get()->getSavedValue<float>("grid-size") == 0.f) Mod::get()->setSavedValue("grid-size", 30.f);
+	if (Mod::get()->getSavedValue<float>("zoom-multiplier") == 0.f) Mod::get()->setSavedValue("zoom-multiplier", 1.f);
+	if (Mod::get()->getSavedValue<int>("select-mode") == 0) Mod::get()->setSavedValue("select-mode", 1);
+	//if (Mod::get()->getSavedValue<int>("build-color-1") == 0) Mod::get()->setSavedValue("build-color-1", 1);
+	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
+	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
+	//if (Mod::get()->getSavedValue<bool>("enable-build-color-2") == 0) Mod::get()->setSavedValue("enable-build-color-2", 1);
+
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -222,7 +317,8 @@ $on_mod(Loaded) {
 				ErGui::renderSelectFilter();
 				ErGui::renderTransformation();
 				ErGui::renderFooter();
-				ErGui::renderToolsModule();
+				ErGui::renderToolsModule1();
+				ErGui::renderToolsModule2();
 				ErGui::renderObjectList();
 
 				//ErGui::renderCameraSettings();
@@ -442,3 +538,26 @@ $on_mod(Loaded) {
 			}
 			});
 }
+
+// Thanks to:
+//
+// Coders:
+// Rainix		/ Code Help
+// Emiya		/ Code Help
+// HJFod		/ Main Idea, DevTools
+// RaZooM		/ Object Categories
+// Mat			/ ImGui integration
+// MgostiH		/ First Supported! 
+// 
+// Creators:
+// CHRAPIVA		/ Ideas + Feedback
+// Kisss		/ Ideas + Feedback
+// Vernam		/ Creator Contacts + MOTIVATION
+// Pes11		/ Ideas
+// 
+// Others:
+// Herowhither	/ Moral Support
+// Dbrxvich		/ Moral Support
+// Pololak		/ Moral Support
+// 
+//

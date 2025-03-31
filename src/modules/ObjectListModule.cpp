@@ -16,53 +16,8 @@ std::pair<const char*, std::vector<ErGui::ObjectConfig>> favouritesObjects = {
 };
 
 
-void drawImage(CCSpriteFrame* frame) {
-
-	CCSprite* tempSprite = CCSprite::createWithSpriteFrame(frame);
-	auto quad = tempSprite->getQuad();
-
-	float u_min = std::min({ quad.bl.texCoords.u, quad.br.texCoords.u, quad.tl.texCoords.u, quad.tr.texCoords.u });
-	float u_max = std::max({ quad.bl.texCoords.u, quad.br.texCoords.u, quad.tl.texCoords.u, quad.tr.texCoords.u });
-	float v_min = std::min({ quad.bl.texCoords.v, quad.br.texCoords.v, quad.tl.texCoords.v, quad.tr.texCoords.v });
-	float v_max = std::max({ quad.bl.texCoords.v, quad.br.texCoords.v, quad.tl.texCoords.v, quad.tr.texCoords.v });
-
-	auto texture = tempSprite->getTexture();
-	GLuint textureID = texture->getName();
-	ImTextureID imguiTexture = (ImTextureID)(intptr_t)textureID;
-
-
-	auto drawList = ImGui::GetWindowDrawList();
-
-	if (tempSprite->getContentWidth() > tempSprite->getContentHeight()) {
-		float ratio = tempSprite->getContentWidth() / (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x);
-		float newY = tempSprite->getContentHeight() / ratio;
-		float centerY = (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y) / 2.f;
-
-		drawList->AddImageQuad(
-			textureID,
-			ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y + (newY / 2) - centerY), ImVec2(ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y + (newY / 2) - centerY),
-			ImVec2(ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y - (newY / 2) - centerY), ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y - (newY / 2) - centerY),
-			ImVec2(quad.bl.texCoords.u, quad.bl.texCoords.v), ImVec2(quad.br.texCoords.u, quad.br.texCoords.v),
-			ImVec2(quad.tr.texCoords.u, quad.tr.texCoords.v), ImVec2(quad.tl.texCoords.u, quad.tl.texCoords.v)
-		);
-	}
-	else {
-		float ratio = tempSprite->getContentHeight() / (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y);
-		float newX = tempSprite->getContentWidth() / ratio;
-		float centerX = (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x) / 2.f;
-
-		drawList->AddImageQuad(
-			textureID,
-			ImVec2(ImGui::GetItemRectMin().x - (newX / 2) + centerX, ImGui::GetItemRectMax().y), ImVec2(ImGui::GetItemRectMin().x + (newX / 2) + centerX, ImGui::GetItemRectMax().y),
-			ImVec2(ImGui::GetItemRectMin().x + (newX / 2) + centerX, ImGui::GetItemRectMin().y), ImVec2(ImGui::GetItemRectMin().x - (newX / 2) + centerX, ImGui::GetItemRectMin().y),
-			ImVec2(quad.bl.texCoords.u, quad.bl.texCoords.v), ImVec2(quad.br.texCoords.u, quad.br.texCoords.v),
-			ImVec2(quad.tr.texCoords.u, quad.tr.texCoords.v), ImVec2(quad.tl.texCoords.u, quad.tl.texCoords.v)
-		);
-	}
-}
-
-bool ImageButtonFromFrameName(int objId, ImGuiTextFilter filter, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), ImVec4 bgCol = ImVec4(0, 0, 0, 0), ImVec4 tintCol = ImVec4(1, 1, 1, 1)) {
-
+bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, ImGuiTextFilter filter, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), ImVec4 bgCol = ImVec4(0, 0, 0, 0), ImVec4 tintCol = ImVec4(1, 1, 1, 1)) {
+	int objId = objCfg.objectIdVector[j];
 	std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(objId);
 	if (newFrameName.empty()) return false;
 	CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
@@ -82,14 +37,12 @@ bool ImageButtonFromFrameName(int objId, ImGuiTextFilter filter, const char* str
 		shouldPopStyle = true;
 	}
 
-	//if (ImGui::ImageButton(str_id, imguiTexture, imageSize, ImVec2(u_min, v_min), ImVec2(u_max, v_max), bgCol, tintCol)) {
 	if (ImGui::Button(str_id, imageSize)) {
 		if (editorUI->m_selectedObjectIndex != objId)
 			editorUI->m_selectedObjectIndex = objId;
 		else
 			editorUI->m_selectedObjectIndex = 0;
 		editorUI->updateGridNodeSize();
-		std::cout << "ID: " << objId << "\n" << "Name: " << ObjectToolbox::sharedState()->intKeyToFrame(objId) << "\n";
 	}
 	
 	//Pop color for selected object
@@ -103,12 +56,16 @@ bool ImageButtonFromFrameName(int objId, ImGuiTextFilter filter, const char* str
 		if (ImGui::Button("Favourite")) {
 			favouritesObjects.second.at(0).objectIdVector.push_back(objId);
 		}
-		if (ImGui::Button("Delete"))
-			ImGui::CloseCurrentPopup();
+		if (ImGui::Button("Set As Thumbnail")) { 
+			//This is a new obj confing, so it won't work. Should get address of original config
+			auto* pointerObjCfg = &objCfg;
+			pointerObjCfg->thumbnailObjectId = objId;
+			//ImGui::CloseCurrentPopup();
+		}
 		ImGui::EndPopup();
 	}
 
-	drawImage(frame);
+	ErGui::drawImageInImGui(frame);
 
 
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
@@ -119,7 +76,7 @@ bool ImageButtonFromFrameName(int objId, ImGuiTextFilter filter, const char* str
 	return true;
 }
 
-void ImageFolderButton(std::unordered_map<int, bool>& folderOpenStates, std::vector<ErGui::ObjectConfig> visibleButtons, int i, ImVec2 buttonSize = ImVec2(30.f, 30.f)) {
+void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, ImVec2 buttonSize = ImVec2(30.f, 30.f)) {
 
 	int folderId = visibleButtons[i].thumbnailObjectId;
 	// Если для этой папки ещё нет записи, то по умолчанию она закрыта
@@ -149,7 +106,7 @@ void ImageFolderButton(std::unordered_map<int, bool>& folderOpenStates, std::vec
 
 	ImGui::PopStyleColor();
 
-	drawImage(frame);
+	ErGui::drawImageInImGui(frame);
 
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 	float lastButtonX2 = ImGui::GetItemRectMax().x;
@@ -185,16 +142,15 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 
 	if (ImGui::CollapsingHeader(name)) {
 		float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-		static std::unordered_map<int, bool> folderOpenStates;
 
 		for (int i = 0; i < visibleButtons.size(); i++) {
-			ImageFolderButton(folderOpenStates, visibleButtons, i, buttonSize);
+			ImageFolderButton(visibleButtons, i, buttonSize);
 			std::string popupStr = "##POPUP-";
 			popupStr.append(std::to_string(visibleButtons[i].thumbnailObjectId));
 			if (visibleButtons[i].thumbnailObjectId != 0 && ImGui::BeginPopup(popupStr.c_str())) {
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i].objectIdVector[j], filter, strId.c_str(), buttonSize);
+					ImageButtonFromFrameName(visibleButtons[i], j, filter, strId.c_str(), buttonSize);
 
 					if (j + 1 < visibleButtons[i].objectIdVector.size() && (j + 1) % 6 != 0)
 						ImGui::SameLine();
@@ -204,7 +160,7 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 			else if (visibleButtons[i].thumbnailObjectId == 0) {
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i].objectIdVector[j], filter, strId.c_str(), buttonSize);
+					ImageButtonFromFrameName(visibleButtons[i], j, filter, strId.c_str(), buttonSize);
 					//objCount++;
 
 					float lastButtonX2 = ImGui::GetItemRectMax().x;
@@ -241,4 +197,5 @@ void ErGui::renderObjectList() {
 //Buttons Size - Done
 //Favourite objects
 //Set Object as Thumbnail button
+//Recent???
 //...
