@@ -182,7 +182,7 @@ void ErGui::renderObjectList() {
 	ImGui::InputFloat("Button Size", &buttonSizeValue);
 	ImVec2 buttonSize(buttonSizeValue, buttonSizeValue);
 
-	for (auto object : ErGui::getObjectCfg()) {
+	for (auto object : ErGui::objectCfg) {
 		objectTabCreate(object.first, object.second, filter, buttonSize);
 	}
 

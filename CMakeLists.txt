@@ -4,9 +4,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(EditorRevamped-Modules VERSION 1.0.0)
+project(GEAR VERSION 1.0.0)
 
-add_library(${PROJECT_NAME} SHARED src/main.cpp "src/ErGui.cpp" "src/modules/FooterModule.cpp" "src/modules/TransformObjectModule.cpp" "src/modules/EditGroupModule.cpp" "src/modules/SelectFilterModule.cpp" "src/includes/myUtils.cpp" "src/modules/ToolsModule.cpp" "src/modules/CameraSettings.cpp" "src/modules/ObjectListModule.cpp" "src/includes/ObjectCategories.cpp" "src/modules/LayerModule.cpp")
+add_library(${PROJECT_NAME} SHARED src/main.cpp "src/ErGui.cpp" "src/modules/FooterModule.cpp" "src/modules/TransformObjectModule.cpp" "src/modules/EditGroupModule.cpp" "src/modules/SelectFilterModule.cpp" "src/includes/myUtils.cpp" "src/modules/ToolsModule.cpp" "src/modules/CameraSettings.cpp" "src/modules/ObjectListModule.cpp" "src/includes/ObjectCategories.cpp" "src/modules/LayerModule.cpp" "src/modules/EditObjectModule.cpp")
+
+
+#include(FetchContent)
+#FetchContent_Declare(
+#    json
+#    GIT_REPOSITORY https://github.com/nlohmann/json.git
+#)
+#FetchContent_MakeAvailable(json)
+
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -21,7 +30,7 @@ setup_geode_mod(${PROJECT_NAME})
 set(HAS_IMGUI ON)
 CPMAddPackage("gh:matcool/gd-imgui-cocos#0207a36bbe504d8dbc34c984218114af6af36afc")
 
-target_link_libraries(${PROJECT_NAME} imgui-cocos)
+target_link_libraries(${PROJECT_NAME} imgui-cocos) #nlohmann_json::nlohmann_json
 
 target_include_directories(imgui-cocos INTERFACE ./library/imgui-docking)
 
@@ -36,3 +45,6 @@ target_include_directories(imgui-cocos INTERFACE ./library/imgui-docking)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/includes)
+
+
+

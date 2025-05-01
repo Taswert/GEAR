@@ -19,6 +19,18 @@
 #include "modules/CameraSettings.hpp"
 #include "modules/ObjectListModule.hpp"
 #include "modules/LayerModule.hpp"
+#include "modules/EditObjectModule.hpp"
+
+#include "includes/ObjectCategories.hpp"
+#include <matjson.hpp>
+#include <matjson/reflect.hpp>
+#include <matjson/std.hpp>
+#include <matjson/stl_serialize.hpp>
+
+#include <Geode/Result.hpp>
+
+//#include <nlohmann/json.hpp>
+//using json = nlohmann::json;
 
 using namespace geode::prelude;
 
@@ -301,6 +313,54 @@ $on_mod(Loaded) {
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-2") == 0) Mod::get()->setSavedValue("enable-build-color-2", 1);
 
+
+	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
+	std::map<const char*, std::vector<ErGui::ObjectConfig>> data = ErGui::getDefaultObjectCfg();
+
+	matjson::Value j;
+
+	for (const auto& kv : data) {
+		j[kv.first] = kv.second;
+	}
+
+	//std::cout << j.dump() << "\n\n";
+	std::cout << cfgDir << "\n\n";
+	std::ifstream cfgFile = std::ifstream(cfgDir);
+	//geode::Result res;
+	geode::Result parsed = matjson::parse(cfgFile);
+	
+	if (!parsed) {
+		auto someError = parsed.unwrapErr();
+		if (parsed.unwrapErr().message == "eof") {
+			std::ofstream oCfgFile = std::ofstream(cfgDir);
+			oCfgFile.write(j.dump().c_str(), j.dump().size());
+			oCfgFile.close();
+		}
+		std::cout << "Failed to parse json: " << someError.message << " " << typeid(someError).name() << "\n";
+	
+		ErGui::objectCfg = data;
+	}
+	//else {
+	//	matjson::Value parsedObject = parsed.unwrap();
+	//	std::map<const char*, std::vector<ErGui::ObjectConfig>> newData;
+	//	for (const auto& [key, mapValue] : parsedObject) {
+	//		auto myVectorOfObjCfg = mapValue.asArray().unwrap();
+	//		std::vector<ErGui::ObjectConfig> objCfgVector;
+	//		for (const auto& objCfgValue : myVectorOfObjCfg) {
+	//			objCfgVector.push_back(objCfgValue.as<ErGui::ObjectConfig>().unwrap());
+	//		}
+	//		newData[key.c_str()] = objCfgVector;
+	//	}
+	//
+	//	ErGui::objectCfg = newData;
+	//
+	//	std::cout << parsedObject.size() << "\n";
+	//}
+	
+	cfgFile.close();
+	
+	ErGui::objectCfg = data;
+
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -308,6 +368,9 @@ $on_mod(Loaded) {
 		//io.Fonts->AddFontFromFileTTF("Karla-Regular.ttf", 16.f);
 		//io.Fonts->Build();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		
+		
+		ErGui::setupTriggersSettings();
 		}).draw([] {
 
 			if (auto lel = GameManager::sharedState()->getEditorLayer()) {
@@ -329,6 +392,7 @@ $on_mod(Loaded) {
 				ErGui::renderToolsModule1();
 				ErGui::renderToolsModule2();
 				ErGui::renderObjectList();
+				ErGui::renderEditObjectModule();
 
 				//ErGui::renderCameraSettings();
 				

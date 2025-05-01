@@ -8,12 +8,29 @@
 	},
 	"id": "taswert.gear",
 	"name": "G.E.A.R.",
-	"version": "v1.0.0",
+	"version": "v0.0.0-alpha",
 	"developer": "Taswert",
 	"description": "",
 	"resources": {
 		"files": [
 			"resources/imgui-fonts/Karla-Regular.ttf"
 		]
+	},
+	"settings": {
+		"object-list-config": {
+			"type": "file",
+			"name": "Object List Config",
+			"description": "You can configure here categories and folders of object list module!",
+			"default": "{mod_config_dir}/object_list.json",
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": [ "*.json" ],
+						"description": "JSON file"
+					}
+				]
+			}
+		}
 	}
 }

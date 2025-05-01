@@ -203,6 +203,8 @@ void ErGui::renderToolsModule2() {
 	switch (editorUI->m_selectedMode) {
 		case 1: //Delete
 		{
+			ImGui::Text("-----| Delete Mode |-----");
+
 			if (ImGui::Button("DeleteAllSP")) {
 				editorUI->onDeleteStartPos(nullptr);
 			}
@@ -237,6 +239,8 @@ void ErGui::renderToolsModule2() {
 		}
 		case 2: //Build
 		{
+			ImGui::Text("-----| Build Mode |-----");
+
 			int color1 = Mod::get()->template getSavedValue<int>("build-color-1");
 			int color2 = Mod::get()->template getSavedValue<int>("build-color-2");
 
@@ -294,6 +298,8 @@ void ErGui::renderToolsModule2() {
 		}
 		case 3: //Edit
 		{
+			ImGui::Text("-----| Edit Mode |-----");
+
 			if (ImGui::Checkbox("Lasso", &isLassoEnabled)) {
 				if (isLassoEnabled && editorUI->m_swipeEnabled) {
 					//GameManager::sharedState()->setGameVariable("0003", true);
@@ -316,6 +322,8 @@ void ErGui::renderToolsModule2() {
 		}
 		case 4: //Zoom
 		{
+			ImGui::Text("-----| Zoom Mode |-----");
+
 			if (ImGui::Button("Zoom+")) editorUI->zoomIn(nullptr);
 			if (ImGui::Button("Zoom-")) editorUI->zoomOut(nullptr);
 			float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
@@ -332,6 +340,7 @@ void ErGui::renderToolsModule2() {
 		}
 		case 5: //Image
 		{
+			ImGui::Text("-----| Observer Mode |-----");
 
 			break;
 		}
