@@ -25,10 +25,6 @@ namespace ErGui {
 		return inside;
 	}
 
-	void createNewKeyframeAnim(EditorUI* self) {
-		return reinterpret_cast<void(__fastcall*)(EditorUI*)>(geode::base::get() + 0x1179f0)(self);
-	}
-
 	void setMaxMin(int& value, int max, int min) {
 		if (value > max) value = max;
 		else if (value < min) value = min;
@@ -121,6 +117,52 @@ namespace ErGui {
 				ImVec2(quad.tr.texCoords.u, quad.tr.texCoords.v), ImVec2(quad.tl.texCoords.u, quad.tl.texCoords.v)
 			);
 		}
+	}
+
+	void setupMenuColors(ImVec4 BGColor, ImVec4 HoveredColor, ImVec4 TextFieldColor) {
+		ImVec4* colors = ImGui::GetStyle().Colors;
+
+		// Основные элементы UI
+		//colors[ImGuiCol_WindowBg] =				BGColor;		//ImVec4(0.13f, 0.14f, 0.17f, 1.00f);
+		//colors[ImGuiCol_ChildBg] =				BGColor;		//ImVec4(0.13f, 0.14f, 0.17f, 1.00f);
+		//colors[ImGuiCol_Border] =				ImVec4(0.50f, 0.50f, 0.50f, 0.50f);
+
+		// Рамки и заголовки
+		//colors[ImGuiCol_FrameBg] =				BGColor; //ImVec4(0.50f, 0.50f, 0.50f, 0.50f);	//ImVec4(0.20f, 0.21f, 0.23f, 1.00f);
+		//colors[ImGuiCol_TitleBgActive] =		BGColor; //ImVec4(0.50f, 0.50f, 0.50f, 1.00f);	//ImVec4(0.16f, 0.29f, 0.48f, 1.00f);
+
+		//ImGui::PushStyleColor(ImGuiCol_FrameBg,			BGColor);
+		//ImGui::PushStyleColor(ImGuiCol_TitleBgActive,	BGColor);
+
+		// Меню и вкладки
+		//colors[ImGuiCol_Button] =				ImVec4(HoveredColor.x - 0.10f, HoveredColor.y - 0.10f, HoveredColor.z - 0.10f, HoveredColor.w - 0.10f);	//ImVec4(0.20f, 0.25f, 0.30f, 1.00f);
+		//colors[ImGuiCol_ButtonHovered] =		ImVec4(HoveredColor.x - 0.00f, HoveredColor.y - 0.00f, HoveredColor.z - 0.00f, HoveredColor.w - 0.00f);	//ImVec4(0.30f, 0.35f, 0.40f, 1.00f);
+		//colors[ImGuiCol_ButtonActive] =			ImVec4(HoveredColor.x - 0.15f, HoveredColor.y - 0.15f, HoveredColor.z - 0.15f, HoveredColor.w - 0.15f);	//ImVec4(0.15f, 0.20f, 0.25f, 1.00f);
+
+		//colors[ImGuiCol_Header] =				ImVec4(HoveredColor.x - 0.00f, HoveredColor.y - 0.00f, HoveredColor.z - 0.00f, HoveredColor.w - 0.00f);	//ImVec4(0.30f, 0.35f, 0.40f, 1.00f);
+		//colors[ImGuiCol_HeaderHovered] =		ImVec4(HoveredColor.x + 0.10f, HoveredColor.y + 0.10f, HoveredColor.z + 0.10f, HoveredColor.w + 0.10f);	//ImVec4(0.40f, 0.45f, 0.50f, 1.00f);
+		//colors[ImGuiCol_HeaderActive] =			ImVec4(HoveredColor.x - 0.10f, HoveredColor.y - 0.10f, HoveredColor.z - 0.10f, HoveredColor.w - 0.10f);	//ImVec4(0.20f, 0.25f, 0.30f, 1.00f);
+
+		//colors[ImGuiCol_Separator] =			ImVec4(0.30f, 0.30f, 0.30f, 0.50f);	ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+		//colors[ImGuiCol_SeparatorHovered] =		ImVec4(0.30f, 0.30f, 0.30f, 0.50f);	ImVec4(0.60f, 0.60f, 0.70f, 1.00f);
+		//colors[ImGuiCol_SeparatorActive] =		ImVec4(0.30f, 0.30f, 0.30f, 0.50f);	ImVec4(0.70f, 0.70f, 0.90f, 1.00f);
+
+		//colors[ImGuiCol_Tab] =					ImVec4(HoveredColor.x - 0.10f, HoveredColor.y - 0.10f, HoveredColor.z - 0.10f, HoveredColor.w - 0.10f);	//ImVec4(0.20f, 0.25f, 0.30f, 1.00f);
+		//colors[ImGuiCol_TabHovered] =				ImVec4(HoveredColor.x - 0.00f, HoveredColor.y - 0.00f, HoveredColor.z - 0.00f, HoveredColor.w - 0.00f);	//ImVec4(0.30f, 0.35f, 0.40f, 1.00f);
+		//colors[ImGuiCol_TabActive] =				ImVec4(HoveredColor.x - 0.05f, HoveredColor.y - 0.05f, HoveredColor.z - 0.05f, HoveredColor.w - 0.05f);	//ImVec4(0.25f, 0.30f, 0.35f, 1.00f);
+		//colors[ImGuiCol_TabUnfocused] =			ImVec4(HoveredColor.x - 0.15f, HoveredColor.y - 0.15f, HoveredColor.z - 0.15f, HoveredColor.w - 0.15f);	//ImVec4(0.15f, 0.20f, 0.25f, 1.00f);
+		//colors[ImGuiCol_TabUnfocusedActive] =		ImVec4(HoveredColor.x - 0.10f, HoveredColor.y - 0.10f, HoveredColor.z - 0.10f, HoveredColor.w - 0.10f);	//ImVec4(0.20f, 0.25f, 0.30f, 1.00f);
+
+		ImGui::PushStyleColor(ImGuiCol_Tab,					ImVec4(HoveredColor.x - 0.10f, HoveredColor.y - 0.10f, HoveredColor.z - 0.10f, HoveredColor.w - 0.10f));
+		ImGui::PushStyleColor(ImGuiCol_TabHovered,			ImVec4(HoveredColor.x - 0.00f, HoveredColor.y - 0.00f, HoveredColor.z - 0.00f, HoveredColor.w - 0.00f));
+		ImGui::PushStyleColor(ImGuiCol_TabActive,			ImVec4(HoveredColor.x - 0.05f, HoveredColor.y - 0.05f, HoveredColor.z - 0.05f, HoveredColor.w - 0.05f));
+		ImGui::PushStyleColor(ImGuiCol_TabUnfocused,		ImVec4(HoveredColor.x - 0.15f, HoveredColor.y - 0.15f, HoveredColor.z - 0.15f, HoveredColor.w - 0.15f));
+		ImGui::PushStyleColor(ImGuiCol_TabUnfocusedActive,	ImVec4(HoveredColor.x - 0.10f, HoveredColor.y - 0.10f, HoveredColor.z - 0.10f, HoveredColor.w - 0.10f));
+
+
+		// Текстовое поле и подсказки
+		//colors[ImGuiCol_TextSelectedBg] =		ImVec4(TextFieldColor.x, TextFieldColor.y, TextFieldColor.z, 0.35f); //ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+		//colors[ImGuiCol_NavHighlight] =			ImVec4(TextFieldColor.x, TextFieldColor.y, TextFieldColor.z, 1.00f); //ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
 	}
 
 	void enableClicks() {

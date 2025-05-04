@@ -285,6 +285,7 @@ void renderForArray(CCArray* objArr) {
 }
 
 void ErGui::renderTransformation() {
+	//ErGui::setupMenuColors(ImVec4(0.02f, 0.10f, 0.11f, 0.95f), ImVec4(0.09f, 0.82f, 0.85f, 1.f), ImVec4(0.12f, 0.88f, 0.91f, 1.f));
 	ImGui::Begin("Transformation-Module");
 	ErGui::enableClicks();
 
@@ -300,7 +301,8 @@ void ErGui::renderTransformation() {
 	else {
 		ImGui::Text("Object is not selected...");
 	}
-		
+	
+	//for (int i = 0; i < 5; i++) ImGui::PopStyleColor();
 
 	ImGui::End();
 }

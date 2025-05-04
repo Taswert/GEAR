@@ -175,6 +175,7 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 }
 
 void ErGui::renderObjectList() {
+	//ErGui::setupMenuColors(ImVec4(0.05f, 0.10f, 0.02f, 0.95f), ImVec4(0.38f, 0.77f, 0.12f, 1.f), ImVec4(0.63f, 0.80f, 0.49f, 1.f));
 	ImGui::Begin("ObjectList-Module");
 	static ImGuiTextFilter filter;
 	filter.Draw();
@@ -187,7 +188,8 @@ void ErGui::renderObjectList() {
 	}
 
 	objectTabCreate(favouritesObjects.first, favouritesObjects.second, filter, buttonSize);
-	
+
+	//for (int i = 0; i < 5; i++) ImGui::PopStyleColor();
 	ImGui::End();
 }
 

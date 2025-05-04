@@ -20,6 +20,7 @@
 #include "modules/ObjectListModule.hpp"
 #include "modules/LayerModule.hpp"
 #include "modules/EditObjectModule.hpp"
+#include "modules/ActionHistoryModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
@@ -364,27 +365,12 @@ $on_mod(Loaded) {
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
-		//io.Fonts->Clear();
-		//io.Fonts->AddFontFromFileTTF("Karla-Regular.ttf", 16.f);
-		//io.Fonts->Build();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		
 		
 		ErGui::setupTriggersSettings();
 		}).draw([] {
 
 			if (auto lel = GameManager::sharedState()->getEditorLayer()) {
-				// В начале каждого кадра: создание основного окна на весь экран
-				//ImGui::SetNextWindowPos(ImVec2(0, 0));
-				//ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-				//ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
-				//ImGui::Begin("MainWindow", nullptr, mainWindowFlags);
-
-				//ImGui::End(); // Завершаем "MainWindow"
-				// Можно добавить сюда дополнительные элементы ImGui для управления интерфейсом
-				
-				//ShowMainWindow();
-
 				ErGui::renderEditGroupModule();
 				ErGui::renderSelectFilter();
 				ErGui::renderTransformation();
@@ -393,6 +379,7 @@ $on_mod(Loaded) {
 				ErGui::renderToolsModule2();
 				ErGui::renderObjectList();
 				ErGui::renderEditObjectModule();
+				ErGui::renderActionHistoryModule();
 
 				//ErGui::renderCameraSettings();
 				
