@@ -315,6 +315,9 @@ $on_mod(Loaded) {
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-2") == 0) Mod::get()->setSavedValue("enable-build-color-2", 1);
 
 
+
+	//Json is not working properly now, I'll fix that a bit later...
+
 	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
 	std::map<const char*, std::vector<ErGui::ObjectConfig>> data = ErGui::getDefaultObjectCfg();
 
@@ -599,10 +602,15 @@ $on_mod(Loaded) {
 			});
 }
 
+// Mod Developers:
+// 
+// Taswert
+// Rainix
+//
+// ----------------------------------
 // Thanks to:
 //
 // Coders:
-// Rainix		/ Code Help
 // Emiya		/ Code Help
 // HJFod		/ Main Idea, DevTools
 // RaZooM		/ Object Categories
