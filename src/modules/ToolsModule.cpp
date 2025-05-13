@@ -1,4 +1,5 @@
 #include "ToolsModule.hpp"
+#include "EditColorModule.hpp"
 
 void parseObjects(const char* tabName, EditorUI* editorUI) {
 	auto bsl = static_cast<BoomScrollLayer*>(editorUI->getChildByID(tabName)->getChildren()->objectAtIndex(0));
@@ -72,17 +73,17 @@ void ErGui::renderToolsModule1() {
 		
 	ImGui::Text("-");
 
+	if (ImGui::Button("Delete")) {
+		if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
+		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
+	}
+
 	if (ImGui::Button("Warp")) {
 		editorUI->activateTransformControl(nullptr);
 	}
 
 	if (ImGui::Button("De-Select")) {
 		editorUI->deselectAll();
-	}
-
-	if (ImGui::Button("Delete")) {
-		if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
-		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
 
 	ImGui::Text("-");
@@ -105,94 +106,28 @@ void ErGui::renderToolsModule1() {
 		}
 	}
 
+	ImGui::Text("-");
+	short step = 1;
+	short fastStep = 5;
+	if (ImGui::InputScalar("Layer", ImGuiDataType_S16, &editorUI->m_editorLayer->m_currentLayer, &step, &fastStep)) {
+		if (editorUI->m_editorLayer->m_currentLayer < -1) 
+			editorUI->m_editorLayer->m_currentLayer = -1;
+	}
+
+
+	if (ImGui::Button("Link")) {
+		editorUI->onGroupSticky(nullptr);
+	}
+	
+	if (ImGui::Button("Unlink")) {
+		editorUI->onUngroupSticky(nullptr);
+	}
+
+
 	ImGui::End();
 }
 
-int colorSelectImGuiPopup(int colorId, int oneortwo) {
-	auto popupStr = std::string("colorSelectPopup") + std::to_string(oneortwo);
-	if (ImGui::BeginPopup(popupStr.c_str())) {
-		for (int i = 0; i < 1102; i++) {
-			auto effectManager = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager;
-			auto ccMyColor = effectManager->getColorAction(i);
 
-			std::string suffix = "";
-			
-			switch (i) {
-				default:
-					break;
-			case 1000:
-				suffix = "-BG";
-				break;
-			case 1001:
-				suffix = "-G1";
-				break;
-			case 1002:
-				suffix = "-LINE";
-				break;
-			case 1003:
-				suffix = "-3DL";
-				break;
-			case 1004:
-				suffix = "-OBJECT";
-				break;
-			case 1005:
-				suffix = "-P1";
-				break;
-			case 1006:
-				suffix = "-P2";
-				break;
-			case 1007:
-				suffix = "-LBG";
-				break;
-			case 1009:
-				suffix = "-G2";
-				break;
-			case 1010:
-				suffix = "-BLACK";
-				break;
-			case 1011:
-				suffix = "-WHITE";
-				break;
-			case 1012:
-				suffix = "-LIGHTER";
-				break;
-			case 1013:
-				suffix = "-MG";
-				break;
-			case 1014:
-				suffix = "-MG2";
-				break;
-			}
-			
-			std::string btnStr = std::string("color") + std::to_string(i) + suffix + std::string("##COLOR-BUTTON-POPUP");
-
-			//std::cout << btnStr << "\n";
-			if (ImGui::ColorButton(btnStr.c_str(), ImVec4(ccMyColor->m_fromColor.r / 255.f, ccMyColor->m_fromColor.g / 255.f, ccMyColor->m_fromColor.b / 255.f, 1.f))) {
-				colorId = i;
-				ImGui::CloseCurrentPopup();
-			}
-
-			auto colEditPopupStr = btnStr + "-EDIT-POPUP";
-			if (ImGui::BeginPopup(colEditPopupStr.c_str())) {
-				auto colEditStr = btnStr + "-EDIT";
-				float editedColors[3] = { ccMyColor->m_fromColor.r / 255.f, ccMyColor->m_fromColor.g / 255.f, ccMyColor->m_fromColor.b / 255.f };
-				ImGui::ColorEdit3(colEditStr.c_str(), editedColors);
-				ccMyColor->m_fromColor = ccColor3B(int(editedColors[0] * 255), int(editedColors[1] * 255), int(editedColors[2] * 255));
-
-				//std::cout << int(effectManager->getColorAction(i)->m_fromColor.r) << " " << int(effectManager->getColorAction(i)->m_fromColor.g) << " " << int(effectManager->getColorAction(i)->m_fromColor.b) << "\n";
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
-				ImGui::OpenPopup(colEditPopupStr.c_str());
-			}
-
-			if ((i+1) % 10 != 0) ImGui::SameLine();
-		}
-		ImGui::EndPopup();
-	}
-	return colorId;
-}
 
 void ErGui::renderToolsModule2() {
 	ImGui::Begin("Tools-Module2");
@@ -247,14 +182,15 @@ void ErGui::renderToolsModule2() {
 			auto effectManager = gameManager->m_levelEditorLayer->m_effectManager;
 			auto ccMyColor1 = effectManager->getColorSprite(color1);
 			if (ImGui::ColorButton("color1##COLOR-BUTTON", ImVec4(ccMyColor1->m_color.r / 255.f, ccMyColor1->m_color.g / 255.f, ccMyColor1->m_color.b / 255.f, 1.f))) {
-				ImGui::OpenPopup("colorSelectPopup1");
+				ImGui::OpenPopup("CSP##COLOR1");
 			}
-			color1 = colorSelectImGuiPopup(color1, 1);
+			ErGui::colorSelectImGuiPopup(&color1, "CSP##COLOR1", false);
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(80.f);
-			ImGui::InputInt("##BUILD-COLOR-1", &color1);
-			if (color1 > 1101) color1 = 1101;
-			if (color1 < 0) color1 = 0;
+			if (ImGui::InputInt("##BUILD-COLOR-1", &color1)) {
+				if (color1 > 1101) color1 = 1101;
+				if (color1 < 0) color1 = 0;
+			}
 
 			ImGui::SameLine();
 			bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
@@ -266,14 +202,15 @@ void ErGui::renderToolsModule2() {
 
 			auto ccMyColor2 = effectManager->getColorSprite(color2);
 			if (ImGui::ColorButton("color2##COLOR-BUTTON", ImVec4(ccMyColor2->m_color.r / 255.f, ccMyColor2->m_color.g / 255.f, ccMyColor2->m_color.b / 255.f, 1.f))) {
-				ImGui::OpenPopup("colorSelectPopup2");
+				ImGui::OpenPopup("CSP##COLOR2");
 			}
-			color2 = colorSelectImGuiPopup(color2, 2);
+			ErGui::colorSelectImGuiPopup(&color2, "CSP##COLOR2", false);
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(80.f);
-			ImGui::InputInt("##BUILD-COLOR-2", &color2);
-			if (color2 > 1101) color2 = 1101;
-			if (color2 < 0) color2 = 0;
+			if (ImGui::InputInt("##BUILD-COLOR-2", &color2)) {
+				if (color2 > 1101) color2 = 1101;
+				if (color2 < 0) color2 = 0;
+			}
 
 			ImGui::SameLine();
 			bool enableColorBuild2 = Mod::get()->getSavedValue<bool>("enable-build-color-2");

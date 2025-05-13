@@ -9,6 +9,7 @@
 #include <Geode/modify/CustomSongWidget.hpp>
 #include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/modify/ObjectToolbox.hpp>
+#include <Geode/modify/LevelEditorLayer.hpp>
 
 #include <IconsMaterialDesignIcons.h>
 #include "modules/EditGroupModule.hpp"
@@ -21,6 +22,7 @@
 #include "modules/LayerModule.hpp"
 #include "modules/EditObjectModule.hpp"
 #include "modules/ActionHistoryModule.hpp"
+#include "modules/EditColorModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
@@ -49,6 +51,19 @@ bool filterSingleObj(bool filterBool, int objParameter, std::vector<int> vec) {
 	return false;
 }
 
+class $modify(LevelEditorLayer) {
+	void removeSpecial(GameObject * obj) {
+		if (obj->m_objectID == 3642) {
+			for (auto alObj : this->m_drawGridLayer->m_audioLineObjects) {
+				if (alObj.second == obj) {
+					this->m_drawGridLayer->m_audioLineObjects.erase(alObj.first);
+				}
+			}
+		}
+		LevelEditorLayer::removeSpecial(obj);
+	}
+};
+
 class $modify(ObjectToolbox) {
 	float gridNodeSizeForKey(int id) {
 		auto size = Mod::get()->template getSavedValue<float>("grid-size");
@@ -61,7 +76,45 @@ class $modify(ObjectToolbox) {
 
 class $modify(EditorUI) {
 	void scrollWheel(float p0, float p1) {
-		std::cout << p0 << " " << p1 << "\n";
+		
+		//Zoom To Cursor + Expanded constractions
+		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed()) {
+			auto winSize = CCDirector::sharedDirector()->getWinSize();
+			auto batchLayer = static_cast<CCLayer*>(this->m_editorLayer->getChildByID("main-node")->getChildByID("batch-layer"));
+
+			float oldScale = batchLayer->getScale();
+			CCPoint oldPosition = batchLayer->getPosition();
+			CCPoint glPos = CCDirector::sharedDirector()->getOpenGLView()->getMousePosition();
+
+			CCSize frameSize = CCDirector::sharedDirector()->getOpenGLView()->getFrameSize();
+			CCSize visibleSize = CCDirector::sharedDirector()->getVisibleSize();
+			CCPoint visibleOrigin = CCDirector::sharedDirector()->getVisibleOrigin();
+
+			float vx = (glPos.x / frameSize.width) * visibleSize.width + visibleOrigin.x;
+			float vy = (glPos.y / frameSize.height) * visibleSize.height + visibleOrigin.y;
+			vy = visibleSize.height - vy;
+			CCPoint visibleCursor{ vx, vy };
+
+			float scaleStep = oldScale * 0.1f;
+			float newScale = oldScale + (p0 > 0 ? -scaleStep : scaleStep);
+			newScale = clamp(newScale, 0.1f, 1000.0f);
+
+			float ratio = newScale / oldScale;
+
+			CCPoint delta = oldPosition - visibleCursor;
+			CCPoint newPos = visibleCursor + delta * ratio;
+
+			batchLayer->setScale(newScale);
+			batchLayer->setPosition(newPos);
+
+			if (this->m_rotationControl)
+				this->m_rotationControl->setScale(1.f / newScale);
+
+			return;
+		}
+
+
+
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())
 			EditorUI::scrollWheel(p1, p0);
 		else
@@ -76,10 +129,14 @@ class $modify(EditorUI) {
 		int color1 = Mod::get()->template getSavedValue<int>("build-color-1");
 		int color2 = Mod::get()->template getSavedValue<int>("build-color-2");
 		auto obj = EditorUI::createObject(p0, p1);
-		if (obj->m_baseColor && enableColorBuild1) 
+		if (obj->m_baseColor && enableColorBuild1) {
 			obj->m_baseColor->m_colorID = color1;
-		if (obj->m_detailColor && enableColorBuild2)
+			std::cout << "main\n";
+		}
+		if (obj->m_detailColor && enableColorBuild2) {
 			obj->m_detailColor->m_colorID = color2;
+			std::cout << "det\n";
+		}
 		return obj;
 	}
 
@@ -104,8 +161,9 @@ class $modify(EditorUI) {
 					}
 				}
 				EditorUI::deselectAll();
-				if (objArr.count() > 0)
+				if (objArr.count() > 0) {
 					EditorUI::selectObjects(&objArr, p1);
+				}
 				break;
 			}
 			case 2: {
@@ -145,6 +203,17 @@ class $modify(EditorUI) {
 		if (p0 == cocos2d::enumKeyCodes::KEY_Five) {
 			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 5;
 		}
+
+		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_A) {
+			EditorUI::processSelectObjects(this->m_editorLayer->m_objects);
+			EditorUI::updateButtons();
+			//EditorUI::deactivateRotationControl();
+			EditorUI::deactivateScaleControl();
+			EditorUI::deactivateTransformControl();
+			EditorUI::updateObjectInfoLabel();
+			
+		}
+
 		EditorUI::keyDown(p0);
 	}
 
@@ -249,20 +318,6 @@ class $modify(CCTouchDispatcher) {
 	}
 };
 
-//class $modify(CustomizeObjectLayer) {
-//	void onSelectColor(CCObject * sender) {
-//		CustomizeObjectLayer::onSelectColor(sender);
-//		if (GameObject* obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject) {
-//			if (from<int>(this, 0x2d0) == 1) {
-//				obj->m_activeMainColorID = from<int>(this, 0x2d4);
-//			}
-//			else if (from<int>(this, 0x2d0) == 2) {
-//				obj->m_activeDetailColorID = from<int>(this, 0x2d4);
-//			}
-//		}
-//	}
-//};
-
 
 static bool touchHasBegan = false;
 static bool touchHasBegan2 = false;
@@ -365,6 +420,11 @@ $on_mod(Loaded) {
 	
 	ErGui::objectCfg = data;
 
+	//std::cout
+	//	<< "Offset ColorSelectPopup::m_touchTriggered = "
+	//	<< offsetof(ColorSelectPopup, ColorSelectPopup::m_gameObject)
+	//	<< " bytes\n";
+
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -383,6 +443,7 @@ $on_mod(Loaded) {
 				ErGui::renderObjectList();
 				ErGui::renderEditObjectModule();
 				ErGui::renderActionHistoryModule();
+				ErGui::renderEditColor();
 
 				//ErGui::renderCameraSettings();
 				
@@ -614,7 +675,7 @@ $on_mod(Loaded) {
 // Emiya		/ Code Help
 // HJFod		/ Main Idea, DevTools
 // RaZooM		/ Object Categories
-// Mat			/ ImGui integration
+// Mat			/ ImGui integration + Circle Tool
 // MgostiH		/ First Supported! 
 // 
 // Creators:
