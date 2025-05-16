@@ -141,8 +141,11 @@ class $modify(EditorUI) {
 	}
 
 	void selectObject(GameObject* obj, bool p1) {
-		if (ErGui::selectFilterRealization(obj))
+		if (ErGui::selectFilterRealization(obj)) {
+			if (auto eObj = static_cast<EffectGameObject*>(obj)) 
+				ErGui::saveHueValues(&eObj->m_triggerTargetColor);
 			EditorUI::selectObject(obj, p1);
+		}
 		return;
 	}
 
@@ -422,7 +425,7 @@ $on_mod(Loaded) {
 
 	//std::cout
 	//	<< "Offset ColorSelectPopup::m_touchTriggered = "
-	//	<< offsetof(ColorSelectPopup, ColorSelectPopup::m_gameObject)
+	//	<< offsetof(EffectGameObject, EffectGameObject::m_centerGroupID)
 	//	<< " bytes\n";
 
 	ImGuiCocos::get().setup([] {
@@ -682,6 +685,7 @@ $on_mod(Loaded) {
 // CHRAPIVA		/ Ideas + Feedback
 // Kisss		/ Ideas + Feedback
 // Vernam		/ Creator Contacts + MOTIVATION
+// Shlyapa		/ Ideas + Feedback
 // Pes11		/ Ideas
 // 
 // Others:

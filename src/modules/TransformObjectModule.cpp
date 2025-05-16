@@ -1,5 +1,26 @@
-#include "TransformObjectModule.hpp"
+﻿#include "TransformObjectModule.hpp"
 using namespace ErGui;
+
+
+void addObjectToUndoList(GameObject* obj, UndoCommand command) {
+	GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, command));
+	GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
+}
+
+void addObjectsToUndoList(CCArray* objArr, UndoCommand command) {
+	CCArray* copyObjArr = CCArray::create();
+	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		auto objCopy = GameObjectCopy::create(obj);
+		copyObjArr->addObject(objCopy);
+		//objCopy->resetObject();
+	}
+	GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(copyObjArr, command));
+	GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
+}
+
+float deg2rad(float d) {
+	return d * (3.14159265f / 180.f);
+}
 
 void skewFuncX(GameObject* obj, float step) {
 	//if (obj->getRotationX() + step)
@@ -19,10 +40,34 @@ void skewFuncX(GameObject* obj, float step) {
 	}
 }
 
+// Групповая версия:
+void skewFuncXGroup(CCArray* objArr, float step) {
+	if (objArr == nullptr || objArr->count() == 0) return;
+
+	float baseY = GameManager::sharedState()->m_levelEditorLayer->m_editorUI->getGroupCenter(objArr, false).y;
+
+	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		float oldX = obj->getPositionX();
+		float oldRot = obj->getRotationX();
+
+		skewFuncX(obj, step);
+
+		float newRot = obj->getRotationX();
+		if (newRot == oldRot) continue;
+
+		float dy = obj->getPositionY() - baseY;
+
+		float origX = oldX - std::tan(deg2rad(oldRot)) * dy;
+		float newX = origX + std::tan(deg2rad(newRot)) * dy;
+
+		obj->setPositionX(newX);
+	}
+}
+
 void skewFuncY(GameObject* obj, float step) {
 	float alpha = obj->getRotationY() - obj->getRotationX();
 	float h = std::cos(alpha * (3.14159f / 180.f)) * obj->m_scaleX;
-	
+
 	alpha = std::fmod(alpha + step, 360.f);
 	float newRot = obj->getRotationY() + step;
 
@@ -35,6 +80,30 @@ void skewFuncY(GameObject* obj, float step) {
 		obj->m_scaleX = modScaleX * minusMod;
 	}
 }
+
+void skewFuncYGroup(CCArray* objArr, float step) {
+	if (objArr == nullptr || objArr->count() == 0) return;
+
+	float baseX = GameManager::sharedState()->m_levelEditorLayer->m_editorUI->getGroupCenter(objArr, false).x;
+
+	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		float oldY = obj->getPositionY();
+		float oldRot = obj->getRotationY();
+
+		skewFuncY(obj, step);
+
+		float newRot = obj->getRotationY();
+		if (newRot == oldRot) continue;
+
+		float dx = obj->getPositionX() - baseX;
+
+		float origY = oldY + std::tan(deg2rad(oldRot)) * dx;
+		float newY = origY - std::tan(deg2rad(newRot)) * dx;
+
+		obj->setPositionY(newY);
+	}
+}
+
 
 //Mat's code. Thank you Mat.
 float calc(float angle) {
@@ -95,7 +164,10 @@ void renderCircleTool() {
 }
 
 void renderForObject(GameObject* obj) {
-	//Also, make legacy options for every tab
+
+	auto gameManager = GameManager::sharedState();
+	auto editorUI = gameManager->getEditorLayer()->m_editorUI;
+
 	if (ImGui::CollapsingHeader("-----| Move |-----")) {
 		float posX = obj->getRealPosition().x;
 		float posY = obj->getRealPosition().y;
@@ -116,9 +188,14 @@ void renderForObject(GameObject* obj) {
 
 		ImGui::InputFloat("PosX", &posX, moveStep);
 		ImGui::InputFloat("PosY", &posY, moveStep);
-		if (oldPosX != posX || oldPosY != posY) {
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
-			GameManager::sharedState()->getEditorLayer()->m_editorUI->moveObject(obj, { posX - oldPosX, posY - oldPosY });
+
+		float dPosX = posX - oldPosX;
+		float dPosY = posY - oldPosY;
+
+		if (dPosX || dPosY) {
+			addObjectToUndoList(obj, UndoCommand::Transform);
+			editorUI->m_rotationControl->setPosition({ editorUI->m_rotationControl->getPositionX() + dPosX, editorUI->m_rotationControl->getPositionY() + dPosY });
+			editorUI->moveObject(obj, { dPosX, dPosY });
 		}
 	}
 
@@ -138,24 +215,23 @@ void renderForObject(GameObject* obj) {
 
 		if (ImGui::InputFloat("RotX", &rotX, rotationStep)) {
 			rotX = std::fmod(rotX, 360);
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+			addObjectToUndoList(obj, UndoCommand::Transform);
+			obj->setRotationX(rotX);
 		}
 		if (ImGui::InputFloat("RotY", &rotY, rotationStep)) {
 			rotY = std::fmod(rotY, 360);
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+			addObjectToUndoList(obj, UndoCommand::Transform);
 		}
 		float rotDelta = ErGui::deltaInputFloat("Rotate", rotationStep);
-		//ImGui::InputFloat("RotDelta", &rotDelta, rotationStep); //make custom InputFloat with rotation display
 		ImGui::Text("Rot: %.2f", obj->getRotation());
 
 		if (rotDelta) {
 			rotX = std::fmod(rotX + rotDelta, 360);
 			rotY = std::fmod(rotY + rotDelta, 360);
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+			addObjectToUndoList(obj, UndoCommand::Transform);
+			obj->setRotationX(rotX);
+			obj->setRotationY(rotY);
 		}
-		
-		obj->setRotationX(rotX);
-		obj->setRotationY(rotY);
 
 	}
 
@@ -175,24 +251,26 @@ void renderForObject(GameObject* obj) {
 
 		if (ImGui::InputFloat("ScaleX", &scaleX, scaleStep)) {
 			short flipX = obj->isFlipX() ? -1 : 1;
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+
+			addObjectToUndoList(obj, UndoCommand::Transform);
 			obj->setScaleX(scaleX * flipX);
 			obj->m_scaleX = scaleX;
 		}
 		if (ImGui::InputFloat("ScaleY", &scaleY, scaleStep)) {
 			short flipY = obj->isFlipY() ? -1 : 1;
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+
+			addObjectToUndoList(obj, UndoCommand::Transform);
 			obj->setScaleY(scaleY * flipY);
 			obj->m_scaleY = scaleY;
 		}
 		float scaleDelta = ErGui::deltaInputFloat("Scale", scaleStep);
-		//ImGui::InputFloat("ScaleDelta", &scaleDelta, scaleStep); 
 		ImGui::Text("Scale: %.2f", obj->m_scaleX);
 
 		if (scaleDelta) {
 			short flipX = obj->isFlipX() ? -1 : 1;
 			short flipY = obj->isFlipY() ? -1 : 1;
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+
+			addObjectToUndoList(obj, UndoCommand::Transform);
 			obj->setScaleX((scaleX + scaleDelta) * flipX);
 			obj->setScaleY((scaleY + scaleDelta) * flipY);
 			obj->m_scaleX = scaleX + scaleDelta;
@@ -214,12 +292,12 @@ void renderForObject(GameObject* obj) {
 		ImGui::Text("Presets");
 
 		if (float skewXDelta = ErGui::deltaInputFloat("SkewX", skewStep)) {
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+			addObjectToUndoList(obj, UndoCommand::Transform);
 			skewFuncX(obj, skewXDelta);
 		}
 		ImGui::SameLine();
 		if (float skewYDelta = ErGui::deltaInputFloat("SkewY", skewStep)) {
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, UndoCommand::Transform));
+			addObjectToUndoList(obj, UndoCommand::Transform);
 			skewFuncY(obj, skewYDelta);
 		}
 
@@ -229,8 +307,10 @@ void renderForObject(GameObject* obj) {
 }
 
 void renderForArray(CCArray* objArr) {
-	//Also, make legacy options for every tab
-	auto lel = GameManager::sharedState()->getEditorLayer();
+	auto gameManager = GameManager::sharedState();
+	auto lel = gameManager->getEditorLayer();
+	auto editorUI = lel->m_editorUI;
+	
 	if (ImGui::CollapsingHeader("-----| Move |-----")) {
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
 		if (ImGui::Button("0.5##MoveStepPreset")) moveStep = 0.5f;	ImGui::SameLine();
@@ -246,9 +326,10 @@ void renderForArray(CCArray* objArr) {
 		ImGui::SameLine();
 		float posYDelta = ErGui::deltaInputFloat("PosY", moveStep);
 		if (posXDelta || posYDelta) {
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(objArr, UndoCommand::Transform));
+			editorUI->m_rotationControl->setPosition({ editorUI->m_rotationControl->getPositionX() + posXDelta, editorUI->m_rotationControl->getPositionY() + posYDelta });
+			addObjectsToUndoList(objArr, UndoCommand::Transform);
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				GameManager::sharedState()->getEditorLayer()->m_editorUI->moveObject(obj, { posXDelta, posYDelta });
+				editorUI->moveObject(obj, { posXDelta, posYDelta });
 			}
 		}
 	}
@@ -272,18 +353,13 @@ void renderForArray(CCArray* objArr) {
 		float rotDeltaX = ErGui::deltaInputFloat("RotateX", rotationStep);
 		ImGui::SameLine();
 		float rotDeltaY = ErGui::deltaInputFloat("RotateY", rotationStep);
-		
-		//ImGui::InputFloat("RotX", &rotX, rotationStep);
-		//ImGui::InputFloat("RotY", &rotY, rotationStep);
-		//ImGui::InputFloat("RotDelta", &rotDelta, rotationStep); //make custom InputFloat with rotation display
-		//ImGui::Text("Rot: %.2f", obj->getRotation());
-		
+
 
 		if (rotDeltaX || rotDeltaY || rotDelta) {
+			addObjectsToUndoList(objArr, UndoCommand::Transform);
 			if (!rotateObjectsPositionSnap)
 				lel->m_editorUI->rotateObjects(objArr, rotDelta, { 0, 0 });
 			else {
-				GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(objArr, UndoCommand::Transform));
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 					float rotX = obj->getRotationX();
 					float rotY = obj->getRotationY();
@@ -298,7 +374,7 @@ void renderForArray(CCArray* objArr) {
 		}
 	}
 
-	if (ImGui::CollapsingHeader("-----| Scale |-----")) { //it's not saving when exit the level for some reason...
+	if (ImGui::CollapsingHeader("-----| Scale |-----")) {
 		ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
 		if (ImGui::Button("0.01##ScaleStepPreset")) scaleStep = 0.01f;		ImGui::SameLine();
 		if (ImGui::Button("0.05##ScaleStepPreset")) scaleStep = 0.05f;		ImGui::SameLine();
@@ -317,20 +393,13 @@ void renderForArray(CCArray* objArr) {
 		ImGui::SameLine();
 		float scaleDeltaY = ErGui::deltaInputFloat("ScaleY", scaleStep);
 
-		//ImGui::InputFloat("ScaleX", &scaleX, scaleStep);
-		//ImGui::InputFloat("ScaleY", &scaleY, scaleStep);
-		//ImGui::InputFloat("ScaleDelta", &scaleDelta, scaleStep); //make custom InputFloat with rotation display
-		//ImGui::Text("Scale: %.2f", obj->m_scaleX);
 	
 		if (scaleDeltaX || scaleDeltaY || scaleDelta) {
-			GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(objArr, UndoCommand::Transform));
+			addObjectsToUndoList(objArr, UndoCommand::Transform);
 			if (!scaleObjectsPositionSnap) {
-				//lel->m_editorUI->scaleObjects(objArr, scaleDelta + scaleDeltaX, scaleDelta + scaleDeltaY, { 0, 0 }, ObjectScaleType::XY, false);
 				CCPoint groupCenter = lel->m_editorUI->getGroupCenter(objArr, false);
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 					CCPoint offset = { (obj->getPosition().x - groupCenter.x) / obj->getScaleX(), (obj->getPosition().y - groupCenter.y) / obj->getScaleY() };
-					//std::cout << obj->getPosition().y					<< " " << groupCenter.y << " " << obj->getScaleY()					<< "\n";
-					//std::cout << obj->getPosition().y - groupCenter.y	<< " " << (obj->getPosition().x - groupCenter.y) / obj->getScaleY()	<< "\n";
 
 					float scaleX = obj->m_scaleX;
 					float scaleY = obj->m_scaleY;
@@ -342,8 +411,6 @@ void renderForArray(CCArray* objArr) {
 					obj->setScaleY((scaleY + scaleDelta + scaleDeltaY) * flipY);
 					obj->m_scaleX = scaleX + scaleDelta + scaleDeltaX;
 					obj->m_scaleY = scaleY + scaleDelta + scaleDeltaY;
-
-					//std::cout << obj->getScaleY() << " " << offset.y * obj->getScaleY() << " " << offset.y * obj->getScaleY() + groupCenter.y << "\n\n";
 
 					if (scaleDelta)
 						obj->setPosition({ offset.x * obj->getScaleX() + groupCenter.x , offset.y * obj->getScaleY() + groupCenter.y });
@@ -386,12 +453,12 @@ void renderForArray(CCArray* objArr) {
 		float skewYDelta = ErGui::deltaInputFloat("SkewY", skewStep);
 
 		if (skewXDelta || skewYDelta) {
-			//GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(objArr, UndoCommand::Transform));
+			addObjectsToUndoList(objArr, UndoCommand::Transform);
 			if (!skewObjectsPositionSnap) {
-				std::cout << "So uh, this is wip ig...\n";
+				skewFuncXGroup(objArr, skewXDelta);
+				skewFuncYGroup(objArr, skewYDelta);
 			}
 			else {
-				GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(objArr, UndoCommand::Transform));
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 					skewFuncX(obj, skewXDelta);
 					skewFuncY(obj, skewYDelta);

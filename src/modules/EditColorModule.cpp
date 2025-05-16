@@ -10,11 +10,11 @@ const char* colorTypes[] = {
 GameObject* refObject = nullptr;
 int objArrOldCount = 0;
 
-float hue = 0;
-float saturation = 0;
-float value = 0;
+float savedHueEC = 0;
+float savedSaturationEC = 0;
+float savedValueEC = 0;
 
-void clampHSV(ccHSVValue* hsvValue) {
+void ErGui::clampHSV(ccHSVValue* hsvValue) {
 	if (!hsvValue->absoluteSaturation && hsvValue->s < 0.f)
 		 hsvValue->s = 0.f;
 	if (!hsvValue->absoluteBrightness && hsvValue->v < 0.f)
@@ -32,18 +32,18 @@ std::string colorPickerPopup(std::string btnStr, ColorAction* ccMyColor) {
 	
 	if (ImGui::BeginPopup(colEditPopupStr.c_str())) {
 		float r, g, b;
-		float hsv[4] = { hue, saturation, value, ccMyColor->m_fromOpacity };
+		float hsv[4] = { savedHueEC, savedSaturationEC, savedValueEC, ccMyColor->m_fromOpacity };
 		ImGuiColorEditFlags flags =
 			ImGuiColorEditFlags_InputHSV;
 		if (ccMyColor->m_copyID == 0) {
 			ImGui::ColorPicker4((btnStr + "-EDIT").c_str(), hsv, flags);
 
-			hue = hsv[0];
-			saturation = hsv[1];
-			value = hsv[2];
+			savedHueEC = hsv[0];
+			savedSaturationEC = hsv[1];
+			savedValueEC = hsv[2];
 			ccMyColor->m_fromOpacity = hsv[3];
 
-			ImGui::ColorConvertHSVtoRGB(hue, saturation, value, r, g, b);
+			ImGui::ColorConvertHSVtoRGB(savedHueEC, savedSaturationEC, savedValueEC, r, g, b);
 			ccMyColor->m_fromColor = ccColor3B(int(r * 255), int(g * 255), int(b * 255));
 		}
 		else {
@@ -55,7 +55,7 @@ std::string colorPickerPopup(std::string btnStr, ColorAction* ccMyColor) {
 			ImGui::Checkbox("Absolute Value##AV", &ccMyColor->m_copyHSV.absoluteBrightness);
 			//ImGui::Checkbox("Legacy HSV##what", &ccMyColor->m_legacyHSV); TRIGGER FUNCTION
 
-			clampHSV(&ccMyColor->m_copyHSV);
+			ErGui::clampHSV(&ccMyColor->m_copyHSV);
 
 			if (ImGui::Button("HSV Reset##HSV-RESET")) {
 				ccMyColor->m_copyHSV.absoluteBrightness = false;
@@ -178,7 +178,7 @@ bool ErGui::colorSelectImGuiPopup(int* colorId, std::string popupStr, bool color
 				float r = ccMyColor->m_fromColor.r / 255.f;
 				float g = ccMyColor->m_fromColor.g / 255.f;
 				float b = ccMyColor->m_fromColor.b / 255.f;
-				ImGui::ColorConvertRGBtoHSV(r, g, b, hue, saturation, value);
+				ImGui::ColorConvertRGBtoHSV(r, g, b, savedHueEC, savedSaturationEC, savedValueEC);
 				ImGui::OpenPopup(colEditPopupStr.c_str());
 			}
 
@@ -244,7 +244,7 @@ void colorButtonSelect(GJSpriteColor* spriteColor, bool isDetail, CCArray* objAr
 			float r = ccColorAction->m_fromColor.r / 255.f;
 			float g = ccColorAction->m_fromColor.g / 255.f;
 			float b = ccColorAction->m_fromColor.b / 255.f;
-			ImGui::ColorConvertRGBtoHSV(r, g, b, hue, saturation, value);
+			ImGui::ColorConvertRGBtoHSV(r, g, b, savedHueEC, savedSaturationEC, savedValueEC);
 
 			ImGui::OpenPopup(colEditPopupStr.c_str());
 		}
@@ -345,8 +345,8 @@ void renderForObjectEC(GameObject* obj) {
 		gjBaseColor->m_hsv.v = val[0];
 		gjDetailColor->m_hsv.v = val[1];
 
-		clampHSV(&gjBaseColor->m_hsv);
-		clampHSV(&gjDetailColor->m_hsv);
+		ErGui::clampHSV(&gjBaseColor->m_hsv);
+		ErGui::clampHSV(&gjDetailColor->m_hsv);
 
 		ImGui::Text("HSV Reset");
 		if (ImGui::Button("Base##HSV-RESET")) {
@@ -373,7 +373,7 @@ void renderForObjectEC(GameObject* obj) {
 		ImGui::Checkbox("Absolute Saturation##AS", &gjBaseColor->m_hsv.absoluteSaturation);
 		ImGui::Checkbox("Absolute Value##AV", &gjBaseColor->m_hsv.absoluteBrightness);
 
-		clampHSV(&gjBaseColor->m_hsv);
+		ErGui::clampHSV(&gjBaseColor->m_hsv);
 
 		if (ImGui::Button("HSV Reset##HSV-RESET")) {
 			gjBaseColor->m_hsv.absoluteBrightness = false;
@@ -479,10 +479,10 @@ void renderForArrayEC(CCArray* objArr) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_baseColor->m_hsv.s = sat[0];
 
-				clampHSV(&obj->m_baseColor->m_hsv);
+				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 				if (obj->m_detailColor) {
 					obj->m_detailColor->m_hsv.s = sat[1];
-					clampHSV(&obj->m_detailColor->m_hsv);
+					ErGui::clampHSV(&obj->m_detailColor->m_hsv);
 				}
 			}
 		}
@@ -491,11 +491,11 @@ void renderForArrayEC(CCArray* objArr) {
 			gjDetailColor->m_hsv.v = val[1];
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_baseColor->m_hsv.v = val[0];
-				clampHSV(&obj->m_baseColor->m_hsv);
+				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 
 				if (obj->m_detailColor) {
 					obj->m_detailColor->m_hsv.v = val[1];
-					clampHSV(&obj->m_detailColor->m_hsv);
+					ErGui::clampHSV(&obj->m_detailColor->m_hsv);
 				}
 				
 			}
@@ -569,17 +569,17 @@ void renderForArrayEC(CCArray* objArr) {
 		if (ImGui::DragFloat("Saturation", &gjBaseColor->m_hsv.s, 0.05f, -1.f, 2.f)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_baseColor->m_hsv.s = gjBaseColor->m_hsv.s;
-				clampHSV(&obj->m_baseColor->m_hsv);
+				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 			}
 		}
 		if (ImGui::DragFloat("Value", &gjBaseColor->m_hsv.v, 0.05f, -1.f, 2.f)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_baseColor->m_hsv.v = gjBaseColor->m_hsv.v;
-				clampHSV(&obj->m_baseColor->m_hsv);
+				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 			}
 		}
 
-		clampHSV(&gjBaseColor->m_hsv);
+		ErGui::clampHSV(&gjBaseColor->m_hsv);
 
 		if (ImGui::Checkbox("Absolute Saturation##AS", &gjBaseColor->m_hsv.absoluteSaturation)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {

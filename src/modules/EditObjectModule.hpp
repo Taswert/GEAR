@@ -7,6 +7,7 @@ using namespace geode::prelude;
 
 namespace ErGui {
 
+	void saveHueValues(ccColor3B* color);
 	void setupTriggersSettings();
 	void renderEditObjectModule();
 }
