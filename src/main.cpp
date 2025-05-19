@@ -80,7 +80,12 @@ class $modify(EditorUI) {
 		//Zoom To Cursor + Expanded constractions
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed()) {
 			auto winSize = CCDirector::sharedDirector()->getWinSize();
-			auto batchLayer = static_cast<CCLayer*>(this->m_editorLayer->getChildByID("main-node")->getChildByID("batch-layer"));
+			CCLayer* batchLayer = nullptr;
+			if (this->m_editorLayer->getChildByID("main-node") != nullptr)
+				batchLayer = static_cast<CCLayer*>(this->m_editorLayer->getChildByID("main-node")->getChildByID("batch-layer"));
+			else if (this->m_editorLayer->m_shaderLayer != nullptr)
+				batchLayer = static_cast<CCLayer*>(this->m_editorLayer->m_shaderLayer->getChildByID("main-node")->getChildByID("batch-layer"));
+			else EditorUI::scrollWheel(p0, p1);
 
 			float oldScale = batchLayer->getScale();
 			CCPoint oldPosition = batchLayer->getPosition();

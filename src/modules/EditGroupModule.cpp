@@ -144,20 +144,37 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		bool addGroupCheck = true;
 		if (obj->m_groups) {
-			addGroupCheck = std::find(obj->m_groups->begin(), obj->m_groups->end(), 0) != obj->m_groups->end() && (!static_cast<CCArray*>(lel->m_groups[chosenGroupEGM]) || !static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->containsObject(obj));
+			addGroupCheck = std::find(obj->m_groups->begin(), obj->m_groups->end(), 0) != obj->m_groups->end() && 
+				(!static_cast<CCArray*>(lel->m_groups[chosenGroupEGM]) || !static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->containsObject(obj));
 		}
 
 		if (ImGui::Button("Add##EGM-ADDGROUP")) {
 			if (addGroupCheck) {
+				if (!lel->m_groups[chosenGroupEGM]) {
+					CCArray* arr = CCArray::create();
+					arr->retain();								//I hope this didn't make some memory leaks...
+					lel->m_groups[chosenGroupEGM] = arr;
+				}
 				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
 				obj->addToGroup(chosenGroupEGM);
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("AddP##EGM-ADDGROUPPARENT") && addGroupCheck) {
-			static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
-			obj->addToGroup(chosenGroupEGM);
-			lel->setGroupParent(obj, chosenGroupEGM);
+		if (ImGui::Button("AddP##EGM-ADDGROUPPARENT")) {
+			if (addGroupCheck) {
+				if (!lel->m_groups[chosenGroupEGM]) {
+					CCArray* arr = CCArray::create();
+					arr->retain();
+					lel->m_groups[chosenGroupEGM] = arr;
+				}
+				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
+				obj->addToGroup(chosenGroupEGM);
+				lel->setGroupParent(obj, chosenGroupEGM);
+			}
+			else if (std::find(obj->m_groups->begin(), obj->m_groups->end(), 0) != obj->m_groups->end() &&
+				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->containsObject(obj)) {
+				lel->setGroupParent(obj, chosenGroupEGM);
+			}
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##EGM-NEXTFREEGROUP")) {
@@ -392,8 +409,15 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				}
 
 				if (addGroupCheck) {
+					if (!lel->m_groups[chosenGroupEGM]) {
+						CCArray* arr = CCArray::create();
+						arr->retain();
+						lel->m_groups[chosenGroupEGM] = arr;
+					}
 					static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
 					obj->addToGroup(chosenGroupEGM);
+					
+					groupInfoUpdate();
 				}
 			}
 		}
@@ -414,18 +438,29 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 	if (ImGui::CollapsingHeader("-----| Groups |-----")) {
 		int groupsSize = groupsFromObjArr.size();
 		for (int i = 0; i < groupsSize; i++) {
-			int groupInt = groupsFromObjArr[i];
+			int groupInt = groupsFromObjArr[i].first;
 			std::string btnStr = std::to_string(groupInt);
 			btnStr += "##RMVGROUP";
+
+			if (groupsFromObjArr[i].second != objArr->count()) {
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.27f, 0.f, 0.52f, 1.f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.40f, 0.f, 0.67f, 1.f));
+			}
 
 			if (ImGui::Button(btnStr.c_str())) {
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 					obj->removeFromGroup(groupInt);
 					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
 				}
-				groupsFromObjArr.erase(std::find(groupsFromObjArr.begin(), groupsFromObjArr.end(), groupInt));
+				groupsFromObjArr.erase(std::find(groupsFromObjArr.begin(), groupsFromObjArr.end(), groupsFromObjArr[i]));
 				groupsSize--;
 			}
+
+			if (groupsFromObjArr[i].second != objArr->count()) {
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+			}
+
 			if ((i + 1) % 10 != 0 && i != groupsSize - 1)
 				ImGui::SameLine();
 		}
@@ -728,7 +763,7 @@ void ErGui::renderEditGroupModule() {
 	ErGui::enableClicks();
 
 
-	auto lel = GameManager::sharedState()->getEditorLayer();
+	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto obj = lel->m_editorUI->m_selectedObject;
 	auto objArr = lel->m_editorUI->m_selectedObjects;
 	if (obj) {
@@ -802,12 +837,14 @@ void ErGui::groupInfoUpdate() {
 	ErGui::cb_CenterEffect = false;
 	ErGui::cb_Reverse = false;
 
-	std::unordered_set<int> groupSet;
+	std::map<int, int> groupSet;
+	std::set<int> oldGroupSet;
 
 	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 		if (obj->m_groups) {
 			for (int i = 0; i < obj->m_groups->size(); i++) {
-				groupSet.insert(obj->m_groups->at(i));
+				oldGroupSet.insert(obj->m_groups->at(i));
+				groupSet[obj->m_groups->at(i)]++;
 			}
 		}
 
@@ -869,16 +906,20 @@ void ErGui::groupInfoUpdate() {
 		}
 	}
 
+
 	if (auto obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject) {
 		if (obj->m_groups) {
 			for (int i = 0; i < obj->m_groups->size(); i++) {
-				groupSet.insert(obj->m_groups->at(i));
+				oldGroupSet.insert(obj->m_groups->at(i));
+				groupSet[obj->m_groups->at(i)]++;
 			}
 		}
 	}
 
-	ErGui::groupsFromObjArr.assign(groupSet.begin(), groupSet.end());
+	groupSet.erase(0);
+	for (auto obj : groupSet) {
+		ErGui::groupsFromObjArr.push_back(obj);
+	}
+
 	std::sort(ErGui::groupsFromObjArr.begin(), ErGui::groupsFromObjArr.end());
-	if (ErGui::groupsFromObjArr.size() > 0)
-		ErGui::groupsFromObjArr.erase(ErGui::groupsFromObjArr.begin());
 }
