@@ -23,6 +23,7 @@
 #include "modules/EditObjectModule.hpp"
 #include "modules/ActionHistoryModule.hpp"
 #include "modules/EditColorModule.hpp"
+#include "modules/GameWindowModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
@@ -363,6 +364,23 @@ void ShowMainWindow()
 }
 
 
+class $modify(CCTouchDispatcher) {
+	void touches(CCSet * touches, CCEvent * event, unsigned int type) {
+		auto& io = ImGui::GetIO();
+		auto* touch = static_cast<CCTouch*>(touches->anyObject());
+
+		if (touch == nullptr) {
+			return;
+		}
+
+		if (ErGui::isGameWindowHovered) {
+			ImGui::GetIO().WantCaptureMouse = false;
+			touch->setTouchInfo(touch->getID(), ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
+		}
+		CCTouchDispatcher::touches(touches, event, type);
+	}
+};
+
 
 
 $on_mod(Loaded) {
@@ -452,6 +470,7 @@ $on_mod(Loaded) {
 				ErGui::renderEditObjectModule();
 				ErGui::renderActionHistoryModule();
 				ErGui::renderEditColor();
+				ErGui::renderGameWindow();
 
 				//ErGui::renderCameraSettings();
 				
