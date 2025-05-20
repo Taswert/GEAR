@@ -74,9 +74,7 @@ namespace ErGui {
 		ImGui::PopID();
 		return result;
 	}
-
-	void drawImageInImGui(CCSpriteFrame* frame) {
-		CCSprite* tempSprite = CCSprite::createWithSpriteFrame(frame);
+	void drawSpriteInImGui(CCSprite* tempSprite) {
 		auto quad = tempSprite->getQuad();
 
 		float u_min = std::min({ quad.bl.texCoords.u, quad.br.texCoords.u, quad.tl.texCoords.u, quad.tr.texCoords.u });
@@ -117,6 +115,11 @@ namespace ErGui {
 				ImVec2(quad.tr.texCoords.u, quad.tr.texCoords.v), ImVec2(quad.tl.texCoords.u, quad.tl.texCoords.v)
 			);
 		}
+	}
+
+	void drawFrameInImGui(CCSpriteFrame* frame) {
+		CCSprite* tempSprite = CCSprite::createWithSpriteFrame(frame);
+		drawSpriteInImGui(tempSprite);
 	}
 
 	void setupMenuColors(ImVec4 BGColor, ImVec4 HoveredColor, ImVec4 TextFieldColor) {

@@ -65,7 +65,7 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, ImGuiTextFilte
 		ImGui::EndPopup();
 	}
 
-	ErGui::drawImageInImGui(frame);
+	ErGui::drawFrameInImGui(frame);
 
 
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
@@ -106,7 +106,7 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 
 	ImGui::PopStyleColor();
 
-	ErGui::drawImageInImGui(frame);
+	ErGui::drawFrameInImGui(frame);
 
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 	float lastButtonX2 = ImGui::GetItemRectMax().x;

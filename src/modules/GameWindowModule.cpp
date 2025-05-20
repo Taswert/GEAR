@@ -46,5 +46,5 @@ void ErGui::renderGameWindow() {
 	else {
 		ErGui::isGameWindowHovered = false;
 	}
-
+	ImGui::End();
 }

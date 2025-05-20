@@ -13,7 +13,8 @@
 	"description": "",
 	"resources": {
 		"files": [
-			"resources/imgui-fonts/Karla-Regular.ttf"
+			"resources/imgui-fonts/Inter_18pt-Regular.ttf",
+			"resources/imgui-fonts/materialdesignicons-webfont.ttf"
 		]
 	},
 	"settings": {

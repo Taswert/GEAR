@@ -36,8 +36,7 @@ void ErGui::renderToolsModule1() {
 
 	ImGui::Text("-");
 
-		
-		
+	//reinterpret_cast<const char*>(u8"\uf1127")
 	bool swipeBool = editorUI->m_swipeEnabled;
 	if (ImGui::Checkbox("Swipe", &swipeBool)) {
 		editorUI->m_swipeEnabled = swipeBool;
@@ -49,7 +48,7 @@ void ErGui::renderToolsModule1() {
 			lassoPatch->disable();
 		}
 	}
-		
+
 	bool rotationBool = gameManager->getGameVariable("0007");
 	if (ImGui::Checkbox("Rotation", &rotationBool)) {
 		gameManager->setGameVariable("0007", rotationBool);
@@ -157,7 +156,7 @@ void ErGui::renderToolsModule2() {
 			if (!newFrameName.empty()) {
 				CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
 				if (frame)
-					ErGui::drawImageInImGui(frame);
+					ErGui::drawFrameInImGui(frame);
 			}
 
 			int deleteFilterMode = GameManager::sharedState()->getIntGameVariable("0005");
@@ -228,7 +227,7 @@ void ErGui::renderToolsModule2() {
 			if (!newFrameName.empty()) {
 				CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
 				if (frame) 
-					ErGui::drawImageInImGui(frame);
+					ErGui::drawFrameInImGui(frame);
 			}
 
 			break;

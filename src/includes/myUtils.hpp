@@ -19,7 +19,8 @@ namespace ErGui {
 
 	inline auto lassoPatch = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
 
-	void drawImageInImGui(CCSpriteFrame* frame);
+	void drawSpriteInImGui(CCSprite* tempSprite);
+	void drawFrameInImGui(CCSpriteFrame* frame);
 
 	void setupMenuColors(ImVec4 BGColor, ImVec4 HoveredColor, ImVec4 TextFieldColor);
 
