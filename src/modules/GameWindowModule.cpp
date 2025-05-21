@@ -4,6 +4,8 @@
 namespace ErGui {
 	bool isGameWindowHovered = false;
 	CCPoint gameWindowTouchCoordinatesConvertedToWorld;
+	CCPoint gameWindowTouchCoordinatesConvertedToWorldForZoom;
+	static bool constrainByLastObject = false;
 }
 
 void ErGui::renderGameWindow() {
@@ -12,6 +14,35 @@ void ErGui::renderGameWindow() {
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
 
 	ImGui::Begin("Game");
+	if (ImGui::Button("Save")) {
+		auto winSize = CCDirector::sharedDirector()->getWinSize();
+		auto rt = CCRenderTexture::create(winSize.width, winSize.height, kTexture2DPixelFormat_RGBA8888);
+		rt->begin();
+		CCDirector::sharedDirector()->getRunningScene()->visit();
+		rt->end();
+
+		// Собираем полный путь
+		std::string path = "coolName.png";
+		bool ok = rt->saveToFile(path.c_str(), cocos2d::kCCImageFormatPNG);
+		if (ok) {
+			std::cout << "Done! Saved to %s";
+		}
+		else {
+			std::cout << "Nah...";
+		}
+	}
+	//CCEGLView
+	auto lel = GameManager::sharedState()->m_levelEditorLayer;
+	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
+	float maxPosX = ErGui::constrainByLastObject ? lel->getLastObjectX() : std::max(lel->getLastObjectX(), 32470.f);
+	if (ImGui::SliderFloat("##LevelPositionSlider", &objectLayerX, -30.f, maxPosX))
+		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
+
+	ImGui::SameLine();
+	ImGui::Checkbox("Constrain By Last Object", &ErGui::constrainByLastObject);
+
+	//32470.f - the least of max X position;
+
 	ImVec2 gameWinSize = ImGui::GetContentRegionAvail();
 	ImVec2 cursorStart = ImGui::GetCursorPos();
 
@@ -42,6 +73,7 @@ void ErGui::renderGameWindow() {
 		ImVec2 windowMouseCoordinates = ImVec2(mouse.x - windowStart.x, mouse.y - windowStart.y);
 		auto winSize = CCDirector::sharedDirector()->getWinSize();
 		ErGui::gameWindowTouchCoordinatesConvertedToWorld = CCPoint(windowMouseCoordinates.x / drawSize.x * winSize.width, windowMouseCoordinates.y / drawSize.y * winSize.height);
+		ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom = CCPoint(gameWindowTouchCoordinatesConvertedToWorld.x, winSize.height - gameWindowTouchCoordinatesConvertedToWorld.y);
 	}
 	else {
 		ErGui::isGameWindowHovered = false;

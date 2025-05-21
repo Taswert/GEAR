@@ -29,9 +29,14 @@ public:
 
 		auto glTextureID = gameRenderer->getSprite()->getTexture()->getName();
 		auto glTextureSize = gameRenderer->getSprite()->getTexture()->getContentSizeInPixels();
+
 		ImTextureID imguiTexture = (ImTextureID)(intptr_t)glTextureID;
 
 		return RenderedTexture(imguiTexture, glTextureSize);
+	}
+
+	static CCRenderTexture* getCCRenderTexture() {
+		return gameRenderer;
 	}
 };
 CCRenderTexture* ScreenRenderer::gameRenderer = nullptr;

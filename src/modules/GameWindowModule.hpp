@@ -8,5 +8,6 @@ using namespace geode::prelude;
 namespace ErGui {
 	extern bool isGameWindowHovered;
 	extern CCPoint gameWindowTouchCoordinatesConvertedToWorld;
+	extern CCPoint gameWindowTouchCoordinatesConvertedToWorldForZoom;
 	void renderGameWindow();
 }

@@ -38,11 +38,12 @@ namespace ErGui {
 		ImGui::PushID(label);
 
 		float result = 0;
+		
+		ImGui::Text(label);
+		ImGui::SameLine(70.f);
 		if (ImGui::Button("-")) {
 			result = step * -1;
 		}
-		ImGui::SameLine();
-		ImGui::Text(label);
 		ImGui::SameLine();
 		if (ImGui::Button("+")) {
 			result = step;

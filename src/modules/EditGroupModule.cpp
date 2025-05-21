@@ -502,6 +502,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				obj->m_editorLayer += delta;
 				if (obj->m_editorLayer < 0) obj->m_editorLayer = 0;
 			}
+			groupInfoUpdate();
 		}
 
 		if (int delta = deltaInputIntImproved("EditorL2", maxEl2, minEl2, 1)) {
@@ -509,6 +510,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				obj->m_editorLayer2 += delta;
 				if (obj->m_editorLayer2 < 0) obj->m_editorLayer2 = 0;
 			}
+			groupInfoUpdate();
 		}
 
 		if (int delta = deltaInputIntImproved("Z-Order", maxZOrder, minZOrder, 1)) {
@@ -519,6 +521,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				if (oldOrder == 1 && delta == -1) obj->m_zOrder = -1;
 				if (oldOrder == -1 && delta == 1) obj->m_zOrder = 1;
 			}
+			groupInfoUpdate();
 		}
 
 		if (int delta = deltaInputIntImproved("Z-Layer", maxZLayer, minZLayer, 1)) {
@@ -527,6 +530,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				*zLayer += delta;
 				setMaxMin(*zLayer, 11, -5);
 			}
+			groupInfoUpdate();
 		}
 	}
 
@@ -536,21 +540,23 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_enterChannel += delta;
 			}
+			groupInfoUpdate();
 		}
 
 		if (int delta = deltaInputIntImproved("Material", maxMaterial, minMaterial, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_objectMaterial += delta;
 			}
+			groupInfoUpdate();
 		}
 
 		if (firstEgObj) {
-			int minOrderValue = firstEgObj->m_ordValue;
-			int maxOrderValue = firstEgObj->m_ordValue;
-			int minChannel = firstEgObj->m_channelValue;
-			int maxChannel = firstEgObj->m_channelValue;
-			int minControlID = firstEgObj->m_controlID;
-			int maxControlID = firstEgObj->m_controlID;
+			minOrderValue = firstEgObj->m_ordValue;
+			maxOrderValue = firstEgObj->m_ordValue;
+			minChannel = firstEgObj->m_channelValue;
+			maxChannel = firstEgObj->m_channelValue;
+			minControlID = firstEgObj->m_controlID;
+			maxControlID = firstEgObj->m_controlID;
 
 			if (int delta = deltaInputIntImproved("Order Value", maxOrderValue, minOrderValue, 1)) {
 				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
@@ -559,6 +565,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 						if (egObj->m_ordValue < 0) egObj->m_ordValue = 0;
 					}
 				}
+				groupInfoUpdate();
 			}
 			if (int delta = deltaInputIntImproved("Channel Value", maxChannel, minChannel, 1)) {
 				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
@@ -567,6 +574,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 						if (egObj->m_channelValue < 0) egObj->m_channelValue = 0;
 					}
 				}
+				groupInfoUpdate();
 			}
 			if (int delta = deltaInputIntImproved("ControlID", maxControlID, minControlID, 1)) {
 				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
@@ -574,6 +582,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 						egObj->m_controlID += delta;
 					}
 				}
+				groupInfoUpdate();
 			}
 		}
 		if (ImGui::Button("Anim")) {

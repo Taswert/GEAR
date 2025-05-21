@@ -35,7 +35,6 @@ int spawnOldGroupID = 0;
 int spawnNewGroupID = 0;
 
 float savedHueEO, savedSaturationEO, savedValueEO;
-const float INPUT_ITEM_WIDTH = 160.f;
 
 void drawTouchSpawnTriggered(EffectGameObject* eObj) {
 	if (eObj->m_isSpawnTriggered) eObj->m_isTouchTriggered = false;
@@ -138,7 +137,7 @@ void drawColorSettings(GameObject* obj) {
 		eObj->m_targetColor = targetID;
 	}
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Fade Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_duration < 0.f) eObj->m_duration = 0.f;
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
@@ -176,7 +175,7 @@ void drawMoveSettings(GameObject* obj) {
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
 	
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
@@ -214,7 +213,7 @@ void drawMoveSettings(GameObject* obj) {
 		float xStep = eObj->m_moveOffset.x / modStep;
 		float yStep = eObj->m_moveOffset.y / modStep;
 
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (!eObj->m_lockToCameraX && !eObj->m_lockToPlayerX) {
 			ImGui::InputFloat("Move X", &xStep, 1.f, 10.f, "%.2f");
 			eObj->m_moveOffset.x = xStep * modStep;
@@ -230,7 +229,7 @@ if (!eObj->m_isSilent) {
 		eObj->m_lockToPlayerX = false;
 }
 
-ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 if (!eObj->m_lockToCameraY && !eObj->m_lockToPlayerY) {
 	ImGui::InputFloat("Move Y", &yStep, 1.f, 10.f, "%.2f");
 	eObj->m_moveOffset.y = yStep * modStep;
@@ -248,12 +247,12 @@ if (!eObj->m_isSilent) {
 
 	}
 	else {
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("Center Group ID", &eObj->m_targetModCenterID)) {
 			if (eObj->m_targetModCenterID < 0)		eObj->m_targetModCenterID = 0;
 			if (eObj->m_targetModCenterID > 9999)	eObj->m_targetModCenterID = 9999;
 		}
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("Target Pos ID", &eObj->m_centerGroupID)) {
 			if (eObj->m_centerGroupID < 0)		eObj->m_centerGroupID = 0;
 			if (eObj->m_centerGroupID > 9999)	eObj->m_centerGroupID = 9999;
@@ -270,12 +269,12 @@ if (!eObj->m_isSilent) {
 
 		if (eObj->m_isDirectionFollowSnap360) {
 			float moveDistance = eObj->m_directionModeDistance / modStep;
-			ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			ImGui::InputFloat("Distance", &moveDistance, 1.f, 10.f, "%.2f");
 			eObj->m_directionModeDistance = moveDistance * modStep;
 		}
 		else {
-			ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			ImGui::Combo("Target Mode", reinterpret_cast<int*>(&eObj->m_moveTargetMode), moveTargetModeItems, IM_ARRAYSIZE(moveTargetModeItems));
 		}
 	}
@@ -283,14 +282,14 @@ if (!eObj->m_isSilent) {
 	ImGui::Separator();
 
 	if (!eObj->m_isSilent) {
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputFloat("Move Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
 			if (eObj->m_duration < -1.f) eObj->m_duration = -1.f;
 			auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
 			eObj->m_endPosition = *somePoint;
 		}
 
-		drawEasingSettings(eObj, INPUT_ITEM_WIDTH);
+		drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
 	}
 
 	drawTouchSpawnTriggered(eObj);
@@ -341,7 +340,7 @@ void drawPulseSettings(GameObject* obj) {
 		if (ImGui::Checkbox("Detail Only", &eObj->m_pulseDetailOnly) && eObj->m_pulseMainOnly) {
 			eObj->m_pulseMainOnly = false;
 		}
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
 			if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 			if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
@@ -405,21 +404,21 @@ void drawPulseSettings(GameObject* obj) {
 
 	ImGui::Separator();
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Fade In", &eObj->m_fadeInDuration, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_fadeInDuration < 0.f) eObj->m_fadeInDuration = 0.f;
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
 		eObj->m_endPosition = *somePoint;
 	}
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Hold", &eObj->m_holdDuration, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_holdDuration < 0.f) eObj->m_holdDuration = 0.f;
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
 		eObj->m_endPosition = *somePoint;
 	}
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Fade Out", &eObj->m_fadeOutDuration, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_fadeOutDuration < 0.f) eObj->m_fadeOutDuration = 0.f;
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
@@ -480,19 +479,19 @@ void drawSpawnSettings(GameObject* obj) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<SpawnTriggerGameObject*>(obj);
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 		lel->updateObjectLabel(obj);
 	}
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Delay", &eObj->m_spawnDelay, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_spawnDelay < 0.f) eObj->m_spawnDelay = 0.f;
 	}
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Range##Delay", &eObj->m_delayRange, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_delayRange < 0.f) eObj->m_delayRange = 0.f;
 	}
@@ -505,13 +504,13 @@ void drawSpawnSettings(GameObject* obj) {
 
 	if (ImGui::CollapsingHeader("Remap Settings")) {
 
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("Original ID", &spawnOldGroupID)) {
 			if (spawnOldGroupID < 0) spawnOldGroupID = 0;
 			if (spawnOldGroupID > 9999) spawnOldGroupID = 9999;
 		}
 
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("New ID", &spawnNewGroupID)) {
 			if (spawnNewGroupID < 0) spawnNewGroupID = 0;
 			if (spawnNewGroupID > 9999) spawnNewGroupID = 9999;
@@ -554,13 +553,13 @@ void drawRotateSettings(GameObject* obj) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Target ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 		lel->updateObjectLabel(obj);
 	}
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Center ID", &eObj->m_centerGroupID)) {
 		if (eObj->m_centerGroupID < 0)		eObj->m_centerGroupID = 0;
 		if (eObj->m_centerGroupID > 9999)	eObj->m_centerGroupID = 9999;
@@ -582,20 +581,20 @@ void drawRotateSettings(GameObject* obj) {
 	ImGui::Separator();
 
 	if (!eObj->m_useMoveTarget && !eObj->m_isDirectionFollowSnap360) {
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::InputFloat("Degrees", &eObj->m_rotationDegrees, 1.f, 10.f, "%.2f");
 
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::InputInt("x360", &eObj->m_times360, 1, 5);
 
 	}
 	else {
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("Rot Target ID", &eObj->m_rotationTargetID)) {
 			if (eObj->m_rotationTargetID < 0)		eObj->m_rotationTargetID = 0;
 			if (eObj->m_rotationTargetID > 9999)	eObj->m_rotationTargetID = 9999;
 		}
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::InputFloat("Rot Offset", &eObj->m_rotationOffset, 1.f, 10.f, "%.2f");
 
 
@@ -608,26 +607,26 @@ void drawRotateSettings(GameObject* obj) {
 		}
 
 		if (eObj->m_useMoveTarget) {
-			ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH / 2);
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2);
 			if (ImGui::InputInt("##MinXID", &eObj->m_minXID)) {
 				if (eObj->m_minXID < 0)		eObj->m_minXID = 0;
 				if (eObj->m_minXID > 9999)	eObj->m_minXID = 9999;
 
 			}
 			ImGui::SameLine();
-			ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH / 2);
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2);
 			if (ImGui::InputInt("MinMax X ID##MaxXID", &eObj->m_maxXID)) {
 				if (eObj->m_maxXID < 0)		eObj->m_maxXID = 0;
 				if (eObj->m_maxXID > 9999)	eObj->m_maxXID = 9999;
 			}
 
-			ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH / 2);
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2);
 			if (ImGui::InputInt("##MinYID", &eObj->m_minYID)) {
 				if (eObj->m_minYID < 0)		eObj->m_minYID = 0;
 				if (eObj->m_minYID > 9999)	eObj->m_minYID = 9999;
 			}
 			ImGui::SameLine();
-			ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH / 2);
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2);
 			if (ImGui::InputInt("MinMax Y ID##MaxYID", &eObj->m_maxYID)) {
 				if (eObj->m_maxYID < 0)		eObj->m_maxYID = 0;
 				if (eObj->m_maxYID > 9999)	eObj->m_maxYID = 9999;
@@ -637,7 +636,7 @@ void drawRotateSettings(GameObject* obj) {
 
 	ImGui::Separator();
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Move Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_duration < -1.f) eObj->m_duration = -1.f;
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
@@ -645,12 +644,12 @@ void drawRotateSettings(GameObject* obj) {
 	}
 
 	if (eObj->m_isDynamicMode && (eObj->m_useMoveTarget || eObj->m_isDirectionFollowSnap360)) {
-		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::InputInt("Easing", reinterpret_cast<int*>(&eObj->m_dynamicModeEasing), 1, 10);
 		//ImGui::Text(std::to_string(static_cast<int>(eObj->m_dynamicModeEasing)).c_str());
 	}
 	else {
-		drawEasingSettings(eObj, INPUT_ITEM_WIDTH);
+		drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
 	}
 
 	drawTouchSpawnTriggered(eObj);
@@ -661,13 +660,13 @@ void drawScaleSettings(GameObject* obj) {
 	auto eObj = static_cast<TransformTriggerGameObject*>(obj);
 
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Target ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 		lel->updateObjectLabel(obj);
 	}
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Center ID", &eObj->m_centerGroupID)) {
 		if (eObj->m_centerGroupID < 0)		eObj->m_centerGroupID = 0;
 		if (eObj->m_centerGroupID > 9999)	eObj->m_centerGroupID = 9999;
@@ -675,10 +674,10 @@ void drawScaleSettings(GameObject* obj) {
 
 	ImGui::Separator();
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::InputFloat("Scale X", &eObj->m_objectScaleX, 0.1f, 0.5f, "%.2f");
 	ImGui::Checkbox("Div by X", &eObj->m_divideX);
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::InputFloat("Scale Y", &eObj->m_objectScaleY, 0.1f, 0.5f, "%.2f");
 	ImGui::Checkbox("Div by Y", &eObj->m_divideY);
 
@@ -690,13 +689,13 @@ void drawScaleSettings(GameObject* obj) {
 
 	ImGui::Separator();
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Scale Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
 		if (eObj->m_duration < 0.f) eObj->m_duration = 0.f;
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
 		eObj->m_endPosition = *somePoint;
 	}
-	drawEasingSettings(eObj, INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
 
 	drawTouchSpawnTriggered(eObj);
 }

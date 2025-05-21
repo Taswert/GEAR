@@ -86,6 +86,13 @@ namespace ErGui {
 	inline int minMaterial;
 	inline int maxMaterial;
 
+	inline int minOrderValue;
+	inline int maxOrderValue;
+	inline int minChannel;
+	inline int maxChannel;
+	inline int minControlID;
+	inline int maxControlID;
+
 
 	//WELL FUCK ME!
 	//---Cosmetic

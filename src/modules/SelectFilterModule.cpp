@@ -254,13 +254,21 @@ void ErGui::renderSelectFilter() {
 
 
 	if (ImGui::CollapsingHeader("Main Color Filter")) {
-		ImGui::InputInt("ColorID##MCOL", &chosenMainColorSFM);
+		ImGui::Text("ColorID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##MCOL-ColorID", &chosenMainColorSFM);
 		setMin(chosenMainColorSFM, 0);
-		ImGui::InputInt("Offset##MCOL", &offsetMainColorSFM);
-		setMin(offsetMainColorSFM, 0);
+		ImGui::SameLine();
 		if (ImGui::Button("Add##MCOL") && chosenMainColorSFM > 0) {
 			mainColorsFilterSet.insert(chosenMainColorSFM);
 		}
+
+		ImGui::Text("Offset");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##MCOL-Offset", &offsetMainColorSFM);
+		setMin(offsetMainColorSFM, 0);
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##MCOL")) {
 			for (int i = offsetMainColorSFM; i < 10000; i++) {
@@ -287,13 +295,21 @@ void ErGui::renderSelectFilter() {
 	
 	
 	if (ImGui::CollapsingHeader("Detail Color Filter")) {
-		ImGui::InputInt("ColorID##DCOL", &chosenDetailColorSFM);
+		ImGui::Text("ColorID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##DCOL-ColorID", &chosenDetailColorSFM);
 		setMin(chosenDetailColorSFM, 0);
-		ImGui::InputInt("Offset##DCOL", &offsetDetailColorSFM);
-		setMin(offsetDetailColorSFM, 0);
+		ImGui::SameLine();
 		if (ImGui::Button("Add##DCOL") && chosenDetailColorSFM > 0) {
 			detailColorsFilterSet.insert(chosenDetailColorSFM);
 		}
+
+		ImGui::Text("Offset");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##DCOL-Offset", &offsetDetailColorSFM);
+		setMin(offsetDetailColorSFM, 0);
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##DCOL")) {
 			for (int i = offsetDetailColorSFM; i < 1000; i++) {
@@ -320,13 +336,21 @@ void ErGui::renderSelectFilter() {
 
 
 	if (ImGui::CollapsingHeader("GroupID Filter")) {
-		ImGui::InputInt("GroupID", &chosenGroupSFM);
+		ImGui::Text("GroupID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##GROUP-ID", &chosenGroupSFM);
 		setMin(chosenGroupSFM, 1);
-		ImGui::InputInt("Offset##GROUP", &offsetGroupSFM);
-		setMin(offsetGroupSFM, 1);
+		ImGui::SameLine();
 		if (ImGui::Button("Add##GROUP") && chosenGroupSFM > 0) {
 			groupsFilterSet.insert(chosenGroupSFM);
 		}
+
+		ImGui::Text("Offset");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##GROUP-Offset", &offsetGroupSFM);
+		setMin(offsetGroupSFM, 1);
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##GROUP")) {
 			for (int i = offsetGroupSFM; i < 1000; i++) {
@@ -353,13 +377,21 @@ void ErGui::renderSelectFilter() {
 	
 
 	if (ImGui::CollapsingHeader("Channel Filter")) {
-		ImGui::InputInt("ChannelID", &chosenChannelSFM);
+		ImGui::Text("ChannelID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##CHAN-ID", &chosenChannelSFM);
 		setMin(chosenChannelSFM, 0);
-		ImGui::InputInt("Offset##CHAN", &offsetChannelSFM);
-		setMin(offsetChannelSFM, 0);
+		ImGui::SameLine();
 		if (ImGui::Button("Add##CHAN") && chosenChannelSFM > -1) {
 			channelFilterSet.insert(chosenChannelSFM);
 		}
+
+		ImGui::Text("Offset");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##CHAN-Offset", &offsetChannelSFM);
+		setMin(offsetChannelSFM, 0);
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##CHAN")) {
 			for (int i = offsetChannelSFM; i < 10000; i++) {
