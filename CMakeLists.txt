@@ -6,7 +6,25 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(GEAR VERSION 1.0.0)
 
-add_library(${PROJECT_NAME} SHARED src/main.cpp "src/ErGui.cpp" "src/modules/FooterModule.cpp" "src/modules/TransformObjectModule.cpp" "src/modules/EditGroupModule.cpp" "src/modules/SelectFilterModule.cpp" "src/includes/myUtils.cpp" "src/modules/ToolsModule.cpp" "src/modules/CameraSettings.cpp" "src/modules/ObjectListModule.cpp" "src/includes/ObjectCategories.cpp" "src/modules/LayerModule.cpp" "src/modules/EditObjectModule.cpp" "src/modules/ActionHistoryModule.cpp" "src/modules/EditColorModule.cpp" "src/modules/GameWindowModule.cpp")
+add_library(${PROJECT_NAME} SHARED 
+    src/main.cpp 
+    src/ErGui.cpp
+    src/modules/FooterModule.cpp
+    src/modules/TransformObjectModule.cpp
+    src/modules/EditGroupModule.cpp
+    src/modules/SelectFilterModule.cpp
+    src/includes/myUtils.cpp
+    src/modules/ToolsModule.cpp
+    src/modules/CameraSettings.cpp
+    src/modules/ObjectListModule.cpp
+    src/includes/ObjectCategories.cpp
+    src/modules/LayerModule.cpp
+    src/modules/EditObjectModule.cpp
+    src/modules/ActionHistoryModule.cpp
+    src/modules/EditColorModule.cpp
+    src/modules/GameWindowModule.cpp
+    src/includes/razoomUtils.cpp
+)
 
 
 #include(FetchContent)

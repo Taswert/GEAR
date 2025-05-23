@@ -16,15 +16,26 @@ std::pair<const char*, std::vector<ErGui::ObjectConfig>> favouritesObjects = {
 };
 
 
+static std::unordered_map<int, CCSprite*> objectSpriteCache; // todo: нормальную инициализацию и удаление
+
+static CCSprite* getObjectSprite(int id) {
+	auto it = objectSpriteCache.find(id);
+	if (it != objectSpriteCache.end()) {
+		return it->second;
+	}
+	auto spr = ErGui::getGameObjectAsSingleSpriteById(id);
+	spr->retain();
+	objectSpriteCache[id] = spr;
+	spr->setFlipY(true); // fix for imgui coordinates
+	return spr;
+}
+
+
 bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, ImGuiTextFilter filter, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), ImVec4 bgCol = ImVec4(0, 0, 0, 0), ImVec4 tintCol = ImVec4(1, 1, 1, 1)) {
 	int objId = objCfg.objectIdVector[j];
 	std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(objId);
-	if (newFrameName.empty()) return false;
-	CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
-	if (!frame) return false;
 
-	EditorUI* editorUI = GameManager::sharedState()->m_levelEditorLayer->m_editorUI;
-
+	EditorUI* editorUI = EditorUI::get();
 
 	//Color for selected object
 	bool shouldPopStyle = false;
@@ -48,10 +59,7 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, ImGuiTextFilte
 	//Pop color for selected object
 	if (shouldPopStyle) ImGui::PopStyleColor();
 
-	std::string objSettingsPopupStr = std::string("ObjectSettingsPopup") + str_id;
-
-	if (ImGui::BeginPopupContextItem())
-	{
+	if (ImGui::BeginPopupContextItem()) {
 		ImGui::Text("Object Settings");
 		if (ImGui::Button("Favourite")) {
 			favouritesObjects.second.at(0).objectIdVector.push_back(objId);
@@ -65,13 +73,11 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, ImGuiTextFilte
 		ImGui::EndPopup();
 	}
 
-	ErGui::drawFrameInImGui(frame);
-
+	ErGui::drawSpriteInImGui(getObjectSprite(objId));
 
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
 		ImGui::SetTooltip(newFrameName.c_str());
 	}
-
 
 	return true;
 }
@@ -81,18 +87,7 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 	int folderId = visibleButtons[i].thumbnailObjectId;
 	// Если для этой папки ещё нет записи, то по умолчанию она закрыта
 
-	if (folderId == 0)
-		return ;
-
-
-	std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(folderId);
-	if (newFrameName.empty()) 
-		return ;
-
-	CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
-	if (!frame) 
-		return ;
-
+	if (folderId == 0) return ;
 
 	ImGui::PushStyleColor(ImGuiCol_Button, { 0.4f, 0.f, 0.5f, 1.f });
 
@@ -106,7 +101,7 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 
 	ImGui::PopStyleColor();
 
-	ErGui::drawFrameInImGui(frame);
+	ErGui::drawSpriteInImGui(getObjectSprite(folderId));
 
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 	float lastButtonX2 = ImGui::GetItemRectMax().x;
@@ -117,9 +112,12 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 
 }
 
+// this is called foreach object tab
 void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, ImGuiTextFilter filter, ImVec2 buttonSize) {
 
 	std::vector<ErGui::ObjectConfig> visibleButtons;
+
+	// filter buttons from mySet
 	for (ErGui::ObjectConfig oc : mySet) {
 		std::vector<int> visibleObjects = { };
 		
@@ -147,6 +145,7 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 			ImageFolderButton(visibleButtons, i, buttonSize);
 			std::string popupStr = "##POPUP-";
 			popupStr.append(std::to_string(visibleButtons[i].thumbnailObjectId));
+
 			if (visibleButtons[i].thumbnailObjectId != 0 && ImGui::BeginPopup(popupStr.c_str())) {
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
