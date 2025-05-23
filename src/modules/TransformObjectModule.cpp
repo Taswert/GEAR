@@ -2,22 +2,6 @@
 using namespace ErGui;
 
 
-void addObjectToUndoList(GameObject* obj, UndoCommand command) {
-	GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, command));
-	GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
-}
-
-void addObjectsToUndoList(CCArray* objArr, UndoCommand command) {
-	CCArray* copyObjArr = CCArray::create();
-	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-		auto objCopy = GameObjectCopy::create(obj);
-		copyObjArr->addObject(objCopy);
-		//objCopy->resetObject();
-	}
-	GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(copyObjArr, command));
-	GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
-}
-
 float deg2rad(float d) {
 	return d * (3.14159265f / 180.f);
 }
@@ -373,27 +357,32 @@ void renderForObject(GameObject* obj) {
 	//}
 
 	//if (ImGui::CollapsingHeader("-----| Skew |-----")) {
-		//ImGui::InputFloat("SkewStep", &skewStep, 1.f);
-		//if (ImGui::Button("1##SkewStepPreset")) skewStep = 1.f;			ImGui::SameLine();
-		//if (ImGui::Button("5##SkewStepPreset")) skewStep = 5.f;			ImGui::SameLine();
-		//if (ImGui::Button("10##SkewStepPreset")) skewStep = 10.f;		ImGui::SameLine();
-		//if (ImGui::Button("15##SkewStepPreset")) skewStep = 15.f;		ImGui::SameLine();
-		//if (ImGui::Button("30##SkewStepPreset")) skewStep = 30.f;		ImGui::SameLine();
-		//if (ImGui::Button("45##SkewStepPreset")) skewStep = 45.f;		ImGui::SameLine();
-		//ImGui::Text("Presets");
+		if (ImGui::BeginPopup("SkewStepPopup")) {
+			ImGui::InputFloat("SkewStep", &skewStep, 1.f);
+			if (ImGui::Button("1##SkewStepPreset")) skewStep = 1.f;			ImGui::SameLine();
+			if (ImGui::Button("5##SkewStepPreset")) skewStep = 5.f;			ImGui::SameLine();
+			if (ImGui::Button("10##SkewStepPreset")) skewStep = 10.f;		ImGui::SameLine();
+			if (ImGui::Button("15##SkewStepPreset")) skewStep = 15.f;		ImGui::SameLine();
+			if (ImGui::Button("30##SkewStepPreset")) skewStep = 30.f;		ImGui::SameLine();
+			if (ImGui::Button("45##SkewStepPreset")) skewStep = 45.f;		ImGui::SameLine();
+			ImGui::Text("Presets");
+			ImGui::EndPopup();
+		}
 
 		if (float skewXDelta = ErGui::deltaInputFloat("SkewX", skewStep)) {
 			addObjectToUndoList(obj, UndoCommand::Transform);
 			skewFuncX(obj, skewXDelta);
 		}
 		ImGui::SameLine();
-		ImGui::Button("S##SkewX-Step");
+		if (ImGui::Button("S##SkewX-Step"))
+			ImGui::OpenPopup("SkewStepPopup");
 		if (float skewYDelta = ErGui::deltaInputFloat("SkewY", skewStep)) {
 			addObjectToUndoList(obj, UndoCommand::Transform);
 			skewFuncY(obj, skewYDelta);
 		}
 		ImGui::SameLine();
-		ImGui::Button("S##SkewY-Step");
+		if (ImGui::Button("S##SkewY-Step"))
+			ImGui::OpenPopup("SkewStepPopup");
 
 	//}
 
@@ -405,16 +394,19 @@ void renderForArray(CCArray* objArr) {
 	auto lel = gameManager->getEditorLayer();
 	auto editorUI = lel->m_editorUI;
 	
-	if (ImGui::CollapsingHeader("-----| Move |-----")) {
-		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
-		if (ImGui::Button("0.5##MoveStepPreset")) moveStep = 0.5f;	ImGui::SameLine();
-		if (ImGui::Button("2##MoveStepPreset")) moveStep = 2.f;		ImGui::SameLine();
-		if (ImGui::Button("7.5##MoveStepPreset")) moveStep = 7.5f;	ImGui::SameLine();
-		if (ImGui::Button("10##MoveStepPreset")) moveStep = 10.f;	ImGui::SameLine();
-		if (ImGui::Button("15##MoveStepPreset")) moveStep = 15.f;	ImGui::SameLine();
-		if (ImGui::Button("30##MoveStepPreset")) moveStep = 30.f;	ImGui::SameLine();
-		if (ImGui::Button("150##MoveStepPreset")) moveStep = 150.f;	ImGui::SameLine();
-		ImGui::Text("Presets");
+	//if (ImGui::CollapsingHeader("-----| Move |-----")) {
+		if (ImGui::BeginPopup("MoveStepPopup")) {
+			ImGui::InputFloat("MoveStep", &moveStep, 1.f);
+			if (ImGui::Button("0.5##MoveStepPreset")) moveStep = 0.5f;	ImGui::SameLine();
+			if (ImGui::Button("2##MoveStepPreset")) moveStep = 2.f;		ImGui::SameLine();
+			if (ImGui::Button("7.5##MoveStepPreset")) moveStep = 7.5f;	ImGui::SameLine();
+			if (ImGui::Button("10##MoveStepPreset")) moveStep = 10.f;	ImGui::SameLine();
+			if (ImGui::Button("15##MoveStepPreset")) moveStep = 15.f;	ImGui::SameLine();
+			if (ImGui::Button("30##MoveStepPreset")) moveStep = 30.f;	ImGui::SameLine();
+			if (ImGui::Button("150##MoveStepPreset")) moveStep = 150.f;	ImGui::SameLine();
+			ImGui::Text("Presets");
+			ImGui::EndPopup();
+		}
 
 		float posXDelta = ErGui::deltaInputFloat("PosX", moveStep);
 		float posYDelta = ErGui::deltaInputFloat("PosY", moveStep);
@@ -425,21 +417,27 @@ void renderForArray(CCArray* objArr) {
 				editorUI->moveObject(obj, { posXDelta, posYDelta });
 			}
 		}
-	}
+		if (ImGui::Button("S##Position-Presets")) {
+			ImGui::OpenPopup("MoveStepPopup");
+		}
+		ImGui::Separator();
+	//}
 
 
-	if (ImGui::CollapsingHeader("-----| Rotation |-----")) {
-		ImGui::InputFloat("RotStep", &rotationStep, 1.f);
-		if (ImGui::Button("1##RotateStepPreset")) rotationStep = 1.f;		ImGui::SameLine();
-		if (ImGui::Button("10##RotateStepPreset")) rotationStep = 10.f;		ImGui::SameLine();
-		if (ImGui::Button("15##RotateStepPreset")) rotationStep = 15.f;		ImGui::SameLine();
-		if (ImGui::Button("30##RotateStepPreset")) rotationStep = 30.f;		ImGui::SameLine();
-		if (ImGui::Button("45##RotateStepPreset")) rotationStep = 45.f;		ImGui::SameLine();
-		if (ImGui::Button("90##RotateStepPreset")) rotationStep = 90.f;		ImGui::SameLine();
-		if (ImGui::Button("180##RotateStepPreset")) rotationStep = 180.f;	ImGui::SameLine();
-		ImGui::Text("Presets");
+	//if (ImGui::CollapsingHeader("-----| Rotation |-----")) {
+		if (ImGui::BeginPopup("RotStepPopup")) {
+			ImGui::InputFloat("RotStep", &rotationStep, 1.f);
+			if (ImGui::Button("1##RotateStepPreset")) rotationStep = 1.f;		ImGui::SameLine();
+			if (ImGui::Button("10##RotateStepPreset")) rotationStep = 10.f;		ImGui::SameLine();
+			if (ImGui::Button("15##RotateStepPreset")) rotationStep = 15.f;		ImGui::SameLine();
+			if (ImGui::Button("30##RotateStepPreset")) rotationStep = 30.f;		ImGui::SameLine();
+			if (ImGui::Button("45##RotateStepPreset")) rotationStep = 45.f;		ImGui::SameLine();
+			if (ImGui::Button("90##RotateStepPreset")) rotationStep = 90.f;		ImGui::SameLine();
+			if (ImGui::Button("180##RotateStepPreset")) rotationStep = 180.f;	ImGui::SameLine();
+			ImGui::Text("Presets");
+			ImGui::EndPopup();
+		}
 
-		ImGui::Checkbox("Position Snap##RotPosSnap", &rotateObjectsPositionSnap);
 		
 		float rotDelta = ErGui::deltaInputFloat("Rotate", rotationStep);
 		float rotDeltaX = ErGui::deltaInputFloat("RotateX", rotationStep);
@@ -463,20 +461,27 @@ void renderForArray(CCArray* objArr) {
 				}
 			}
 		}
-	}
+		if (ImGui::Button("S##Rotation-Presets")) {
+			ImGui::OpenPopup("RotStepPopup");
+		}
+		ImGui::SameLine();
+		ImGui::Checkbox("Position Snap##RotPosSnap", &rotateObjectsPositionSnap);
+		ImGui::Separator();
+	//}
 
-	if (ImGui::CollapsingHeader("-----| Scale |-----")) {
-		ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
-		if (ImGui::Button("0.01##ScaleStepPreset")) scaleStep = 0.01f;		ImGui::SameLine();
-		if (ImGui::Button("0.05##ScaleStepPreset")) scaleStep = 0.05f;		ImGui::SameLine();
-		if (ImGui::Button("0.1##ScaleStepPreset")) scaleStep = 0.1f;		ImGui::SameLine();
-		if (ImGui::Button("0.25##ScaleStepPreset")) scaleStep = 0.25f;		ImGui::SameLine();
-		if (ImGui::Button("0.5##ScaleStepPreset")) scaleStep = 0.5f;		ImGui::SameLine();
-		if (ImGui::Button("1##ScaleStepPreset")) scaleStep = 1.f;			ImGui::SameLine();
-		if (ImGui::Button("2##ScaleStepPreset")) scaleStep = 2.f;			ImGui::SameLine();
-		ImGui::Text("Presets");
-
-		ImGui::Checkbox("Position Snap##ScalePosSnap", &scaleObjectsPositionSnap);
+	//if (ImGui::CollapsingHeader("-----| Scale |-----")) {
+		if (ImGui::BeginPopup("ScaleStepPopup")) {
+			ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
+			if (ImGui::Button("0.01##ScaleStepPreset")) scaleStep = 0.01f;		ImGui::SameLine();
+			if (ImGui::Button("0.05##ScaleStepPreset")) scaleStep = 0.05f;		ImGui::SameLine();
+			if (ImGui::Button("0.1##ScaleStepPreset")) scaleStep = 0.1f;		ImGui::SameLine();
+			if (ImGui::Button("0.25##ScaleStepPreset")) scaleStep = 0.25f;		ImGui::SameLine();
+			if (ImGui::Button("0.5##ScaleStepPreset")) scaleStep = 0.5f;		ImGui::SameLine();
+			if (ImGui::Button("1##ScaleStepPreset")) scaleStep = 1.f;			ImGui::SameLine();
+			if (ImGui::Button("2##ScaleStepPreset")) scaleStep = 2.f;			ImGui::SameLine();
+			ImGui::Text("Presets");
+			ImGui::EndPopup();
+		}
 
 		float scaleDelta = ErGui::deltaInputFloat("Scale", scaleStep);
 		float scaleDeltaX = ErGui::deltaInputFloat("ScaleX", scaleStep);
@@ -524,21 +529,29 @@ void renderForArray(CCArray* objArr) {
 				}
 			}
 		}
-	}
-
-	if (ImGui::CollapsingHeader("-----| Skew |-----")) {
-		ImGui::InputFloat("SkewStep", &skewStep, 1.f);
-		if (ImGui::Button("1##SkewStepPreset")) skewStep = 1.f;			ImGui::SameLine();
-		if (ImGui::Button("5##SkewStepPreset")) skewStep = 5.f;			ImGui::SameLine();
-		if (ImGui::Button("10##SkewStepPreset")) skewStep = 10.f;		ImGui::SameLine();
-		if (ImGui::Button("15##SkewStepPreset")) skewStep = 15.f;		ImGui::SameLine();
-		if (ImGui::Button("30##SkewStepPreset")) skewStep = 30.f;		ImGui::SameLine();
-		if (ImGui::Button("45##SkewStepPreset")) skewStep = 45.f;		ImGui::SameLine();
-		ImGui::Text("Presets");
-
-		ImGui::Checkbox("Position Snap##SkewPosSnap", &skewObjectsPositionSnap);
-		float skewXDelta = ErGui::deltaInputFloat("SkewX", skewStep);
+		if (ImGui::Button("S##Scale-Presets")) {
+			ImGui::OpenPopup("ScaleStepPopup");
+		}
 		ImGui::SameLine();
+		ImGui::Checkbox("Position Snap##ScalePosSnap", &scaleObjectsPositionSnap);
+		ImGui::Separator();
+	//}
+
+	//if (ImGui::CollapsingHeader("-----| Skew |-----")) {
+		if (ImGui::BeginPopup("SkewStepPopup")) {
+			ImGui::InputFloat("SkewStep", &skewStep, 1.f);
+			if (ImGui::Button("1##SkewStepPreset")) skewStep = 1.f;			ImGui::SameLine();
+			if (ImGui::Button("5##SkewStepPreset")) skewStep = 5.f;			ImGui::SameLine();
+			if (ImGui::Button("10##SkewStepPreset")) skewStep = 10.f;		ImGui::SameLine();
+			if (ImGui::Button("15##SkewStepPreset")) skewStep = 15.f;		ImGui::SameLine();
+			if (ImGui::Button("30##SkewStepPreset")) skewStep = 30.f;		ImGui::SameLine();
+			if (ImGui::Button("45##SkewStepPreset")) skewStep = 45.f;		ImGui::SameLine();
+			ImGui::Text("Presets");
+			ImGui::EndPopup();
+		}
+
+		
+		float skewXDelta = ErGui::deltaInputFloat("SkewX", skewStep);
 		float skewYDelta = ErGui::deltaInputFloat("SkewY", skewStep);
 
 		if (skewXDelta || skewYDelta) {
@@ -554,7 +567,12 @@ void renderForArray(CCArray* objArr) {
 				}
 			}
 		}
-	}
+		if (ImGui::Button("S##Skew-Presets")) {
+			ImGui::OpenPopup("SkewStepPopup");
+		}
+		ImGui::SameLine();
+		ImGui::Checkbox("Position Snap##SkewPosSnap", &skewObjectsPositionSnap);
+	//}
 
 	renderCircleTool();
 }

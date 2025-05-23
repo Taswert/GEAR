@@ -3,6 +3,7 @@
 #include <imgui-cocos.hpp>
 #include <Geode/Geode.hpp>
 using namespace cocos2d;
+using namespace geode::prelude;
 //class LevelEditorLayer {
 //	gd::string getSFXIDs(LevelEditorLayer* lel);
 //	gd::string getSongIDs(LevelEditorLayer* lel, bool* idk);
@@ -18,6 +19,7 @@ namespace ErGui {
 	int deltaInputIntImproved(const char* label, int max, int min, int step);
 
 	inline auto lassoPatch = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
+	inline auto editorUIbottomConstrainPatch = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
 
 	void drawSpriteInImGui(CCSprite* tempSprite);
 	void drawFrameInImGui(CCSpriteFrame* frame);
@@ -25,6 +27,9 @@ namespace ErGui {
 	void setupMenuColors(ImVec4 BGColor, ImVec4 HoveredColor, ImVec4 TextFieldColor);
 
 	void enableClicks();
+
+	void addObjectToUndoList(GameObject* obj, UndoCommand command);
+	void addObjectsToUndoList(CCArray* objArr, UndoCommand command);
 
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;

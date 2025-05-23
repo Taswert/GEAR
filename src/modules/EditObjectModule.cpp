@@ -83,7 +83,7 @@ void drawColorSettings(GameObject* obj) {
 	float r, g, b;
 	float hsv[4] = { savedHueEO, savedSaturationEO, savedValueEO, eObj->m_opacity };
 	ImGuiColorEditFlags flags =
-		ImGuiColorEditFlags_InputHSV;
+		ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar;
 	if (eObj->m_copyColorID == 0) {
 		ImGui::ColorPicker4((btnStr + "COLOR-SETTINGS").c_str(), hsv, flags);
 
@@ -355,7 +355,7 @@ void drawPulseSettings(GameObject* obj) {
 		float r, g, b;
 		float hsv[4] = { savedHueEO, savedSaturationEO, savedValueEO, eObj->m_opacity };
 		ImGuiColorEditFlags flags =
-			ImGuiColorEditFlags_InputHSV;
+			ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar;
 
 		ImGui::ColorPicker4(std::string("##PULSE-SETTINGS").c_str(), hsv, flags);
 

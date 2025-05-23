@@ -7,8 +7,8 @@
 
 #include <Geode/modify/CustomSongLayer.hpp>
 #include <Geode/modify/CustomSongWidget.hpp>
-#include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/modify/ObjectToolbox.hpp>
+#include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/CCEGLView.hpp>
 
@@ -78,7 +78,7 @@ void initImGuiStyling() {
 	style.TableAngledHeadersTextAlign = ImVec2(0.5f, 0.f);
 	style.ColorButtonPosition = ImGuiDir_Left;
 	style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
-	style.SelectableTextAlign = ImVec2(0.f, 0.f);
+	style.SelectableTextAlign = ImVec2(0.5f, 0.65f);
 	style.SeparatorTextBorderSize = 4.f;
 	style.SeparatorTextAlign = ImVec2(0.f, 0.f);
 	style.SeparatorTextPadding = ImVec2(40.f, 2.f);
@@ -178,7 +178,7 @@ class $modify(ObjectToolbox) {
 };
 
 class $modify(EditorUI) {
-	void scrollWheel(float p0, float p1) {
+	void scrollWheel(float p0, float p1) {	
 		//Zoom To Cursor + Expanded constractions
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed()) {
 			auto winSize = CCDirector::sharedDirector()->getWinSize();
@@ -226,8 +226,11 @@ class $modify(EditorUI) {
 
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())
 			EditorUI::scrollWheel(p1, p0);
-		else
+		else {
+			
 			EditorUI::scrollWheel(p0, p1);
+			
+		}
 	}
 
 
@@ -310,6 +313,7 @@ class $modify(EditorUI) {
 		ErGui::og_prevAnim = lel->m_previewAnimations;
 
 		this->setVisible(false);
+		//this->m_constrainedHeight = 0.f;
 
 		return ret;
 	}
@@ -344,28 +348,31 @@ class $modify(EditorUI) {
 	}
 
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
+		//DEBUG TOUCH POS
 		ErGui::touchedDNFirstPoint = touch->getLocation();
 		if (ErGui::dbgTDN) {
 			ErGui::touchedDN->drawDot(ErGui::touchedDNFirstPoint, 2.5f, { 0.f, 0.f, 0.f, 1.f });
 			ErGui::touchedDN->drawDot(ErGui::touchedDNFirstPoint, 1.5f, { 0.82f, 0.25f, 0.82f, 1.f });
 		}
-		//LASSO
-		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			ErGui::editorUILassoPoints.clear();
+
+		//LASSO + SWIPE
+		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+			ErGui::editorUISwipePoints.clear();
 			CCPoint pt = touch->getLocation();
-			ErGui::editorUILassoPoints.push_back(pt);
+			ErGui::editorUISwipePoints.push_back(pt);
 			ErGui::editorUIDrawNode->clear();
-			return true;
+			//return true;
 		}
+
 
 		return EditorUI::ccTouchBegan(touch, event);
 	}
 
 
 	void ccTouchMoved(CCTouch* touch, CCEvent* event) {
-		
+
+		//DEBUG TOUCH POS
 		ErGui::touchedDN->clear();
-		
 		if (ErGui::dbgTDN) {
 			std::vector<cocos2d::CCPoint> touchedDNVerts = { ErGui::touchedDNFirstPoint, touch->getLocation() };
 			ErGui::touchedDN->drawLines(touchedDNVerts.data(), touchedDNVerts.size(), 1.5f, { 0.f, 0.f, 0.f, 1.f });
@@ -379,29 +386,45 @@ class $modify(EditorUI) {
 		}
 
 
-		//ZOOM MODE
-		if (this->m_selectedMode == 4) {
-			auto editorUI = GameManager::sharedState()->getEditorLayer()->m_editorUI;
-			float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
-			editorUI->m_editorZoom += (touch->getLocation().x - touch->getPreviousLocation().x) * 0.01f * zoomMul;
-			if (editorUI->m_editorZoom > 4.f) editorUI->m_editorZoom = 4.f;
-			if (editorUI->m_editorZoom < 0.1f) editorUI->m_editorZoom = 0.1f;
-			editorUI->updateZoom(editorUI->m_editorZoom);
-			//GameManager::sharedState()->getEditorLayer()->m_editorUI->m_editorZoom;
-			//EditorUI::get()->m_editorZoom += touch->getLocation().x - touch->getPreviousLocation().x;
-			return;
-		}
+		//ZOOM MODE (Should be reworked)
+		//if (this->m_selectedMode == 4) {
+		//	auto editorUI = GameManager::sharedState()->getEditorLayer()->m_editorUI;
+		//	float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
+		//	editorUI->m_editorZoom += (touch->getLocation().x - touch->getPreviousLocation().x) * 0.01f * zoomMul;
+		//	if (editorUI->m_editorZoom > 4.f) editorUI->m_editorZoom = 4.f;
+		//	if (editorUI->m_editorZoom < 0.1f) editorUI->m_editorZoom = 0.1f;
+		//	editorUI->updateZoom(editorUI->m_editorZoom);
+		//	//GameManager::sharedState()->getEditorLayer()->m_editorUI->m_editorZoom;
+		//	//EditorUI::get()->m_editorZoom += touch->getLocation().x - touch->getPreviousLocation().x;
+		//	return;
+		//}
 
 		//LASSO
 		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 			CCPoint pt = touch->getLocation();
-			ErGui::editorUILassoPoints.push_back(pt);
+			ErGui::editorUISwipePoints.push_back(pt);
 			ErGui::editorUIDrawNode->clear();
 
-			if (ErGui::editorUILassoPoints.size() > 1) {
-				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUILassoPoints.data(), ErGui::editorUILassoPoints.size(), { 0, 0, 0, 0 }, 0.2f, { 0, 1.f, 0, 1.f });
+			if (ErGui::editorUISwipePoints.size() > 1) {
+				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
 			}
 			return;
+		}
+
+		//SWIPE
+		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+			CCPoint ptStart = ErGui::editorUISwipePoints.at(0);
+			CCPoint ptEnd = touch->getLocation();
+			ErGui::editorUIDrawNode->clear();
+			ErGui::editorUISwipePoints.clear();
+			ErGui::editorUISwipePoints.push_back(ptStart);
+			ErGui::editorUISwipePoints.push_back({ ptStart.x, ptEnd.y });
+			ErGui::editorUISwipePoints.push_back(ptEnd);
+			ErGui::editorUISwipePoints.push_back({ ptEnd.x, ptStart.y });
+		
+			if (ErGui::editorUISwipePoints.size() > 1) {
+				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
+			}
 		}
 		EditorUI::ccTouchMoved(touch, event);
 	}
@@ -409,10 +432,12 @@ class $modify(EditorUI) {
 	void ccTouchEnded(CCTouch* touch, CCEvent* event) {
 
 		ErGui::touchedDN->clear();
+		ErGui::editorUIDrawNode->clear();
+
 		//LASSO
-		if (ErGui::editorUILassoPoints.size() > 2 && this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			ErGui::editorUIDrawNode->clear();
-			ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUILassoPoints.data(), ErGui::editorUILassoPoints.size(), { 0, 0, 0, 0 }, 0.2f, { 0, 1.f, 0, 1.f });
+		if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
+			this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+			ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
 
 			CCArray* objArr = CCArray::create();
 			for (auto obj : CCArrayExt<GameObject*>(GameManager::sharedState()->getEditorLayer()->m_objects)) {
@@ -427,11 +452,11 @@ class $modify(EditorUI) {
 					(objPos.y * cameraScale) + cameraPos.y
 				);
 
-				if (ErGui::isPointInPolygon(newPos, ErGui::editorUILassoPoints)) {
+				if (ErGui::isPointInPolygon(newPos, ErGui::editorUISwipePoints)) {
 					objArr->addObject(obj);
 				}
 			}
-			//std::cout << "\n";
+			//UNDO LIST!!!!
 			if (objArr->count() > 0)
 				this->selectObjects(objArr, false);
 			CC_SAFE_RELEASE(objArr);
@@ -448,14 +473,6 @@ class $modify(EditorUI) {
 	}
 };
 
-//int someIterator = 0;
-class $modify(CCTouchDispatcher) {
-	void touches(CCSet* touches, CCEvent* event, unsigned int type) {
-		//std::cout << someIterator << " - touchesHook\n";
-		//someIterator++;
-		CCTouchDispatcher::touches(touches, event, type);
-	}
-};
 
 class $modify(CCEGLView) {
 	void pollEvents() {
@@ -468,10 +485,6 @@ class $modify(CCEGLView) {
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 
-			//if (msg.message == WM_MOUSEWHEEL) {
-			//	CCDirector::sharedDirector()->getMouseDispatcher()->dispatchScrollMSG(GET_WHEEL_DELTA_WPARAM(msg.wParam) * 0.4f * -1, 0);
-			//	continue;
-			//}
 
 			if (msg.message == WM_MOUSEHWHEEL) {
 				CCDirector::sharedDirector()->getMouseDispatcher()->dispatchScrollMSG(0, GET_WHEEL_DELTA_WPARAM(msg.wParam) * 0.4f * -1);
@@ -619,11 +632,12 @@ $on_mod(Loaded) {
 	cfgFile.close();
 	
 	ErGui::objectCfg = data;
-
 	//std::cout
 	//	<< "Offset ColorSelectPopup::m_touchTriggered = "
 	//	<< offsetof(EffectGameObject, EffectGameObject::m_centerGroupID)
 	//	<< " bytes\n";
+	ErGui::editorUIbottomConstrainPatch->enable();
+
 
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
@@ -641,6 +655,7 @@ $on_mod(Loaded) {
 
 		initImGuiStyling();
 		
+
 		ErGui::setupTriggersSettings();
 		}).draw([] {
 

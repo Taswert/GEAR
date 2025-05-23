@@ -175,5 +175,20 @@ namespace ErGui {
 		//}
 	}
 
+	void addObjectToUndoList(GameObject* obj, UndoCommand command) {
+		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, command));
+		GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
+	}
+
+	void addObjectsToUndoList(CCArray* objArr, UndoCommand command) {
+		CCArray* copyObjArr = CCArray::create();
+		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+			auto objCopy = GameObjectCopy::create(obj);
+			copyObjArr->addObject(objCopy);
+			//objCopy->resetObject();
+		}
+		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(copyObjArr, command));
+		GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
+	}
 	
 }

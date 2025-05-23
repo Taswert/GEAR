@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 #include "EditColorModule.hpp"
 #include <Geode/GeneratedPredeclare.hpp>
 #include <cocos2d.h>
@@ -34,7 +34,7 @@ std::string colorPickerPopup(std::string btnStr, ColorAction* ccMyColor) {
 		float r, g, b;
 		float hsv[4] = { savedHueEC, savedSaturationEC, savedValueEC, ccMyColor->m_fromOpacity };
 		ImGuiColorEditFlags flags =
-			ImGuiColorEditFlags_InputHSV;
+			ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar;
 		if (ccMyColor->m_copyID == 0) {
 			ImGui::ColorPicker4((btnStr + "-EDIT").c_str(), hsv, flags);
 

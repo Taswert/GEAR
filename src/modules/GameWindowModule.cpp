@@ -14,34 +14,43 @@ void ErGui::renderGameWindow() {
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
 
 	ImGui::Begin("Game");
-	if (ImGui::Button("Save")) {
-		auto winSize = CCDirector::sharedDirector()->getWinSize();
-		auto rt = CCRenderTexture::create(winSize.width, winSize.height, kTexture2DPixelFormat_RGBA8888);
-		rt->begin();
-		CCDirector::sharedDirector()->getRunningScene()->visit();
-		rt->end();
+	//if (ImGui::Button("Save")) {
+	//	auto winSize = CCDirector::sharedDirector()->getWinSize();
+	//	auto rt = CCRenderTexture::create(winSize.width, winSize.height, kTexture2DPixelFormat_RGBA8888);
+	//	rt->begin();
+	//	CCDirector::sharedDirector()->getRunningScene()->visit();
+	//	rt->end();
 
-		// Собираем полный путь
-		std::string path = "coolName.png";
-		bool ok = rt->saveToFile(path.c_str(), cocos2d::kCCImageFormatPNG);
-		if (ok) {
-			std::cout << "Done! Saved to %s";
-		}
-		else {
-			std::cout << "Nah...";
-		}
-	}
-	//CCEGLView
+	//	// Собираем полный путь
+	//	std::string path = "coolName.png";
+	//	bool ok = rt->saveToFile(path.c_str(), cocos2d::kCCImageFormatPNG);
+	//	if (ok) {
+	//		std::cout << "Done! Saved to %s";
+	//	}
+	//	else {
+	//		std::cout << "Nah...";
+	//	}
+	//}
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObject ? lel->getLastObjectX() : std::max(lel->getLastObjectX(), 32470.f);
-	if (ImGui::SliderFloat("##LevelPositionSlider", &objectLayerX, -30.f, maxPosX))
+	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX))
 		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
 
 	ImGui::SameLine();
-	ImGui::Checkbox("Constrain By Last Object", &ErGui::constrainByLastObject);
+	ImGui::Checkbox("##Constrain-By-Last-Object", &ErGui::constrainByLastObject);
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Constrain By Last Object");
 
-	//32470.f - the least of max X position;
+	ImGui::SameLine();
+	ImGui::SameLine();
+	short step = 1;
+	short fastStep = 5;
+	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	if (ImGui::InputScalar("Layer", ImGuiDataType_S16, &lel->m_currentLayer, &step, &fastStep)) {
+		if (lel->m_currentLayer < -1) 
+			lel->m_currentLayer = -1;
+	}
 
 	ImVec2 gameWinSize = ImGui::GetContentRegionAvail();
 	ImVec2 cursorStart = ImGui::GetCursorPos();
@@ -63,6 +72,8 @@ void ErGui::renderGameWindow() {
 		drawOffset.y = (gameWinSize.y - drawSize.y) / 2;
 	}
 
+
+
 	ImGui::SetCursorPos(ImVec2(cursorStart.x + drawOffset.x, cursorStart.y + drawOffset.y));
 	ImGui::Image(renderedScreen.tex, drawSize, ImVec2(0, 1), ImVec2(1, 0));
 
@@ -78,5 +89,13 @@ void ErGui::renderGameWindow() {
 	else {
 		ErGui::isGameWindowHovered = false;
 	}
+
+	//Vertical slider lol
+	//ImGui::SameLine();
+	//float objectLayerY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
+	//if (ImGui::VSliderFloat("##LevelPositionSliderY", ImVec2(20.f, drawSize.y), &objectLayerY, 0.f, 29800.f))
+	//	lel->m_objectLayer->setPositionY(objectLayerY * -1 * lel->m_objectLayer->getScale());
+	
+
 	ImGui::End();
 }

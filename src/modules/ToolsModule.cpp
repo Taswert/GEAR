@@ -29,19 +29,41 @@ void ErGui::renderToolsModule1() {
 	auto gameManager = GameManager::sharedState();
 	auto editorUI = gameManager->getEditorLayer()->m_editorUI;
 
-	
-	ImGui::RadioButton("Build", &editorUI->m_selectedMode, 2);	//ICON_MDI_BRUSH
-	ImGui::RadioButton("Edit", &editorUI->m_selectedMode, 3);	//ICON_MDI_SELECTION
-	ImGui::RadioButton("Delete##Mode", &editorUI->m_selectedMode, 1);	//ICON_MDI_DELETE
-	ImGui::RadioButton("Zoom", &editorUI->m_selectedMode, 4);	//ICON_MDI_MAGNIFY
+	const ImVec2 BTN_SIZE = ImVec2(24.f, 30.f);
+	const ImVec2 DUMMY_PAD = ImVec2(0.f, 2.f);
+
+	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+
+	//ImGui::RadioButton("Build", &editorUI->m_selectedMode, 2);	//ICON_MDI_BRUSH
+	//ImGui::RadioButton("Edit", &editorUI->m_selectedMode, 3);	//ICON_MDI_SELECTION
+	//ImGui::RadioButton("Delete##Mode", &editorUI->m_selectedMode, 1);	//ICON_MDI_DELETE
+	//ImGui::RadioButton("Zoom", &editorUI->m_selectedMode, 4);	//ICON_MDI_MAGNIFY
 	//ImGui::RadioButton("Image##RADIO",	&editorUI->m_selectedMode, 5);
-
-
-	ImGui::Text("-");
-
+	if (ImGui::Selectable(ICON_MDI_BRUSH, editorUI->m_selectedMode == 2, 0, BTN_SIZE))
+		editorUI->m_selectedMode = 2;
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Build Mode");
+	ImGui::Dummy(DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_SELECTION, editorUI->m_selectedMode == 3, 0, BTN_SIZE))
+		editorUI->m_selectedMode = 3;
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Edit Mode");
+	ImGui::Dummy(DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_DELETE, editorUI->m_selectedMode == 1, 0, BTN_SIZE))
+		editorUI->m_selectedMode = 1;
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Delete Mode");
+	ImGui::Dummy(DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_EYE, editorUI->m_selectedMode == 4, 0, BTN_SIZE))
+		editorUI->m_selectedMode = 4;
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Observer Mode");
+	ImGui::Separator();
+	
 	//reinterpret_cast<const char*>(u8"\uf1127")
 	bool swipeBool = editorUI->m_swipeEnabled;
-	if (ImGui::Checkbox("Swipe", &swipeBool)) { //ICON_MDI_GESTURE_TAP_HOLD
+	if (ImGui::Selectable(ICON_MDI_GESTURE_TAP_HOLD, &swipeBool, 0, BTN_SIZE)) {
+	//if (ImGui::Checkbox("Swipe", &swipeBool)) { //ICON_MDI_GESTURE_TAP_HOLD
 		editorUI->m_swipeEnabled = swipeBool;
 
 		if (isLassoEnabled && editorUI->m_swipeEnabled) {
@@ -51,9 +73,13 @@ void ErGui::renderToolsModule1() {
 			lassoPatch->disable();
 		}
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Swipe");
+	ImGui::Dummy(DUMMY_PAD);
 
 	bool rotationBool = gameManager->getGameVariable("0007");
-	if (ImGui::Checkbox("Rotate", &rotationBool)) { //ICON_MDI_ROTATE_RIGHT
+	if (ImGui::Selectable(ICON_MDI_ROTATE_RIGHT, &rotationBool, 0, BTN_SIZE)) {
+	//if (ImGui::Checkbox("Rotation", &rotationBool)) { //ICON_MDI_ROTATE_RIGHT
 		gameManager->setGameVariable("0007", rotationBool);
 		if (rotationBool) {
 			EditorUI_toggleSpecialEditButtons(editorUI);
@@ -62,70 +88,104 @@ void ErGui::renderToolsModule1() {
 			editorUI->m_rotationControl->setVisible(false);
 		}
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Rotation");
+	ImGui::Dummy(DUMMY_PAD);
 
 	bool freeMoveBool = editorUI->m_freeMoveEnabled;
-	if (ImGui::Checkbox("Free Move", &freeMoveBool)) { //ICON_MDI_CURSOR_MOVE
+	if (ImGui::Selectable(ICON_MDI_CURSOR_MOVE, &freeMoveBool, 0, BTN_SIZE)) {
+	//if (ImGui::Checkbox("Free Move", &freeMoveBool)) { //ICON_MDI_CURSOR_MOVE
 		editorUI->m_freeMoveEnabled = freeMoveBool;
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Free Move");
+	ImGui::Dummy(DUMMY_PAD);
 
 	bool snapBool = gameManager->getGameVariable("0008");
-	if (ImGui::Checkbox("Snap", &snapBool)) {	//ICON_MDI_AXIS_ARROW
+	if (ImGui::Selectable(ICON_MDI_AXIS_ARROW, &snapBool, 0, BTN_SIZE)) {
+	//if (ImGui::Checkbox("Snap", &snapBool)) {	//ICON_MDI_AXIS_ARROW
 		gameManager->setGameVariable("0008", snapBool);
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Snap");
 		
-	ImGui::Text("-");
-
-	if (ImGui::Button("Delete##Perm")) {	//ICON_MDI_DELETE_FOREVER
+	ImGui::Separator();
+	if (ImGui::Selectable(ICON_MDI_DELETE_FOREVER, false, 0, BTN_SIZE)) {
+	//if (ImGui::Button("Delete##Perm")) {	//ICON_MDI_DELETE_FOREVER
 		if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
 		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
-
-	if (ImGui::Button("Warp")) {	//ICON_MDI_VECTOR_SQUARE
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Delete Selected");
+	ImGui::Dummy(DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_VECTOR_SQUARE, false, 0, BTN_SIZE)) {
+	//if (ImGui::Button("Warp")) {	//ICON_MDI_VECTOR_SQUARE
 		editorUI->activateTransformControl(nullptr);
 	}
-
-	if (ImGui::Button("Deselect")) { //ICON_MDI_SELECTION_OFF
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Warp Selected");
+	ImGui::Dummy(DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_SELECTION_OFF, false, 0, BTN_SIZE)) {
+	//if (ImGui::Button("Deselect")) { //ICON_MDI_SELECTION_OFF
 		editorUI->deselectAll();
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Deselect Objects");
 
-	ImGui::Text("-");
+	ImGui::Separator();
 
 	auto mode = *reinterpret_cast<int*>(reinterpret_cast<long long>(editorUI->m_editorLayer) + 0x878);
-	std::string playtestStr = "Playtest"; //ICON_MDI_PLAY
-	if (mode == 1) playtestStr = "Pause"; //ICON_MDI_PAUSE
+	std::string playtestStr = ICON_MDI_PLAY; //ICON_MDI_PLAY
+	if (mode == 1) playtestStr = ICON_MDI_PAUSE; //ICON_MDI_PAUSE
 
-	if (ImGui::Button(playtestStr.c_str())) {
-		editorUI->onPlaytest(nullptr);
-	}
 
-	if (ImGui::Button("Playback")) { //ICON_MDI_PLAY_OUTLINE
+	if (ImGui::Selectable(ICON_MDI_PLAY_OUTLINE, false, 0, BTN_SIZE)) {
+	//if (ImGui::Button("Playback")) { //ICON_MDI_PLAY_OUTLINE
 		editorUI->onPlayback(nullptr);
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Playback");
+	ImGui::Dummy(DUMMY_PAD);
+	if (ImGui::Selectable(playtestStr.c_str(), false, 0, BTN_SIZE)) {
+		//if (ImGui::Button(playtestStr.c_str())) {
+		editorUI->onPlaytest(nullptr);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip(mode == 1 ? "Pause" : "Playtest");
 
 	if (mode == 1 || mode == 2) {
-		if (ImGui::Button("Stop")) { //ICON_MDI_STOP
+		ImGui::Dummy(DUMMY_PAD);
+		if (ImGui::Selectable(ICON_MDI_STOP, false, 0, BTN_SIZE)) {
+		//if (ImGui::Button("Stop")) { //ICON_MDI_STOP
 			editorUI->onStopPlaytest(nullptr);
 		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			ImGui::SetTooltip("Stop");
 	}
 
-	ImGui::Text("-");
-	short step = 1;
-	short fastStep = 5;
-	if (ImGui::InputScalar("Layer", ImGuiDataType_S16, &editorUI->m_editorLayer->m_currentLayer, &step, &fastStep)) {
-		if (editorUI->m_editorLayer->m_currentLayer < -1) 
-			editorUI->m_editorLayer->m_currentLayer = -1;
-	}
+	ImGui::Separator();
 
-
-	if (ImGui::Button("Link")) { //ICON_MDI_LINK
+	if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE)) {
+	//if (ImGui::Button("Link")) { //ICON_MDI_LINK
 		editorUI->onGroupSticky(nullptr);
 	}
-	
-	if (ImGui::Button("Unlink")) { //ICON_MDI_LINK_OFF
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Link Selected");
+	ImGui::Dummy(DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE)) {
+	//if (ImGui::Button("Unlink")) { //ICON_MDI_LINK_OFF
 		editorUI->onUngroupSticky(nullptr);
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Unlink Selected");
 
-	ImGui::Checkbox("DbgTDN", &ErGui::dbgTDN);
+	ImGui::Separator();
+	ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("DEBUG: Shows touched position");
+	//ImGui::Checkbox("DbgTDN", &ErGui::dbgTDN;
+
+	ImGui::PopStyleColor();
 
 	ImGui::End();
 }

@@ -74,7 +74,10 @@ void ErGui::renderFooter() {
 	}
 	else
 		ImGui::Text("Max Particles: %d", maxParticleCount);
-
+	ImGui::SameLine();
+	ImGui::Text("|");
+	ImGui::SameLine();
+	ImGui::Text(geode::getMod()->getVersion().toVString().c_str());
 
 	//ImGui::Text("ArraySizes: %d %d %d %d %d %d %d %d %d %d %d", lel->m_unkArr0->count(), lel->m_unkArr1->count(), lel->m_unkArr2->count(),
 	//lel->m_unkArr3->count(), lel->m_unkArr4->count(), lel->m_unkArr5->count(), lel->m_unkArr7->count(),
