@@ -34,6 +34,7 @@ void ErGui::renderGameWindow() {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObject ? lel->getLastObjectX() : std::max(lel->getLastObjectX(), 32470.f);
+	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 4.f);
 	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX))
 		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
 
@@ -50,6 +51,11 @@ void ErGui::renderGameWindow() {
 	if (ImGui::InputScalar("Layer", ImGuiDataType_S16, &lel->m_currentLayer, &step, &fastStep)) {
 		if (lel->m_currentLayer < -1) 
 			lel->m_currentLayer = -1;
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Level Settings")) {
+		lel->m_editorUI->onSettings(nullptr);
 	}
 
 	ImVec2 gameWinSize = ImGui::GetContentRegionAvail();

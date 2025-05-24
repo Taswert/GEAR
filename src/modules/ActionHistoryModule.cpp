@@ -42,12 +42,6 @@ void ErGui::renderActionHistoryModule() {
 		ImGui::PopStyleVar();
 	}
 
-	ImGui::SameLine();
-
-	if (ImGui::Button("Level Settings")) {
-		editorUI->onSettings(nullptr);
-	}
-
 
 	if (ImGui::CollapsingHeader("-----| UndoList |-----")) {
 		auto undoArray = GameManager::sharedState()->m_levelEditorLayer->m_undoObjects;

@@ -3,6 +3,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/GeneratedPredeclare.hpp>
 #include <cocos2d.h>
+#include <alphalaneous.object_popup_api/include/ObjectNames.hpp>
 
 #include "ObjectCategories.hpp"
 
@@ -31,20 +32,22 @@ static CCSprite* getObjectSprite(int id) {
 }
 
 
-bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, ImGuiTextFilter filter, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), ImVec4 bgCol = ImVec4(0, 0, 0, 0), ImVec4 tintCol = ImVec4(1, 1, 1, 1)) {
+bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), ImVec4 bgCol = ImVec4(0, 0, 0, 0), ImVec4 tintCol = ImVec4(1, 1, 1, 1)) {
 	int objId = objCfg.objectIdVector[j];
-	std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(objId);
+	std::string newFrameName = ObjectNames::get()->nameForID(objId);
 
 	EditorUI* editorUI = EditorUI::get();
 
 	//Color for selected object
 	bool shouldPopStyle = false;
 	if (editorUI->m_selectedObjectIndex == objId) {
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+		ImGui::PushStyleColor(ImGuiCol_Border, { 1.f, 1.f, 0.5f, 1.f });
 		ImGui::PushStyleColor(ImGuiCol_Button, {
-			ImGui::GetStyleColorVec4(ImGuiCol_Button).x + 0.2f,
-			ImGui::GetStyleColorVec4(ImGuiCol_Button).y + 0.2f,
-			ImGui::GetStyleColorVec4(ImGuiCol_Button).z + 0.2f,
-			ImGui::GetStyleColorVec4(ImGuiCol_Button).w + 0.2f });
+			ImGui::GetStyleColorVec4(ImGuiCol_Button).x + 0.3f,
+			ImGui::GetStyleColorVec4(ImGuiCol_Button).y + 0.3f,
+			ImGui::GetStyleColorVec4(ImGuiCol_Button).z + 0.3f,
+			ImGui::GetStyleColorVec4(ImGuiCol_Button).w + 0.3f });
 		shouldPopStyle = true;
 	}
 
@@ -57,7 +60,11 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, ImGuiTextFilte
 	}
 	
 	//Pop color for selected object
-	if (shouldPopStyle) ImGui::PopStyleColor();
+	if (shouldPopStyle) {
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+	}
 
 	if (ImGui::BeginPopupContextItem()) {
 		ImGui::Text("Object Settings");
@@ -89,7 +96,7 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 
 	if (folderId == 0) return ;
 
-	ImGui::PushStyleColor(ImGuiCol_Button, { 0.4f, 0.f, 0.5f, 1.f });
+	ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_SeparatorActive));
 
 	std::string folderStrId = "##FOLDER-";
 	folderStrId.append(std::to_string(folderId));
@@ -113,7 +120,7 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 }
 
 // this is called foreach object tab
-void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, ImGuiTextFilter filter, ImVec2 buttonSize) {
+void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, ImGuiTextFilter filter, ImVec2 buttonSize) {
 
 	std::vector<ErGui::ObjectConfig> visibleButtons;
 
@@ -122,8 +129,8 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 		std::vector<int> visibleObjects = { };
 		
 		for (int i : oc.objectIdVector) {
-			auto frameName = ObjectToolbox::sharedState()->intKeyToFrame(i);
-			if (filter.PassFilter(frameName))
+			auto frameName = ObjectNames::get()->nameForID(i);
+			if (filter.PassFilter(frameName.c_str()))
 				visibleObjects.push_back(i);
 		}
 
@@ -138,7 +145,7 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 	if (visibleButtons.empty()) 
 		return;
 
-	if (ImGui::CollapsingHeader(name)) {
+	if (ImGui::CollapsingHeader(name.c_str())) {
 		float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
 		for (int i = 0; i < visibleButtons.size(); i++) {
@@ -149,7 +156,7 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 			if (visibleButtons[i].thumbnailObjectId != 0 && ImGui::BeginPopup(popupStr.c_str())) {
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i], j, filter, strId.c_str(), buttonSize);
+					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize);
 
 					if (j + 1 < visibleButtons[i].objectIdVector.size() && (j + 1) % 6 != 0)
 						ImGui::SameLine();
@@ -159,7 +166,7 @@ void objectTabCreate(const char* name, std::vector<ErGui::ObjectConfig>& mySet, 
 			else if (visibleButtons[i].thumbnailObjectId == 0) {
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i], j, filter, strId.c_str(), buttonSize);
+					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize);
 					//objCount++;
 
 					float lastButtonX2 = ImGui::GetItemRectMax().x;
@@ -182,8 +189,8 @@ void ErGui::renderObjectList() {
 	ImGui::InputFloat("Button Size", &buttonSizeValue);
 	ImVec2 buttonSize(buttonSizeValue, buttonSizeValue);
 
-	for (auto object : ErGui::objectCfg) {
-		objectTabCreate(object.first, object.second, filter, buttonSize);
+	for (auto key : keyOrder) {
+		objectTabCreate(key, ErGui::objectCfg[key], filter, buttonSize);
 	}
 
 	objectTabCreate(favouritesObjects.first, favouritesObjects.second, filter, buttonSize);

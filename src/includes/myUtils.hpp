@@ -24,7 +24,7 @@ namespace ErGui {
 	void drawSpriteInImGui(CCSprite* tempSprite);
 	void drawFrameInImGui(CCSpriteFrame* frame);
 
-	void setupMenuColors(ImVec4 BGColor, ImVec4 HoveredColor, ImVec4 TextFieldColor);
+	void initImGuiStyling();
 
 	void enableClicks();
 

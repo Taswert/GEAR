@@ -25,7 +25,7 @@ namespace ErGui {
 
 // OMG THANK YOU RAZOOM, I LUV YOU SO MUCH!!!!!
     
-    std::map<const char*, std::vector<ObjectConfig>> defaultObjectCfg = {
+    std::map<std::string, std::vector<ObjectConfig>> defaultObjectCfg = {
     {"Blocks", { //DONE
         {1,     {1}},
         {83,    {83, 2, 3, 4, 5, 502, 6, 7}},
@@ -614,7 +614,7 @@ namespace ErGui {
     }}
     };
 
-    std::map<const char*, std::vector<ObjectConfig>> getDefaultObjectCfg() {
+    std::map<std::string, std::vector<ObjectConfig>> getDefaultObjectCfg() {
         return defaultObjectCfg;
     }
 }

@@ -9,7 +9,7 @@
 	"id": "taswert.gear",
 	"name": "G.E.A.R.",
 	"version": "v0.0.0-alpha",
-	"developer": "Taswert",
+	"developers": [ "Taswert", "RainixGD", "RaZooM" ],
 	"description": "",
 	"resources": {
 		"files": [
@@ -33,5 +33,17 @@
 				]
 			}
 		}
+	},
+	"tags": [
+		"editor",
+		"offline",
+		"enhancement",
+		"interface",
+		"bugfix",
+		"utility"
+	],
+	"dependencies": {
+		"geode.node-ids": ">=1.20.1",
+		"alphalaneous.object_popup_api": ">=v1.0.3"
 	}
 }
