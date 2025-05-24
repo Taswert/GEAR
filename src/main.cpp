@@ -134,6 +134,15 @@ class $modify(EditorUI) {
 	}
 
 
+	bool onCreate() {
+		bool ret = EditorUI::onCreate();
+		if (m_selectedObjectIndex) {
+			ErGui::addRecentObjectToList(m_selectedObjectIndex);
+		}
+		return ret;
+	}
+
+
 	GameObject* createObject(int p0, CCPoint p1) {
 		bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
 		bool enableColorBuild2 = Mod::get()->getSavedValue<bool>("enable-build-color-2");
@@ -369,6 +378,7 @@ class $modify(EditorUI) {
 	void destructor() {
 		CC_SAFE_RELEASE(ErGui::editorUIDrawNode);
 		ErGui::editorUIDrawNode = nullptr;
+		ErGui::clearObjectListCache();
 		EditorUI::~EditorUI();
 	}
 };

@@ -1,5 +1,7 @@
 #include "razoomUtils.hpp"
 
+const float defaultObjSprSize = 60.f;
+
 namespace {
     
     // fix for the GameObject setPosition function
@@ -97,12 +99,21 @@ namespace {
         gameObj->setChildColor(color);
     }
 
+
+    CCSprite* renderSprites(CCSprite* sprites, float size) {
+        auto renderer = CCRenderTexture::create(size, size);
+        renderer->begin();
+        sprites->visit();
+        renderer->end();
+        return renderer->getSprite();
+    }
+
 } // namespace
 
 
 // возвращает правильно покрашенный GameObject в виде единого квадратного спрайта 60х60
 CCSprite* ErGui::getGameObjectAsSingleSpriteById(uint16_t objId) {
-    const float size = 60.f;
+    const float size = defaultObjSprSize;
     auto editor = EditorUI::get();
 
     CreateMenuItem* btn = editor->getCreateBtn(objId, 1);
@@ -121,12 +132,25 @@ CCSprite* ErGui::getGameObjectAsSingleSpriteById(uint16_t objId) {
 
     setGameObjScalePositionFix(obj, ccp(size / 2,size / 2), scaleFactor);
 
-    auto renderer = CCRenderTexture::create(size, size);
-    renderer->begin();
-    obj->visit();
-    renderer->end();
-
-    return renderer->getSprite();
+    return renderSprites(obj, size);
 }
+
+CCSprite* ErGui::getGameObjectsAsSingleSprite(const std::string &objString) {
+    const float size = defaultObjSprSize;
+    auto editor = EditorUI::get();
+    auto arr = CCArray::create();
+
+    auto spr = editor->spriteFromObjectString(objString, false, false, 0, arr, nullptr, nullptr);
+
+    for (auto* el : CCArrayExt<GameObject*>(arr)) {
+        setColorToGameObjectNew(el, true);
+    }
+
+    spr->setScale(std::min(size / spr->getContentHeight(), size / spr->getContentWidth()));
+    spr->setPosition(ccp(size / 2,size / 2));
+
+    return renderSprites(spr, size);
+}
+
 
 

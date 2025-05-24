@@ -8,4 +8,6 @@ using namespace geode::prelude;
 
 namespace ErGui {
 	void renderObjectList();
+	void addRecentObjectToList(int objId);
+	void clearObjectListCache();
 }

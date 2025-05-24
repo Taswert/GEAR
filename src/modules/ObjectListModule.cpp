@@ -10,29 +10,93 @@
 using namespace geode::prelude;
 
 float buttonSizeValue = 30.f;
-std::pair<const char*, std::vector<ErGui::ObjectConfig>> favouritesObjects = {
-	"Favourites", {
+const int maxRecentCount = 21;
+std::pair<const char*, std::vector<ErGui::ObjectConfig>> favoriteObjects = {
+	"Favorites", {
+		{0, {}}
+	}
+};
+std::pair<const char*, std::vector<ErGui::ObjectConfig>> recentObjects = {
+	"Most Recent", {
 		{0, {}}
 	}
 };
 
+std::unordered_map<int, CCSprite*> objectSpriteCache; // todo: все еще не очищается
+std::unordered_map<std::string, CCSprite*> customObjectSpriteCache;
 
-static std::unordered_map<int, CCSprite*> objectSpriteCache; // todo: нормальную инициализацию и удаление
 
-static CCSprite* getObjectSprite(int id) {
-	auto it = objectSpriteCache.find(id);
-	if (it != objectSpriteCache.end()) {
-		return it->second;
+std::vector<ErGui::ObjectConfig> getCustomObjectsConfig() {
+	std::vector<int> ids;
+	if (auto dict = GameManager::get()->m_customObjectDict) {
+		for (auto* key : CCArrayExt<CCString*>(dict->allKeys())) {
+			if (int id = std::atoi(key->getCString())) {
+				ids.push_back(id);
+			}
+		}
 	}
-	auto spr = ErGui::getGameObjectAsSingleSpriteById(id);
-	spr->retain();
-	objectSpriteCache[id] = spr;
-	spr->setFlipY(true); // fix for imgui coordinates
-	return spr;
+	return {{0, ids}};
 }
 
 
-bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), ImVec4 bgCol = ImVec4(0, 0, 0, 0), ImVec4 tintCol = ImVec4(1, 1, 1, 1)) {
+CCSprite* getObjectSprite(int id) {
+	if (id > 0) {
+		auto it = objectSpriteCache.find(id);
+		if (it != objectSpriteCache.end()) {
+			return it->second;
+		}
+		auto spr = ErGui::getGameObjectAsSingleSpriteById(id);
+		spr->retain();
+		objectSpriteCache[id] = spr;
+		spr->setFlipY(true); // fix for imgui coordinates
+		return spr;
+	} else {
+		auto objStr = GameManager::get()->stringForCustomObject(id);
+		if (objStr.empty()) {
+			objStr = "1,914,2,735,3,120,155,1,31,bm8gaWRlYQ==;1,914,2,735,3,90,155,1,31,d2hlcmU=;1,914,2,735,3,60,155,1,31,aXQgaXM=;1,914,2,735,3,150,155,1,31,aSBoYXZl;";
+		}
+		auto it = customObjectSpriteCache.find(objStr);
+		if (it != customObjectSpriteCache.end()) {
+			return it->second;
+		}
+		auto spr = ErGui::getGameObjectsAsSingleSprite(objStr);
+		spr->retain();
+		customObjectSpriteCache[objStr] = spr;
+		spr->setFlipY(true); // fix for imgui coordinates
+		return spr;
+	}
+}
+
+
+void ErGui::addRecentObjectToList(int objId) {
+	auto &vec = recentObjects.second.at(0).objectIdVector;
+	const auto it = std::find(vec.begin(), vec.end(), objId);
+	if (it != vec.end()) {
+		vec.erase(it);
+	}
+	int next = objId;
+	for (int i = 0; i < vec.size(); i++) {
+		std::swap(vec[i], next);
+	}
+	if (vec.size() < maxRecentCount) vec.push_back(next);
+	// мда, с листом было бы удобней...
+}
+
+
+void ErGui::clearObjectListCache() {
+	for (auto [_, v] : objectSpriteCache) {
+		v->release();
+	}
+	objectSpriteCache.clear();
+
+	for (auto [_, v] : customObjectSpriteCache) {
+		v->release();
+	}
+	customObjectSpriteCache.clear();
+}
+
+
+bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f)) {
 	int objId = objCfg.objectIdVector[j];
 	std::string newFrameName = ObjectNames::get()->nameForID(objId);
 
@@ -69,7 +133,7 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* st
 	if (ImGui::BeginPopupContextItem()) {
 		ImGui::Text("Object Settings");
 		if (ImGui::Button("Favourite")) {
-			favouritesObjects.second.at(0).objectIdVector.push_back(objId);
+			favoriteObjects.second.at(0).objectIdVector.push_back(objId);
 		}
 		if (ImGui::Button("Set As Thumbnail")) { 
 			//This is a new obj confing, so it won't work. Should get address of original config
@@ -120,7 +184,7 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 }
 
 // this is called foreach object tab
-void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, ImGuiTextFilter filter, ImVec2 buttonSize) {
+void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, ImGuiTextFilter filter, ImVec2 buttonSize, bool isCustomTab = false) {
 
 	std::vector<ErGui::ObjectConfig> visibleButtons;
 
@@ -142,8 +206,7 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, 
 		}
 	}
 
-	if (visibleButtons.empty()) 
-		return;
+	if (visibleButtons.empty() && !isCustomTab) return;
 
 	if (ImGui::CollapsingHeader(name.c_str())) {
 		float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
@@ -167,7 +230,6 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, 
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
 					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize);
-					//objCount++;
 
 					float lastButtonX2 = ImGui::GetItemRectMax().x;
 					float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + buttonSize.x;
@@ -176,6 +238,18 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, 
 						ImGui::SameLine();
 				}
 			}
+		}
+		if (isCustomTab) {
+			if (ImGui::Button("+", ImVec2(30, 30))) EditorUI::get()->onNewCustomItem(nullptr);
+			ImGui::SameLine();
+
+			if (ImGui::Button("-", ImVec2(30, 30))) EditorUI::get()->onDeleteCustomItem(nullptr);
+			ImGui::SameLine();
+
+			if (ImGui::Button("<", ImVec2(30, 30))) EditorUI::get()->orderDownCustomItem(nullptr);
+			ImGui::SameLine();
+
+			if (ImGui::Button(">", ImVec2(30, 30))) EditorUI::get()->orderUpCustomItem(nullptr);
 		}
 	}
 }
@@ -193,7 +267,10 @@ void ErGui::renderObjectList() {
 		objectTabCreate(key, ErGui::objectCfg[key], filter, buttonSize);
 	}
 
-	objectTabCreate(favouritesObjects.first, favouritesObjects.second, filter, buttonSize);
+	objectTabCreate(favoriteObjects.first, favoriteObjects.second, filter, buttonSize);
+	objectTabCreate(recentObjects.first, recentObjects.second, filter, buttonSize);
+	auto customConfig = getCustomObjectsConfig();
+	objectTabCreate("Custom Objects", customConfig, filter, buttonSize, true);
 
 	//for (int i = 0; i < 5; i++) ImGui::PopStyleColor();
 	ImGui::End();
