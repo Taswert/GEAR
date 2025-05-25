@@ -245,5 +245,4 @@ namespace ErGui {
 		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(copyObjArr, command));
 		GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
 	}
-	
 }

@@ -11,6 +11,7 @@
 #include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/CCEGLView.hpp>
+#include <Geode/modify/EditorPauseLayer.hpp>
 
 #include <IconsMaterialDesignIcons.h>
 #include "modules/EditGroupModule.hpp"
@@ -39,6 +40,43 @@
 
 using namespace geode::prelude;
 
+template <>
+struct matjson::Serialize<ErGui::ObjectConfig> {
+	static geode::Result<ErGui::ObjectConfig> fromJson(const matjson::Value& value) {
+		GEODE_UNWRAP_INTO(int thumbnailObjectId, value["thumbnailObjectId"].asInt());
+		GEODE_UNWRAP_INTO(std::vector<matjson::Value> arr, value["objectIdVector"].asArray());
+
+		// Преобразование каждого элемента в int
+		std::vector<int> vec;
+		vec.reserve(arr.size());
+		for (auto& item : arr) {
+			GEODE_UNWRAP_INTO(int id, item.asInt());
+			vec.push_back(id);
+		}
+
+		return geode::Ok(ErGui::ObjectConfig{
+			thumbnailObjectId,
+			std::move(vec)
+			});
+	}
+
+	static matjson::Value toJson(const ErGui::ObjectConfig& obj) {
+		// Собираем JSON-массив из вектора int
+		std::vector<matjson::Value> arr;
+		arr.reserve(obj.objectIdVector.size());
+		for (int id : obj.objectIdVector) {
+			arr.emplace_back(id);
+		}
+		// Value(std::vector<matjson::Value>) создаёт JSON-массив :contentReference[oaicite:0]{index=0}
+
+		// Собираем объект
+		return matjson::makeObject({
+			{ "thumbnailObjectId", obj.thumbnailObjectId },
+			{ "objectIdVector", matjson::Value(std::move(arr)) }
+			}); // makeObject(...) для создания JSON-объекта :contentReference[oaicite:1]{index=1}
+	}
+};
+
 template <class R, class T>
 R& from(T base, intptr_t offset) {
 	return *reinterpret_cast<R*>(reinterpret_cast<uintptr_t>(base) + offset);
@@ -53,6 +91,32 @@ bool filterSingleObj(bool filterBool, int objParameter, std::vector<int> vec) {
 	}
 	return false;
 }
+
+void exitEditor() {
+	//Cfg Save
+	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
+	matjson::Value j;
+	for (auto key : ErGui::keyOrder) {
+		j[key] = ErGui::objectCfg[key];
+	}
+	std::ofstream oCfgFile = std::ofstream(cfgDir);
+	oCfgFile.write(j.dump().c_str(), j.dump().size());
+	oCfgFile.close();
+
+	ErGui::clearObjectListCache();
+}
+
+class $modify(EditorPauseLayer) {
+	void onExitEditor(CCObject * sender) {
+		exitEditor();
+		EditorPauseLayer::onExitEditor(sender);
+	}
+
+	void onSaveAndPlay(CCObject * sender) {
+		exitEditor();
+		EditorPauseLayer::onSaveAndPlay(sender);
+	}
+};
 
 class $modify(LevelEditorLayer) {
 	void removeSpecial(GameObject * obj) {
@@ -375,12 +439,6 @@ class $modify(EditorUI) {
 		EditorUI::ccTouchEnded(touch, event);
 	}
 
-	void destructor() {
-		CC_SAFE_RELEASE(ErGui::editorUIDrawNode);
-		ErGui::editorUIDrawNode = nullptr;
-		ErGui::clearObjectListCache();
-		EditorUI::~EditorUI();
-	}
 };
 
 
@@ -477,43 +535,6 @@ class $modify(CCTouchDispatcher) {
 			touch->setTouchInfo(touch->getID(), ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
 		}
 		CCTouchDispatcher::touches(touches, event, type);
-	}
-};
-
-template <>
-struct matjson::Serialize<ErGui::ObjectConfig> {
-	static geode::Result<ErGui::ObjectConfig> fromJson(const matjson::Value& value) {
-		GEODE_UNWRAP_INTO(int thumbnailObjectId, value["thumbnailObjectId"].asInt());
-		GEODE_UNWRAP_INTO(std::vector<matjson::Value> arr, value["objectIdVector"].asArray());
-
-		// Преобразование каждого элемента в int
-		std::vector<int> vec;
-		vec.reserve(arr.size());
-		for (auto& item : arr) {
-			GEODE_UNWRAP_INTO(int id, item.asInt());
-			vec.push_back(id);
-		}
-
-		return geode::Ok(ErGui::ObjectConfig{
-			thumbnailObjectId,
-			std::move(vec)
-			});
-	}
-
-	static matjson::Value toJson(const ErGui::ObjectConfig& obj) {
-		// Собираем JSON-массив из вектора int
-		std::vector<matjson::Value> arr;
-		arr.reserve(obj.objectIdVector.size());
-		for (int id : obj.objectIdVector) {
-			arr.emplace_back(id);
-		}
-		// Value(std::vector<matjson::Value>) создаёт JSON-массив :contentReference[oaicite:0]{index=0}
-
-		// Собираем объект
-		return matjson::makeObject({
-			{ "thumbnailObjectId", obj.thumbnailObjectId },
-			{ "objectIdVector", matjson::Value(std::move(arr)) }
-			}); // makeObject(...) для создания JSON-объекта :contentReference[oaicite:1]{index=1}
 	}
 };
 
@@ -623,11 +644,11 @@ $on_mod(Loaded) {
 			}
 			});
 }
-
 // Mod Developers:
 // 
 // Taswert
 // Rainix
+// RaZooM
 //
 // ----------------------------------
 // Thanks to:
@@ -638,6 +659,7 @@ $on_mod(Loaded) {
 // RaZooM		/ Object Categories
 // Mat			/ ImGui integration + Circle Tool
 // MgostiH		/ First Supported! 
+// Partur		/ UI
 // 
 // Creators:
 // CHRAPIVA		/ Ideas + Feedback

@@ -31,6 +31,18 @@ namespace ErGui {
 	void addObjectToUndoList(GameObject* obj, UndoCommand command);
 	void addObjectsToUndoList(CCArray* objArr, UndoCommand command);
 
+	template<typename T> bool foundInVector(std::vector<T> vec, T valueToFind) {
+		bool found = false;
+		for (T value : vec) {
+			if (value == valueToFind) {
+				found = true;
+				break;
+			}
+		}
+
+		return found;
+	}
+
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;
 	inline CCDrawNode* touchedDN = nullptr;

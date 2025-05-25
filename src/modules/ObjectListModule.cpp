@@ -4,6 +4,7 @@
 #include <Geode/GeneratedPredeclare.hpp>
 #include <cocos2d.h>
 #include <alphalaneous.object_popup_api/include/ObjectNames.hpp>
+#include "IconsMaterialDesignIcons.h"
 
 #include "ObjectCategories.hpp"
 
@@ -11,11 +12,8 @@ using namespace geode::prelude;
 
 float buttonSizeValue = 30.f;
 const int maxRecentCount = 21;
-std::pair<const char*, std::vector<ErGui::ObjectConfig>> favoriteObjects = {
-	"Favorites", {
-		{0, {}}
-	}
-};
+const std::string FAVOURITES_NAME = "Favourites";
+
 std::pair<const char*, std::vector<ErGui::ObjectConfig>> recentObjects = {
 	"Most Recent", {
 		{0, {}}
@@ -95,8 +93,7 @@ void ErGui::clearObjectListCache() {
 	customObjectSpriteCache.clear();
 }
 
-
-bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f)) {
+bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), bool isFavourite = false) {
 	int objId = objCfg.objectIdVector[j];
 	std::string newFrameName = ObjectNames::get()->nameForID(objId);
 
@@ -132,15 +129,34 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* st
 
 	if (ImGui::BeginPopupContextItem()) {
 		ImGui::Text("Object Settings");
-		if (ImGui::Button("Favourite")) {
-			favoriteObjects.second.at(0).objectIdVector.push_back(objId);
+		if (!isFavourite) {
+			if (ImGui::Button("Favourite")) {
+				if (!ErGui::foundInVector<std::string>(ErGui::keyOrder, FAVOURITES_NAME))
+					ErGui::keyOrder.push_back(FAVOURITES_NAME);
+				
+				if (ErGui::objectCfg[FAVOURITES_NAME].empty()) {
+					auto objCfg = ErGui::ObjectConfig(0, std::vector<int>());
+					std::vector<ErGui::ObjectConfig> newCfgVec;
+					newCfgVec.push_back(objCfg);
+					ErGui::objectCfg[FAVOURITES_NAME] = newCfgVec;
+				}
+				if (!ErGui::foundInVector<int>(ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector, objId))
+					ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector.push_back(objId);
+			}
 		}
-		if (ImGui::Button("Set As Thumbnail")) { 
-			//This is a new obj confing, so it won't work. Should get address of original config
-			auto* pointerObjCfg = &objCfg;
-			pointerObjCfg->thumbnailObjectId = objId;
-			//ImGui::CloseCurrentPopup();
+		else {
+			if (ImGui::Button("Remove")) {
+				std::erase(ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector, objId);
+				if (ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector.empty())
+					std::erase(ErGui::keyOrder, FAVOURITES_NAME);
+			}
 		}
+		//if (ImGui::Button("Set As Thumbnail")) { 
+		//	//This is a new obj confing, so it won't work. Should get address of original config
+		//	auto* pointerObjCfg = &objCfg;
+		//	pointerObjCfg->thumbnailObjectId = objId;
+		//	//ImGui::CloseCurrentPopup();
+		//}
 		ImGui::EndPopup();
 	}
 
@@ -219,7 +235,7 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, 
 			if (visibleButtons[i].thumbnailObjectId != 0 && ImGui::BeginPopup(popupStr.c_str())) {
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize);
+					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, FAVOURITES_NAME == name);
 
 					if (j + 1 < visibleButtons[i].objectIdVector.size() && (j + 1) % 6 != 0)
 						ImGui::SameLine();
@@ -229,7 +245,7 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, 
 			else if (visibleButtons[i].thumbnailObjectId == 0) {
 				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
 					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize);
+					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, FAVOURITES_NAME == name);
 
 					float lastButtonX2 = ImGui::GetItemRectMax().x;
 					float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + buttonSize.x;
@@ -240,16 +256,19 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, 
 			}
 		}
 		if (isCustomTab) {
-			if (ImGui::Button("+", ImVec2(30, 30))) EditorUI::get()->onNewCustomItem(nullptr);
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 11));
+			ImGui::Separator();
+			if (ImGui::Button(ICON_MDI_PLUS, ImVec2(30, 30))) EditorUI::get()->onNewCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button("-", ImVec2(30, 30))) EditorUI::get()->onDeleteCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_MINUS, ImVec2(30, 30))) EditorUI::get()->onDeleteCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button("<", ImVec2(30, 30))) EditorUI::get()->orderDownCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_ARROW_LEFT_BOLD, ImVec2(30, 30))) reinterpret_cast<void(__stdcall*)(EditorUI*, CCObject*)>(geode::base::get() + 0xe3050)(EditorUI::get(), nullptr); //EditorUI::get()->orderDownCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button(">", ImVec2(30, 30))) EditorUI::get()->orderUpCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_ARROW_RIGHT_BOLD, ImVec2(30, 30))) reinterpret_cast<void(__stdcall*)(EditorUI*, CCObject*)>(geode::base::get() + 0xe2fc0)(EditorUI::get(), nullptr); //EditorUI::get()->orderUpCustomItem(nullptr);
+			ImGui::PopStyleVar();
 		}
 	}
 }
@@ -267,7 +286,6 @@ void ErGui::renderObjectList() {
 		objectTabCreate(key, ErGui::objectCfg[key], filter, buttonSize);
 	}
 
-	objectTabCreate(favoriteObjects.first, favoriteObjects.second, filter, buttonSize);
 	objectTabCreate(recentObjects.first, recentObjects.second, filter, buttonSize);
 	auto customConfig = getCustomObjectsConfig();
 	objectTabCreate("Custom Objects", customConfig, filter, buttonSize, true);
