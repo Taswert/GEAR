@@ -26,6 +26,7 @@
 #include "modules/ActionHistoryModule.hpp"
 #include "modules/EditColorModule.hpp"
 #include "modules/GameWindowModule.hpp"
+#include "modules/GlobalDockingView.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
@@ -618,12 +619,13 @@ $on_mod(Loaded) {
 		io.Fonts->AddFontFromFileTTF(fontDir.string().c_str(), 24.f, &iconConfig, icons_ranges);
 
 		ErGui::initImGuiStyling();
-		
+	
 
 		ErGui::setupTriggersSettings();
 		}).draw([] {
 
 			if (auto lel = GameManager::sharedState()->getEditorLayer()) {
+				ErGui::renderGlobalDockingView();
 				ErGui::renderEditGroupModule();
 				ErGui::renderSelectFilter();
 				ErGui::renderTransformation();

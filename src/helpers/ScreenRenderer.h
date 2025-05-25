@@ -21,14 +21,16 @@ public:
 		}
 
 		OpenGLStateHelper::saveState();
+		gameRenderer->beginWithClear(0, 0, 0, 0);
 		gameRenderer->begin();
-
+		//LevelEditorLayer::get()->m_shaderLayer->setVisible(true);
 		CCDirector::sharedDirector()->getRunningScene()->visit();
 		gameRenderer->end();
 		OpenGLStateHelper::pushState();
 
 		auto glTextureID = gameRenderer->getSprite()->getTexture()->getName();
 		auto glTextureSize = gameRenderer->getSprite()->getTexture()->getContentSizeInPixels();
+
 
 		ImTextureID imguiTexture = (ImTextureID)(intptr_t)glTextureID;
 

@@ -58,6 +58,11 @@ void ErGui::renderGameWindow() {
 		lel->m_editorUI->onSettings(nullptr);
 	}
 
+	ImGui::SameLine();
+	if (ImGui::Button("Save Game Viewport Screenshot")) {
+		ScreenRenderer::getCCRenderTexture()->saveToFile("viewport.png");
+	}
+
 	ImVec2 gameWinSize = ImGui::GetContentRegionAvail();
 	ImVec2 cursorStart = ImGui::GetCursorPos();
 
