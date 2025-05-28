@@ -12,17 +12,9 @@ using namespace geode::prelude;
 
 float buttonSizeValue = 30.f;
 const int maxRecentCount = 21;
-const std::string FAVOURITES_NAME = "Favourites";
-
-std::pair<const char*, std::vector<ErGui::ObjectConfig>> recentObjects = {
-	"Most Recent", {
-		{0, {}}
-	}
-};
 
 std::unordered_map<int, CCSprite*> objectSpriteCache; // todo: все еще не очищается
 std::unordered_map<std::string, CCSprite*> customObjectSpriteCache;
-
 
 std::vector<ErGui::ObjectConfig> getCustomObjectsConfig() {
 	std::vector<int> ids;
@@ -46,7 +38,6 @@ CCSprite* getObjectSprite(int id) {
 		auto spr = ErGui::getGameObjectAsSingleSpriteById(id);
 		spr->retain();
 		objectSpriteCache[id] = spr;
-		spr->setFlipY(true); // fix for imgui coordinates
 		return spr;
 	} else {
 		auto objStr = GameManager::get()->stringForCustomObject(id);
@@ -60,14 +51,16 @@ CCSprite* getObjectSprite(int id) {
 		auto spr = ErGui::getGameObjectsAsSingleSprite(objStr);
 		spr->retain();
 		customObjectSpriteCache[objStr] = spr;
-		spr->setFlipY(true); // fix for imgui coordinates
 		return spr;
 	}
 }
 
 
 void ErGui::addRecentObjectToList(int objId) {
-	auto &vec = recentObjects.second.at(0).objectIdVector;
+	if (ErGui::objectCfg[RECENT_TAB_KEY].size() == 0) {
+		ErGui::objectCfg[RECENT_TAB_KEY].push_back({0, {}});
+	}
+	auto &vec = ErGui::objectCfg[RECENT_TAB_KEY][0].objectIdVector;
 	const auto it = std::find(vec.begin(), vec.end(), objId);
 	if (it != vec.end()) {
 		vec.erase(it);
@@ -77,7 +70,6 @@ void ErGui::addRecentObjectToList(int objId) {
 		std::swap(vec[i], next);
 	}
 	if (vec.size() < maxRecentCount) vec.push_back(next);
-	// мда, с листом было бы удобней...
 }
 
 
@@ -93,10 +85,9 @@ void ErGui::clearObjectListCache() {
 	customObjectSpriteCache.clear();
 }
 
-bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), bool isFavourite = false) {
-	int objId = objCfg.objectIdVector[j];
-	std::string newFrameName = ObjectNames::get()->nameForID(objId);
 
+bool ImageButtonFromFrameName(ErGui::ObjectConfig const &objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), bool isFavourite = false) {
+	int objId = objCfg.objectIdVector[j];
 	EditorUI* editorUI = EditorUI::get();
 
 	//Color for selected object
@@ -112,11 +103,10 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* st
 		shouldPopStyle = true;
 	}
 
-	if (ImGui::Button(str_id, imageSize)) {
-		if (editorUI->m_selectedObjectIndex != objId)
-			editorUI->m_selectedObjectIndex = objId;
-		else
-			editorUI->m_selectedObjectIndex = 0;
+	ImTextureID texture = (ImTextureID)(intptr_t)getObjectSprite(objId)->getTexture()->getName();
+
+	if (ImGui::ImageButton(str_id, texture, imageSize, ImVec2(0,1), ImVec2(1,0))) {
+		editorUI->m_selectedObjectIndex = (editorUI->m_selectedObjectIndex != objId) ? objId : 0;
 		editorUI->updateGridNodeSize();
 	}
 	
@@ -129,26 +119,18 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* st
 
 	if (ImGui::BeginPopupContextItem()) {
 		ImGui::Text("Object Settings");
+		auto FAVOURITES_NAME = "Favourites";
 		if (!isFavourite) {
 			if (ImGui::Button("Favourite")) {
-				if (!ErGui::foundInVector<std::string>(ErGui::keyOrder, FAVOURITES_NAME))
-					ErGui::keyOrder.push_back(FAVOURITES_NAME);
-				
-				if (ErGui::objectCfg[FAVOURITES_NAME].empty()) {
-					auto objCfg = ErGui::ObjectConfig(0, std::vector<int>());
-					std::vector<ErGui::ObjectConfig> newCfgVec;
-					newCfgVec.push_back(objCfg);
-					ErGui::objectCfg[FAVOURITES_NAME] = newCfgVec;
-				}
-				if (!ErGui::foundInVector<int>(ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector, objId))
-					ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector.push_back(objId);
+				auto &cfg = ErGui::objectCfg[FAVOURITES_NAME];
+				if (cfg.empty()) cfg.push_back({0, {}});
+
+				if (!ErGui::foundInVector<int>(cfg[0].objectIdVector, objId))
+					cfg[0].objectIdVector.push_back(objId);
 			}
-		}
-		else {
+		} else {
 			if (ImGui::Button("Remove")) {
 				std::erase(ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector, objId);
-				if (ErGui::objectCfg[FAVOURITES_NAME].at(0).objectIdVector.empty())
-					std::erase(ErGui::keyOrder, FAVOURITES_NAME);
 			}
 		}
 		//if (ImGui::Button("Set As Thumbnail")) { 
@@ -160,16 +142,15 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig& objCfg, int j, const char* st
 		ImGui::EndPopup();
 	}
 
-	ErGui::drawSpriteInImGui(getObjectSprite(objId));
-
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+		std::string newFrameName = ObjectNames::get()->nameForID(objId);
 		ImGui::SetTooltip(newFrameName.c_str());
 	}
 
 	return true;
 }
 
-void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, ImVec2 buttonSize = ImVec2(30.f, 30.f)) {
+void ImageFolderButton(std::vector<ErGui::ObjectConfig> const &visibleButtons, int i, ImVec2 buttonSize = ImVec2(30.f, 30.f)) {
 
 	int folderId = visibleButtons[i].thumbnailObjectId;
 	// Если для этой папки ещё нет записи, то по умолчанию она закрыта
@@ -177,18 +158,17 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 	if (folderId == 0) return ;
 
 	ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_SeparatorActive));
+	
+	ImTextureID texture = (ImTextureID)(intptr_t)getObjectSprite(folderId)->getTexture()->getName();
 
-	std::string folderStrId = "##FOLDER-";
-	folderStrId.append(std::to_string(folderId));
-	if (ImGui::Button(folderStrId.c_str(), buttonSize)) {
-		std::string popupStr = "##POPUP-";
-		popupStr.append(std::to_string(folderId));
+	std::string folderStrId = "##FOLDER-" + std::to_string(folderId);
+
+	if (ImGui::ImageButton(folderStrId.c_str(), texture, buttonSize, ImVec2(0,1), ImVec2(1,0))) {
+		std::string popupStr = "##POPUP-" + std::to_string(folderId);
 		ImGui::OpenPopup(popupStr.c_str());
 	}
 
 	ImGui::PopStyleColor();
-
-	ErGui::drawSpriteInImGui(getObjectSprite(folderId));
 
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 	float lastButtonX2 = ImGui::GetItemRectMax().x;
@@ -200,61 +180,75 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> visibleButtons, int i, I
 }
 
 // this is called foreach object tab
-void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, ImGuiTextFilter filter, ImVec2 buttonSize, bool isCustomTab = false) {
+void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &mySet, ImGuiTextFilter filter, 
+				ImVec2 buttonSize, bool isCustomTab = false, bool isFavoriteTab = false) {
 
 	std::vector<ErGui::ObjectConfig> visibleButtons;
 
-	// filter buttons from mySet
-	for (ErGui::ObjectConfig oc : mySet) {
-		std::vector<int> visibleObjects = { };
-		
-		for (int i : oc.objectIdVector) {
-			auto frameName = ObjectNames::get()->nameForID(i);
-			if (filter.PassFilter(frameName.c_str()))
-				visibleObjects.push_back(i);
+	// filter
+	if (filter.IsActive()) {
+		for (ErGui::ObjectConfig const &oc : mySet) {
+			std::vector<int> visibleObjects = {};
+			
+			for (int i : oc.objectIdVector) {
+				auto frameName = ObjectNames::get()->nameForID(i);
+				if (filter.PassFilter(frameName.c_str()))
+					visibleObjects.push_back(i);
+			}
+	
+			if (!visibleObjects.empty()) {
+				// Копируем объект, но заменяем objectIdVector на видимые объекты
+				ErGui::ObjectConfig newOc = {oc.thumbnailObjectId, visibleObjects};
+				visibleButtons.push_back(newOc);
+			}
 		}
-
-		if (!visibleObjects.empty()) {
-			// Копируем объект, но заменяем objectIdVector на видимые объекты
-			ErGui::ObjectConfig newOc = oc;
-			newOc.objectIdVector = visibleObjects;
-			visibleButtons.push_back(newOc);
-		}
+	} else {
+		visibleButtons = mySet;
 	}
 
 	if (visibleButtons.empty() && !isCustomTab) return;
+	if (visibleButtons.size() == 1 && visibleButtons[0].objectIdVector.empty()) return;
 
+	// draw buttons
 	if (ImGui::CollapsingHeader(name.c_str())) {
 		float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+		
 		for (int i = 0; i < visibleButtons.size(); i++) {
 			ImageFolderButton(visibleButtons, i, buttonSize);
-			std::string popupStr = "##POPUP-";
-			popupStr.append(std::to_string(visibleButtons[i].thumbnailObjectId));
 
-			if (visibleButtons[i].thumbnailObjectId != 0 && ImGui::BeginPopup(popupStr.c_str())) {
-				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
-					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, FAVOURITES_NAME == name);
+			std::string popupStr = "##POPUP-" + std::to_string(visibleButtons[i].thumbnailObjectId);
+			auto const &objects = visibleButtons[i].objectIdVector;
 
-					if (j + 1 < visibleButtons[i].objectIdVector.size() && (j + 1) % 6 != 0)
-						ImGui::SameLine();
+			if (visibleButtons[i].thumbnailObjectId != 0) {
+				if (ImGui::BeginPopup(popupStr.c_str())) {
+					for (int j = 0; j < objects.size(); j++) {
+						std::string strId = "##OBJECT-" + name + std::to_string(objects[j]);
+
+						ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab);
+
+						if (j + 1 < objects.size() && (j + 1) % 6 != 0)
+							ImGui::SameLine();
+					}
+					ImGui::EndPopup();
 				}
-				ImGui::EndPopup();
 			}
-			else if (visibleButtons[i].thumbnailObjectId == 0) {
-				for (int j = 0; j < visibleButtons[i].objectIdVector.size(); j++) {
-					std::string strId = std::string("##OBJECT-") + name + std::to_string(visibleButtons[i].objectIdVector[j]);
-					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, FAVOURITES_NAME == name);
+			else {
+				for (int j = 0; j < objects.size(); j++) {
+					std::string strId = "##OBJECT-" + name + std::to_string(objects[j]);
+					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab);
 
 					float lastButtonX2 = ImGui::GetItemRectMax().x;
 					float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + buttonSize.x;
 
-					if (j + 1 < visibleButtons[i].objectIdVector.size() && nextButtonX2 < windowVisibleX2)
+					if (j + 1 < objects.size() && nextButtonX2 < windowVisibleX2)
 						ImGui::SameLine();
 				}
 			}
 		}
+		ImGui::PopStyleVar();
+
 		if (isCustomTab) {
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 11));
 			ImGui::Separator();
@@ -264,10 +258,10 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig>& mySet, 
 			if (ImGui::Button(ICON_MDI_MINUS, ImVec2(30, 30))) EditorUI::get()->onDeleteCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button(ICON_MDI_ARROW_LEFT_BOLD, ImVec2(30, 30))) reinterpret_cast<void(__stdcall*)(EditorUI*, CCObject*)>(geode::base::get() + 0xe3050)(EditorUI::get(), nullptr); //EditorUI::get()->orderDownCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_ARROW_LEFT_BOLD, ImVec2(30, 30))) EditorUI::get()->orderDownCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button(ICON_MDI_ARROW_RIGHT_BOLD, ImVec2(30, 30))) reinterpret_cast<void(__stdcall*)(EditorUI*, CCObject*)>(geode::base::get() + 0xe2fc0)(EditorUI::get(), nullptr); //EditorUI::get()->orderUpCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_ARROW_RIGHT_BOLD, ImVec2(30, 30))) EditorUI::get()->orderUpCustomItem(nullptr);
 			ImGui::PopStyleVar();
 		}
 	}
@@ -282,15 +276,12 @@ void ErGui::renderObjectList() {
 	ImGui::InputFloat("Button Size", &buttonSizeValue);
 	ImVec2 buttonSize(buttonSizeValue, buttonSizeValue);
 
+	ErGui::objectCfg[CUSTOM_TAB_KEY] = getCustomObjectsConfig();
+
 	for (auto key : keyOrder) {
-		objectTabCreate(key, ErGui::objectCfg[key], filter, buttonSize);
+		objectTabCreate(key, ErGui::objectCfg[key], filter, buttonSize, key == CUSTOM_TAB_KEY, key == FAVOURITES_TAB_KEY);
 	}
 
-	objectTabCreate(recentObjects.first, recentObjects.second, filter, buttonSize);
-	auto customConfig = getCustomObjectsConfig();
-	objectTabCreate("Custom Objects", customConfig, filter, buttonSize, true);
-
-	//for (int i = 0; i < 5; i++) ImGui::PopStyleColor();
 	ImGui::End();
 }
 

@@ -576,12 +576,12 @@ $on_mod(Loaded) {
 	}
 	else {
 		ErGui::objectCfg.clear();
-		ErGui::keyOrder.clear();
+		// ErGui::keyOrder.clear();
 		matjson::Value parsedObject = parsed.unwrap();
 		std::map<std::string, std::vector<ErGui::ObjectConfig>> newData;
 
 		for (const auto& [key, mapValue] : parsedObject) {
-			ErGui::keyOrder.push_back(key);
+			// ErGui::keyOrder.push_back(key);
 			auto myVectorOfObjCfg = mapValue.asArray().unwrap();
 			std::vector<ErGui::ObjectConfig> objCfgVector;
 			for (const auto& objCfgValue : myVectorOfObjCfg) {
