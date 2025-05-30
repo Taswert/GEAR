@@ -93,7 +93,7 @@ bool filterSingleObj(bool filterBool, int objParameter, std::vector<int> vec) {
 	return false;
 }
 
-void exitEditor() {
+void exitEditor() { // EditorUI is already destroyed here
 	//Cfg Save
 	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
 	matjson::Value j;
@@ -107,17 +107,6 @@ void exitEditor() {
 	ErGui::clearObjectListCache();
 }
 
-class $modify(EditorPauseLayer) {
-	void onExitEditor(CCObject * sender) {
-		exitEditor();
-		EditorPauseLayer::onExitEditor(sender);
-	}
-
-	void onSaveAndPlay(CCObject * sender) {
-		exitEditor();
-		EditorPauseLayer::onSaveAndPlay(sender);
-	}
-};
 
 class $modify(LevelEditorLayer) {
 	void removeSpecial(GameObject * obj) {
@@ -143,6 +132,15 @@ class $modify(ObjectToolbox) {
 };
 
 class $modify(EditorUI) {
+
+	struct Fields {
+		int nothing = 0; // trigger lazy m_fields initialization
+		Fields() {}
+		~Fields() {
+			exitEditor();
+		}
+	};
+
 	void scrollWheel(float p0, float p1) {	
 		//Zoom To Cursor + Expanded constractions
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed()) {
@@ -293,6 +291,8 @@ class $modify(EditorUI) {
 		ErGui::touchedDN = CCDrawNode::create();
 		lel->addChild(ErGui::touchedDN);
 		auto ret = EditorUI::init(lel);
+
+		m_fields->nothing = 42; // trigger m_fields lazy initialization
 		//ErGui::originalCameraPosition = lel->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
 
 		ErGui::og_prevMode = lel->m_previewMode;

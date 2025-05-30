@@ -13,7 +13,7 @@ using namespace geode::prelude;
 float buttonSizeValue = 30.f;
 const int maxRecentCount = 21;
 
-std::unordered_map<int, CCSprite*> objectSpriteCache; // todo: все еще не очищается
+std::unordered_map<int, CCSprite*> objectSpriteCache;
 std::unordered_map<int, std::pair<std::string, CCSprite*>> customObjectSpriteCache;
 
 
