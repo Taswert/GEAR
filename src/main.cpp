@@ -207,6 +207,14 @@ class $modify(EditorUI) {
 		return ret;
 	}
 
+	void clickOnPosition(CCPoint p0) {
+		// dead zone fix
+		float tmp = m_toolbarHeight;
+		m_toolbarHeight = -999999;
+		EditorUI::clickOnPosition(p0);
+		m_toolbarHeight = tmp;
+	}
+
 
 	GameObject* createObject(int p0, CCPoint p1) {
 		bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
