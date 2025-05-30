@@ -10,4 +10,5 @@ namespace ErGui {
 	void renderObjectList();
 	void addRecentObjectToList(int objId);
 	void clearObjectListCache();
+	void reloadCustomObjects();
 }

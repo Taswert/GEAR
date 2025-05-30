@@ -216,6 +216,12 @@ class $modify(EditorUI) {
 	}
 
 
+	void reloadCustomItems() {
+		EditorUI::reloadCustomItems();
+		ErGui::reloadCustomObjects();
+	}
+
+
 	GameObject* createObject(int p0, CCPoint p1) {
 		bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
 		bool enableColorBuild2 = Mod::get()->getSavedValue<bool>("enable-build-color-2");

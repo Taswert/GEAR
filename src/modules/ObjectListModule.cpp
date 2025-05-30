@@ -14,7 +14,8 @@ float buttonSizeValue = 30.f;
 const int maxRecentCount = 21;
 
 std::unordered_map<int, CCSprite*> objectSpriteCache; // todo: все еще не очищается
-std::unordered_map<std::string, CCSprite*> customObjectSpriteCache;
+std::unordered_map<int, std::pair<std::string, CCSprite*>> customObjectSpriteCache;
+
 
 std::vector<ErGui::ObjectConfig> getCustomObjectsConfig() {
 	std::vector<int> ids;
@@ -40,17 +41,19 @@ CCSprite* getObjectSprite(int id) {
 		objectSpriteCache[id] = spr;
 		return spr;
 	} else {
+		
+		auto it = customObjectSpriteCache.find(id);
+		if (it != customObjectSpriteCache.end()) {
+			return it->second.second; // sprite
+		}
+
 		auto objStr = GameManager::get()->stringForCustomObject(id);
 		if (objStr.empty()) {
 			objStr = "1,914,2,735,3,120,155,1,31,bm8gaWRlYQ==;1,914,2,735,3,90,155,1,31,d2hlcmU=;1,914,2,735,3,60,155,1,31,aXQgaXM=;1,914,2,735,3,150,155,1,31,aSBoYXZl;";
 		}
-		auto it = customObjectSpriteCache.find(objStr);
-		if (it != customObjectSpriteCache.end()) {
-			return it->second;
-		}
 		auto spr = ErGui::getGameObjectsAsSingleSprite(objStr);
 		spr->retain();
-		customObjectSpriteCache[objStr] = spr;
+		customObjectSpriteCache[id] = {objStr, spr};
 		return spr;
 	}
 }
@@ -80,9 +83,37 @@ void ErGui::clearObjectListCache() {
 	objectSpriteCache.clear();
 
 	for (auto [_, v] : customObjectSpriteCache) {
-		v->release();
+		v.second->release();
 	}
 	customObjectSpriteCache.clear();
+}
+
+
+void ErGui::reloadCustomObjects() {
+	auto ids = getCustomObjectsConfig();
+	auto gm = GameManager::get();
+	std::unordered_map<std::string, CCSprite*> strMappings;
+	std::unordered_map<int, std::pair<std::string, CCSprite*>> newConfig;
+
+	for (auto [_, v] : customObjectSpriteCache) {
+		strMappings.insert({v.first, v.second});
+	}
+
+	for (int id : ids[0].objectIdVector) {
+		auto str = std::string(gm->stringForCustomObject(id));
+		auto it = strMappings.find(str);
+		if (it != strMappings.end()) {
+			newConfig.insert({id, {str, it->second}});
+			it->second->retain();
+		}
+	}
+
+	for (auto [_, v] : customObjectSpriteCache) {
+		v.second->release();
+	}
+	customObjectSpriteCache.clear();
+
+	customObjectSpriteCache = std::move(newConfig);
 }
 
 
