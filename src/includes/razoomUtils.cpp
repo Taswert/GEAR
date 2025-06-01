@@ -174,19 +174,26 @@ float ErGui::getFPS() { // stolen from GDH
     return 1.f / avgTime;
 }
 
-
 float ErGui::getLastObjectXFast() {
     static int lastObjCount = 0;
-    static float lastObjX = 0;
+    static GameObject* lastObj = nullptr;
 
     auto lel = LevelEditorLayer::get();
 
     if (lastObjCount != lel->m_objectCount) {
         lastObjCount = lel->m_objectCount;
-        lastObjX = lel->getLastObjectX();
+        
+        lastObj = static_cast<GameObject*>(lel->m_objects->objectAtIndex(0));
+        float maxX = lastObj->getPositionX();
+        for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+            if (maxX < obj->getPositionX()) {
+                maxX = obj->getPositionX();
+                lastObj = obj;
+            }
+        }
     }
 
-    return lastObjX;
+    return lastObj->getPositionX();
 }
 
 

@@ -37,8 +37,6 @@
 
 using namespace geode::prelude;
 
-static CCArray* undoObjectsFromSelect;
-
 template <>
 struct matjson::Serialize<ErGui::ObjectConfig> {
 	static geode::Result<ErGui::ObjectConfig> fromJson(const matjson::Value& value) {
@@ -183,6 +181,68 @@ class $modify(ObjectToolbox) {
 	}
 };
 
+void manualObjectsSelect(CCArray* objsInShape) {
+	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+
+	switch (selectMode) {
+		case 3: { // Intersective
+			CCArray* objArr = CCArray::create();
+
+			for (auto obj : CCArrayExt<GameObject*>(objsInShape)) {
+				if (obj->m_isSelected) {
+					objArr->addObject(obj);
+				}
+			}
+			EditorUI::get()->deselectAll();
+			if (objArr->count() > 0) {
+				EditorUI::get()->selectObjects(objArr, false);
+			}
+			break;
+		}
+		case 2: { // Subtractive
+			for (auto obj : CCArrayExt<GameObject*>(objsInShape)) {
+				EditorUI::get()->deselectObject(obj);
+			}
+			if (EditorUI::get()->m_selectedObjects->count() == 1) {
+				EditorUI::get()->m_selectedObject = static_cast<GameObject*>(EditorUI::get()->m_selectedObjects->objectAtIndex(0));
+				EditorUI::get()->m_selectedObjects->removeAllObjects();
+			}
+			break;
+		}
+		case 1: // Additive
+		default: {
+			EditorUI::get()->selectObjects(objsInShape, false);
+			break;
+		}
+	}
+}
+
+void manualObjectSelect(GameObject* objInShape) {
+	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+
+	switch (selectMode) {
+	case 3: {
+		EditorUI::get()->deselectAll();
+		EditorUI::get()->selectObject(objInShape, false);
+		break;
+	}
+	case 2: {
+		EditorUI::get()->deselectObject(objInShape);
+		if (EditorUI::get()->m_selectedObjects->count() == 1) {
+			EditorUI::get()->m_selectedObject = static_cast<GameObject*>(EditorUI::get()->m_selectedObjects->objectAtIndex(0));
+			EditorUI::get()->m_selectedObjects->removeAllObjects();
+		}
+		break;
+	}
+	case 1:
+	default: {
+		EditorUI::get()->selectObject(objInShape, false);
+		break;
+	}
+	}
+}
+
+
 class $modify(EditorUI) {
 
 	struct Fields {
@@ -300,51 +360,8 @@ class $modify(EditorUI) {
 	}
 
 	void selectObjects(CCArray* objArrInRect, bool p1) {
-		
-		int selectMode = Mod::get()->getSavedValue<int>("select-mode");
 		CCArray* sfr = ErGui::selectFilterRealization(objArrInRect);
-
-		this->m_editorLayer->m_undoObjects->removeAllObjects();
-		for (auto undoObj : CCArrayExt<UndoObject*>(undoObjectsFromSelect)) {
-			this->m_editorLayer->m_undoObjects->addObject(undoObj);
-		}
-		undoObjectsFromSelect->removeAllObjects();
-
-		//orig
-		switch (selectMode)
-		{
-			case 3: {
-				CCArray* objArr = CCArray::create();
-				
-				for (auto obj : CCArrayExt<GameObject*>(sfr)) {
-					if (obj->m_isSelected) {
-						objArr->addObject(obj);
-					}
-				}
-				EditorUI::deselectAll();
-				if (objArr->count() > 0) {
-					EditorUI::selectObjects(objArr, p1);
-				}
-				break;
-			}
-			case 2: {
-				//EditorUI::get()->createUndoSelectObject(false);
-				for (auto obj : CCArrayExt<GameObject*>(sfr)) {
-					EditorUI::deselectObject(obj);
-				}
-				break;
-			}
-			case 1:
-			default: {
-				if (sfr->count() > 0) {
-					
-					EditorUI::get()->createUndoSelectObject(false);
-					//this->m_editorLayer->m_undoObjects->addObject(UndoObject::createWithArray(sfr, UndoCommand::Select));
-					EditorUI::selectObjects(sfr, p1);
-				}
-				break;
-			}
-		}
+		EditorUI::selectObjects(sfr, p1);
 		ErGui::groupInfoUpdate();
 	}
 
@@ -489,11 +506,30 @@ class $modify(EditorUI) {
 		ErGui::editorUIDrawNode->clear();
 
 		//SWIPE
-		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			for (auto undoObj : CCArrayExt<UndoObject*>(this->m_editorLayer->m_undoObjects)) {
-				undoObjectsFromSelect->addObject(undoObj);
-			}
-		}
+		//if (!ErGui::isLassoEnabled && this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+
+		//	// тот самый способ получше, но я просто задолбался уже, а objectsInRect надо искать.
+		//	//this->createUndoSelectObject(false);
+		//	//
+		//	//CCArray* selectedObjsDelta = CCArray::create();
+		//	//selectedObjsDelta->addObjectsFromArray(this->m_editorLayer->objectsInRect(CCRect(ErGui::editorUISwipePoints.at(0), ErGui::editorUISwipePoints.at(3)), false));
+		//	//if (this->m_selectedObject) selectedObjsDelta->addObject(this->m_selectedObject);
+		//	//manualObjectsSelect(selectedObjsDelta);
+		//	//
+		//	//// saving undo list
+		//	//CCArray* undoObjects = CCArray::create();
+		//	//undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
+		//	//
+		//	//EditorUI::ccTouchEnded(touch, event);
+		//	//
+		//	//// loading undo list
+		//	//LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
+		//	//LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+		//	//
+		//	//return;
+
+		//	return;
+		//}
 
 		//LASSO
 		if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
@@ -517,15 +553,59 @@ class $modify(EditorUI) {
 					objArr->addObject(obj);
 				}
 			}
-			//UNDO LIST!!!!
-			for (auto undoObj : CCArrayExt<UndoObject*>(this->m_editorLayer->m_undoObjects)) {
-				undoObjectsFromSelect->addObject(undoObj);
+
+			if (objArr->count() > 0) {
+				this->createUndoSelectObject(false);
+				manualObjectsSelect(objArr);
+			}
+			ErGui::editorUIDrawNode->clear();
+
+			CCArray* undoObjects = CCArray::create();
+			undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
+			EditorUI::ccTouchEnded(touch, event);
+			LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
+			LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+
+			return;
+		}
+		// SWIPE & Single Touch
+		else if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+			// saving selected objects
+			CCArray* selectedObjs = CCArray::create();
+			selectedObjs->addObjectsFromArray(this->m_selectedObjects);
+			GameObject* selectedObj = this->m_selectedObject; // could be nullptr
+
+			this->deselectAll();
+
+			// saving undo list
+			CCArray* undoObjects = CCArray::create();
+			undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
+
+
+			EditorUI::ccTouchEnded(touch, event);
+
+			// saving delta objs
+			CCArray* selectedObjsDelta = CCArray::create();
+			selectedObjsDelta->addObjectsFromArray(this->m_selectedObjects);
+			if (this->m_selectedObject) selectedObjsDelta->addObject(this->m_selectedObject);
+			this->deselectAll();
+
+			// loading selected objects
+			this->selectObjects(selectedObjs, false);
+			if (selectedObj) this->selectObject(selectedObj, false);
+
+			// loading undo list
+			LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
+			LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+
+			this->createUndoSelectObject(false);
+			manualObjectsSelect(selectedObjsDelta);
+
+			if (this->m_selectedObjects->isEqualToArray(selectedObjs) && this->m_selectedObject == selectedObj) {
+				LevelEditorLayer::get()->m_undoObjects->removeLastObject();
 			}
 
-			if (objArr->count() > 0)
-				this->selectObjects(objArr, false);
-			CC_SAFE_RELEASE(objArr);
-			ErGui::editorUIDrawNode->clear();
+			return;
 		}
 
 		EditorUI::ccTouchEnded(touch, event);
@@ -609,8 +689,6 @@ $on_mod(Loaded) {
 	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-2") == 0) Mod::get()->setSavedValue("enable-build-color-2", 1);
-	undoObjectsFromSelect = CCArray::create();
-	undoObjectsFromSelect->retain();
 
 	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
 
@@ -667,6 +745,16 @@ $on_mod(Loaded) {
 
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
+		
+		if (!std::filesystem::exists(io.IniFilename)) {
+			const char* prev_ini = io.IniFilename;
+			io.IniFilename = nullptr;
+			auto defaultCfgDir = Mod::get()->getResourcesDir() / "default_imgui.ini";
+			ImGui::LoadIniSettingsFromDisk(defaultCfgDir.string().c_str());
+			io.IniFilename = prev_ini;
+		}
+
+
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
@@ -678,6 +766,7 @@ $on_mod(Loaded) {
 		iconConfig.MergeMode = true;
 		fontDir = Mod::get()->getResourcesDir() / "materialdesignicons-webfont.ttf";
 		io.Fonts->AddFontFromFileTTF(fontDir.string().c_str(), 24.f, &iconConfig, icons_ranges);
+
 
 		ErGui::initImGuiStyling();
 	

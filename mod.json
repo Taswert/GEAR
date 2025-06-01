@@ -11,7 +11,8 @@
 	"resources": {
 		"files": [
 			"resources/imgui-fonts/Inter_18pt-Regular.ttf",
-			"resources/imgui-fonts/materialdesignicons-webfont.ttf"
+			"resources/imgui-fonts/materialdesignicons-webfont.ttf",
+			"resources/default_imgui.ini"
 		]
 	},
 	"settings": {
