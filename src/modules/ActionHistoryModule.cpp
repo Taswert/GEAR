@@ -4,7 +4,10 @@
 #include <cocos2d.h>
 
 void ErGui::renderActionHistoryModule() {
-	ImGui::Begin("ActionHistory-Module");
+	if (!ImGui::Begin("ActionHistory-Module")) {
+		ImGui::End();
+		return;
+	}
 
 	auto editorUI = GameManager::sharedState()->m_levelEditorLayer->m_editorUI;
 	//auto dgl = GameManager::sharedState()->m_levelEditorLayer->m_drawGridLayer;

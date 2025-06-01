@@ -1,4 +1,5 @@
 ﻿#include "FooterModule.hpp"
+#include "razoomUtils.hpp"
 
 int getLengthKey(int time, bool isPlat) {
 	if (isPlat) return 5;
@@ -14,10 +15,10 @@ void ErGui::renderFooter() {
 	ImGui::Begin("Footer");
 	ImGui::GetWindowDockNode()->LocalFlags = ImGuiDockNodeFlags_NoTabBar | ImGuiDockNodeFlags_NoDocking;
 
-	auto lel = GameManager::sharedState()->getEditorLayer();
+	auto lel = LevelEditorLayer::get();
 	
 	//Time + Level Length
-	float tfp = lel->m_drawGridLayer->timeForPos({ lel->getLastObjectX() + 340.f, 0 }, 0, 0, 0, 0, 0, 0);
+	float tfp = lel->m_drawGridLayer->timeForPos({ getLastObjectXFast() + 340.f, 0 }, 0, 0, 0, 0, 0, 0);
 	int minutes = tfp / 60;
 	float seconds = std::fmodf(tfp, 60.f);
 	std::string timeStr;
@@ -77,6 +78,10 @@ void ErGui::renderFooter() {
 	ImGui::Text("|");
 	ImGui::SameLine();
 	ImGui::Text(geode::getMod()->getVersion().toVString().c_str());
+	ImGui::SameLine();
+	ImGui::Text("|");
+	ImGui::SameLine();
+	ImGui::Text("FPS: %d", (int) ErGui::getFPS());
 
 	//ImGui::Text("ArraySizes: %d %d %d %d %d %d %d %d %d %d %d", lel->m_unkArr0->count(), lel->m_unkArr1->count(), lel->m_unkArr2->count(),
 	//lel->m_unkArr3->count(), lel->m_unkArr4->count(), lel->m_unkArr5->count(), lel->m_unkArr7->count(),

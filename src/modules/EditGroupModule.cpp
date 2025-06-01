@@ -769,7 +769,6 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 void ErGui::renderEditGroupModule() {
 	ImGui::Begin("EditGroup-Module");
 
-
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto obj = lel->m_editorUI->m_selectedObject;
 	auto objArr = lel->m_editorUI->m_selectedObjects;

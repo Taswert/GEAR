@@ -194,8 +194,12 @@ void ErGui::renderToolsModule1() {
 
 
 void ErGui::renderToolsModule2() {
-	ImGui::Begin("Tools-Module2");
-	
+	if (!ImGui::Begin("Tools-Module2")) {
+		ImGui::End();
+		return;
+	}
+
+
 	if (auto dockNode = ImGui::GetWindowDockNode()) {
 		if (dockNode->Windows.size() == 1)
 			dockNode->LocalFlags = ImGuiDockNodeFlags_NoTabBar;

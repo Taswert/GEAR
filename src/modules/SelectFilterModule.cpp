@@ -1,5 +1,6 @@
 #pragma once
 #include "SelectFilterModule.hpp"
+
 bool ErGui::selectFilterRealization(GameObject* obj) {
 	bool isFilterOn = false;
 	bool shouldSelect = false;

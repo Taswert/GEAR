@@ -832,10 +832,10 @@ void renderObjectSettings(GameObject* obj) {
 
 	if (ImGui::CollapsingHeader("-----| LEGACY SETTINGS |-----")) {
 		if (ImGui::Button("Edit Object")) {
-			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->editObject(nullptr);
+			EditorUI::get()->editObject(nullptr);
 		}
 		if (ImGui::Button("Edit Special")) {
-			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->editObjectSpecial(0);
+			EditorUI::get()->editObjectSpecial(0);
 		}
 	}
 }
@@ -844,17 +844,20 @@ void renderMultiObjectSettings(CCArray* objArr) {
 	ImGui::Text("MultiObject is not supported yet...");
 	if (ImGui::CollapsingHeader("-----| LEGACY SETTINGS |-----")) {
 		if (ImGui::Button("Edit Object")) {
-			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->editObject(nullptr);
+			EditorUI::get()->editObject(nullptr);
 		}
 		if (ImGui::Button("Edit Special")) {
-			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->editObjectSpecial(0);
+			EditorUI::get()->editObjectSpecial(0);
 		}
 	}
 }
 
 void ErGui::renderEditObjectModule() {
-	ImGui::Begin("EditObject-Module");
-	auto editorUI = GameManager::sharedState()->getEditorLayer()->m_editorUI;
+	if (!ImGui::Begin("EditObject-Module")) {
+		ImGui::End();
+		return;
+	}
+	auto editorUI = EditorUI::get();
 	if (auto obj = editorUI->m_selectedObject) {
 		renderObjectSettings(obj);
 	}
