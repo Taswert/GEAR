@@ -19,10 +19,10 @@ void ErGui::renderFooter() {
 	ErGui::enableClicks();
 
 
-	auto lel = GameManager::sharedState()->getEditorLayer();
+	auto lel = LevelEditorLayer::get();
 	
 	//Time + Level Length
-	float tfp = lel->m_drawGridLayer->timeForPos({ lel->getLastObjectX() + 340.f, 0 }, 0, 0, 0, 0, 0, 0);
+	float tfp = lel->m_drawGridLayer->timeForPos({ getLastObjectXFast() + 340.f, 0 }, 0, 0, 0, 0, 0, 0);
 	int minutes = tfp / 60;
 	float seconds = std::fmodf(tfp, 60.f);
 	std::string timeStr;

@@ -1,5 +1,6 @@
 #include "GameWindowModule.hpp"
 #include "../helpers/ScreenRenderer.h"
+#include "razoomUtils.hpp"
 
 namespace ErGui {
 	bool isGameWindowHovered = false;
@@ -14,7 +15,7 @@ void ErGui::renderGameWindow() {
 		ImGui::End();
 		return;
 	}
-	
+
 
 	auto renderedScreen = ScreenRenderer::render();
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
@@ -37,9 +38,10 @@ void ErGui::renderGameWindow() {
 	//		std::cout << "Nah...";
 	//	}
 	//}
-	auto lel = GameManager::sharedState()->m_levelEditorLayer;
+	auto lel = LevelEditorLayer::get();
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
-	float maxPosX = ErGui::constrainByLastObject ? lel->getLastObjectX() : std::max(lel->getLastObjectX(), 32470.f);
+	float maxPosX = ErGui::constrainByLastObject ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
+
 	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 4.f);
 	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX))
 		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
