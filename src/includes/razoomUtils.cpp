@@ -183,6 +183,9 @@ float ErGui::getLastObjectXFast() {
     if (lastObjCount != lel->m_objectCount) {
         lastObjCount = lel->m_objectCount;
         
+        if (!lel->m_objects) return 0.f;
+        if (lel->m_objects->count() == 0) return 0.f;
+
         lastObj = static_cast<GameObject*>(lel->m_objects->objectAtIndex(0));
         float maxX = lastObj->getPositionX();
         for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
