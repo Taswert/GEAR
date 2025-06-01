@@ -12,8 +12,7 @@ int getLengthKey(int time, bool isPlat) {
 
 void ErGui::renderFooter() {
 	ImGui::Begin("Footer");
-	ErGui::enableClicks();
-
+	ImGui::GetWindowDockNode()->LocalFlags = ImGuiDockNodeFlags_NoTabBar | ImGuiDockNodeFlags_NoDocking;
 
 	auto lel = GameManager::sharedState()->getEditorLayer();
 	

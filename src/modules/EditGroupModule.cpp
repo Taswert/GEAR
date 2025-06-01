@@ -767,9 +767,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 }
 
 void ErGui::renderEditGroupModule() {
-	//ErGui::setupMenuColors(ImVec4(0.10f, 0.04f, 0.04f, 0.95f), ImVec4(0.81f, 0.35f, 0.15f, 1.f), ImVec4(1.00f, 0.57f, 0.38f, 1.f));
 	ImGui::Begin("EditGroup-Module");
-	ErGui::enableClicks();
 
 
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
@@ -785,7 +783,6 @@ void ErGui::renderEditGroupModule() {
 		ImGui::Text("Object is not selected...");
 	}
 
-	//for (int i = 0; i < 5; i++) ImGui::PopStyleColor();
 	ImGui::End();
 }
 
@@ -812,7 +809,7 @@ void ErGui::groupInfoUpdate() {
 	ErGui::maxMaterial = ErGui::firstObj->m_objectMaterial;
 
 
-	//WELL FUCK ME!
+	// Стоит переработать эту систему.
 	//---Cosmetic
 	ErGui::cb_NoEffects = false;
 	ErGui::cb_DontFade = false;

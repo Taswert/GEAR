@@ -24,8 +24,8 @@ void EditorUI_toggleSpecialEditButtons(EditorUI* eui) {
 
 void ErGui::renderToolsModule1() {
 	ImGui::Begin("Tools-Module1");
-	ErGui::enableClicks();
-		
+	ImGui::GetWindowDockNode()->LocalFlags = ImGuiDockNodeFlags_NoTabBar | ImGuiDockNodeFlags_NoDocking;
+
 	auto gameManager = GameManager::sharedState();
 	auto editorUI = gameManager->getEditorLayer()->m_editorUI;
 
@@ -127,6 +127,7 @@ void ErGui::renderToolsModule1() {
 	ImGui::Dummy(DUMMY_PAD);
 	if (ImGui::Selectable(ICON_MDI_SELECTION_OFF, false, 0, BTN_SIZE)) {
 	//if (ImGui::Button("Deselect")) { //ICON_MDI_SELECTION_OFF
+		editorUI->createUndoSelectObject(false);
 		editorUI->deselectAll();
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
@@ -179,10 +180,10 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Unlink Selected");
 
-	ImGui::Separator();
-	ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("DEBUG: Shows touched position");
+	//ImGui::Separator();
+	//ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
+	//if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	//	ImGui::SetTooltip("DEBUG: Shows touched position");
 	//ImGui::Checkbox("DbgTDN", &ErGui::dbgTDN;
 
 	ImGui::PopStyleColor();
@@ -194,6 +195,13 @@ void ErGui::renderToolsModule1() {
 
 void ErGui::renderToolsModule2() {
 	ImGui::Begin("Tools-Module2");
+	
+	if (auto dockNode = ImGui::GetWindowDockNode()) {
+		if (dockNode->Windows.size() == 1)
+			dockNode->LocalFlags = ImGuiDockNodeFlags_NoTabBar;
+		else
+			dockNode->LocalFlags = ImGuiDockNodeFlags_None;
+	}
 
 	auto gameManager = GameManager::sharedState();
 	auto editorUI = gameManager->getEditorLayer()->m_editorUI;
@@ -334,13 +342,13 @@ void ErGui::renderToolsModule2() {
 			ImGui::SameLine();
 			if (ImGui::Button("Zoom-")) editorUI->zoomOut(nullptr);
 
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-			float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
-			if (ImGui::DragFloat("Zoom Mul", &zoomMul, 0.1f) && zoomMul >= 0.1f && zoomMul <= 10.f) {
-				Mod::get()->setSavedValue("zoom-multiplier", zoomMul);
-				editorUI->updateGridNodeSize();
-			}
+			//ImGui::SameLine();
+			//ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+			//float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
+			//if (ImGui::DragFloat("Zoom Mul", &zoomMul, 0.1f) && zoomMul >= 0.1f && zoomMul <= 10.f) {
+			//	Mod::get()->setSavedValue("zoom-multiplier", zoomMul);
+			//	editorUI->updateGridNodeSize();
+			//}
 
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);

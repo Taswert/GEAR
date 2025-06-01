@@ -4,6 +4,9 @@
 #include "OpenGLStateHelper.h"
 using namespace geode::prelude;
 
+// По идее, нам нужна только структура RenderedTexture и всё.
+// Стоит обсудить с Райниксом удаление этого и OpenGLStateHelper хеддеров.
+
 class ScreenRenderer {
 public:
 	struct RenderedTexture {
@@ -23,7 +26,6 @@ public:
 		OpenGLStateHelper::saveState();
 		gameRenderer->beginWithClear(0, 0, 0, 0);
 		gameRenderer->begin();
-		//LevelEditorLayer::get()->m_shaderLayer->setVisible(true);
 		CCDirector::sharedDirector()->getRunningScene()->visit();
 		gameRenderer->end();
 		OpenGLStateHelper::pushState();
@@ -32,8 +34,8 @@ public:
 		auto glTextureSize = gameRenderer->getSprite()->getTexture()->getContentSizeInPixels();
 
 
-		ImTextureID imguiTexture = (ImTextureID)(intptr_t)glTextureID;
-
+		ImTextureID imguiTexture = (ImTextureID)(intptr_t)ErGui::gameFrame;
+		std::cout << glTextureSize.width << " " << glTextureSize.height << "\n";
 		return RenderedTexture(imguiTexture, glTextureSize);
 	}
 

@@ -73,7 +73,7 @@ void ErGui::renderActionHistoryModule() {
 			default:
 				break;
 			}
-			myText += "(" + std::to_string(static_cast<int>(undoObject->m_command)) + "): ";
+			myText += std::format("[{}]", static_cast<void*>(undoObject)) + "(" + std::to_string(static_cast<int>(undoObject->m_objects->count())) + "): ";
 			ImGui::Text(myText.c_str());
 			i++;
 		}
@@ -109,7 +109,7 @@ void ErGui::renderActionHistoryModule() {
 			default:
 				break;
 			}
-			myText += "(" + std::to_string(static_cast<int>(redoObject->m_command)) + "): ";
+			myText += std::format("[{}]", static_cast<void*>(redoObject)) + "(" + std::to_string(static_cast<int>(redoObject->m_objects->count())) + ") : ";
 			ImGui::Text(myText.c_str());
 			i++;
 		}

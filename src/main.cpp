@@ -19,7 +19,6 @@
 #include "modules/TransformObjectModule.hpp"
 #include "modules/FooterModule.hpp"
 #include "modules/ToolsModule.hpp"
-#include "modules/CameraSettings.hpp"
 #include "modules/ObjectListModule.hpp"
 #include "modules/LayerModule.hpp"
 #include "modules/EditObjectModule.hpp"
@@ -36,10 +35,9 @@
 
 #include <Geode/Result.hpp>
 
-//#include <nlohmann/json.hpp>
-//using json = nlohmann::json;
-
 using namespace geode::prelude;
+
+static CCArray* undoObjectsFromSelect;
 
 template <>
 struct matjson::Serialize<ErGui::ObjectConfig> {
@@ -78,9 +76,63 @@ struct matjson::Serialize<ErGui::ObjectConfig> {
 	}
 };
 
-template <class R, class T>
-R& from(T base, intptr_t offset) {
-	return *reinterpret_cast<R*>(reinterpret_cast<uintptr_t>(base) + offset);
+// Написано нейронкой, т.к. я просто устану разбираться в этом сейчас. Основа от DevTools'ов.
+static GLuint captureScreenToGLTexture() {
+	static GLuint captureTexId = 0;    // хранит ID текстуры, куда мы копируем кадр
+	static int lastW = 0, lastH = 0;   // чтобы пересоздавать текстуру, если размер изменился
+
+	// 1) Узнаём, сколько пикселей реально сейчас на экране (viewport):
+	GLint vp[4];
+	glGetIntegerv(GL_VIEWPORT, vp);
+	int screenW = vp[2];
+	int screenH = vp[3];
+
+	// 2) Если размер изменился (например, игрок поменял окно), пересоздаём текстуру:
+	if (!captureTexId || lastW != screenW || lastH != screenH) {
+		if (captureTexId) {
+			glDeleteTextures(1, &captureTexId);
+			captureTexId = 0;
+		}
+		glGenTextures(1, &captureTexId);
+		glBindTexture(GL_TEXTURE_2D, captureTexId);
+
+		// Настраиваем фильтрацию — обычно LINEAR, чтобы превью при масштабировании было быстрее «размыто»
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// Резервируем память под будущую копию экрана
+		glTexImage2D(
+			GL_TEXTURE_2D,		// таргет
+			0,					// LOD
+			GL_RGBA,			// внутренний формат (RGBA8)
+			screenW, screenH,	// ширина, высота
+			0,					 // border
+			GL_RGBA,			// формат поступающих данных
+			GL_UNSIGNED_BYTE,	// тип данных
+			nullptr				// пока нет данных (будет заполнено glCopyTexSubImage2D)
+		);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		lastW = screenW;
+		lastH = screenH;
+	}
+
+	// 3) Привязываем нашу текстуру и копируем текущий back-buffer (FBO = 0) в неё:
+	glBindTexture(GL_TEXTURE_2D, captureTexId);
+
+	// Копируем целиком экран (вниз/влево от 0,0) в текстуру, начиная с 0,0
+	glCopyTexSubImage2D(
+		GL_TEXTURE_2D, 0,    // который уровень mipmap (0) и таргет
+		0, 0,                // смещение (xOffset, yOffset) в текстуре
+		0, 0,                // какая точка back-buffer берётся (x, y)
+		screenW, screenH     // сколько пикселей копировать
+	);
+
+	// 4) Бинд снова очищаем (не обязательно, но принято)
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// 5) Возвращаем ID текстуры, куда мы скопировали экран
+	return captureTexId;
 }
 
 
@@ -250,32 +302,46 @@ class $modify(EditorUI) {
 	void selectObjects(CCArray* objArrInRect, bool p1) {
 		
 		int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+		CCArray* sfr = ErGui::selectFilterRealization(objArrInRect);
+
+		this->m_editorLayer->m_undoObjects->removeAllObjects();
+		for (auto undoObj : CCArrayExt<UndoObject*>(undoObjectsFromSelect)) {
+			this->m_editorLayer->m_undoObjects->addObject(undoObj);
+		}
+		undoObjectsFromSelect->removeAllObjects();
 
 		//orig
 		switch (selectMode)
 		{
 			case 3: {
-				CCArray objArr;
-				for (auto obj : CCArrayExt<GameObject*>(ErGui::selectFilterRealization(objArrInRect))) {
+				CCArray* objArr = CCArray::create();
+				
+				for (auto obj : CCArrayExt<GameObject*>(sfr)) {
 					if (obj->m_isSelected) {
-						objArr.addObject(obj);
+						objArr->addObject(obj);
 					}
 				}
 				EditorUI::deselectAll();
-				if (objArr.count() > 0) {
-					EditorUI::selectObjects(&objArr, p1);
+				if (objArr->count() > 0) {
+					EditorUI::selectObjects(objArr, p1);
 				}
 				break;
 			}
 			case 2: {
-				for (auto obj : CCArrayExt<GameObject*>(ErGui::selectFilterRealization(objArrInRect))) {
+				//EditorUI::get()->createUndoSelectObject(false);
+				for (auto obj : CCArrayExt<GameObject*>(sfr)) {
 					EditorUI::deselectObject(obj);
 				}
 				break;
 			}
 			case 1:
 			default: {
-				EditorUI::selectObjects(ErGui::selectFilterRealization(objArrInRect), p1);
+				if (sfr->count() > 0) {
+					
+					EditorUI::get()->createUndoSelectObject(false);
+					//this->m_editorLayer->m_undoObjects->addObject(UndoObject::createWithArray(sfr, UndoCommand::Select));
+					EditorUI::selectObjects(sfr, p1);
+				}
 				break;
 			}
 		}
@@ -295,10 +361,10 @@ class $modify(EditorUI) {
 		m_fields->nothing = 42; // trigger m_fields lazy initialization
 		//ErGui::originalCameraPosition = lel->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
 
-		ErGui::og_prevMode = lel->m_previewMode;
-		ErGui::og_prevShad = lel->m_previewShaders;
-		ErGui::og_prevPart = lel->m_previewParticles;
-		ErGui::og_prevAnim = lel->m_previewAnimations;
+		//ErGui::og_prevMode = lel->m_previewMode;
+		//ErGui::og_prevShad = lel->m_previewShaders;
+		//ErGui::og_prevPart = lel->m_previewParticles;
+		//ErGui::og_prevAnim = lel->m_previewAnimations;
 
 		this->setVisible(false);
 		//this->m_constrainedHeight = 0.f;
@@ -337,8 +403,8 @@ class $modify(EditorUI) {
 
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
 		//DEBUG TOUCH POS
-		ErGui::touchedDNFirstPoint = touch->getLocation();
 		if (ErGui::dbgTDN) {
+			ErGui::touchedDNFirstPoint = touch->getLocation();
 			ErGui::touchedDN->drawDot(ErGui::touchedDNFirstPoint, 2.5f, { 0.f, 0.f, 0.f, 1.f });
 			ErGui::touchedDN->drawDot(ErGui::touchedDNFirstPoint, 1.5f, { 0.82f, 0.25f, 0.82f, 1.f });
 		}
@@ -360,8 +426,8 @@ class $modify(EditorUI) {
 	void ccTouchMoved(CCTouch* touch, CCEvent* event) {
 
 		//DEBUG TOUCH POS
-		ErGui::touchedDN->clear();
 		if (ErGui::dbgTDN) {
+			ErGui::touchedDN->clear();
 			std::vector<cocos2d::CCPoint> touchedDNVerts = { ErGui::touchedDNFirstPoint, touch->getLocation() };
 			ErGui::touchedDN->drawLines(touchedDNVerts.data(), touchedDNVerts.size(), 1.5f, { 0.f, 0.f, 0.f, 1.f });
 			ErGui::touchedDN->drawLines(touchedDNVerts.data(), touchedDNVerts.size(), 0.5f, { 0.82f, 0.82f, 0.25f, 1.f });
@@ -374,7 +440,7 @@ class $modify(EditorUI) {
 		}
 
 
-		//ZOOM MODE (Should be reworked)
+		//ZOOM MODE - Нужно переделать
 		//if (this->m_selectedMode == 4) {
 		//	auto editorUI = GameManager::sharedState()->getEditorLayer()->m_editorUI;
 		//	float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
@@ -422,6 +488,13 @@ class $modify(EditorUI) {
 		ErGui::touchedDN->clear();
 		ErGui::editorUIDrawNode->clear();
 
+		//SWIPE
+		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+			for (auto undoObj : CCArrayExt<UndoObject*>(this->m_editorLayer->m_undoObjects)) {
+				undoObjectsFromSelect->addObject(undoObj);
+			}
+		}
+
 		//LASSO
 		if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
 			this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
@@ -445,6 +518,10 @@ class $modify(EditorUI) {
 				}
 			}
 			//UNDO LIST!!!!
+			for (auto undoObj : CCArrayExt<UndoObject*>(this->m_editorLayer->m_undoObjects)) {
+				undoObjectsFromSelect->addObject(undoObj);
+			}
+
 			if (objArr->count() > 0)
 				this->selectObjects(objArr, false);
 			CC_SAFE_RELEASE(objArr);
@@ -458,6 +535,10 @@ class $modify(EditorUI) {
 
 
 class $modify(CCEGLView) {
+	void swapBuffers() {
+		ErGui::gameFrame = captureScreenToGLTexture();
+		CCEGLView::swapBuffers();
+	}
 	void pollEvents() {
 		auto& io = ImGui::GetIO();
 
@@ -500,42 +581,6 @@ class $modify(CCEGLView) {
 };
 
 
-static bool touchHasBegan = false;
-static bool touchHasBegan2 = false;
-static float winMultiplier = 1.5f;
-static int selectedTab = 0;
-
-
-void ShowMainWindow()
-{
-	// Окно «MainWindow» занимает всё окно приложения
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0));
-	ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, ImVec4(0, 0, 0, 0));
-
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-	ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags_NoTitleBar |
-		ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoBringToFrontOnFocus |
-		ImGuiWindowFlags_NoInputs;
-	ImGui::Begin("MainWindow", nullptr, mainWindowFlags);
-
-	// Создаём док-спейс внутри основного окна
-	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
-
-
-	//if (ImGui::IsItemHovered()) {
-	//	ImGuiCocos::get().setShouldPassClicks(true);
-	//}
-
-	ImGui::End(); // Завершаем "MainWindow"
-
-	ImGui::PopStyleColor(2);
-}
-
-
 class $modify(CCTouchDispatcher) {
 	void touches(CCSet * touches, CCEvent * event, unsigned int type) {
 		auto& io = ImGui::GetIO();
@@ -564,7 +609,8 @@ $on_mod(Loaded) {
 	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-2") == 0) Mod::get()->setSavedValue("enable-build-color-2", 1);
-
+	undoObjectsFromSelect = CCArray::create();
+	undoObjectsFromSelect->retain();
 
 	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
 
@@ -612,6 +658,7 @@ $on_mod(Loaded) {
 
 	ErGui::editorUIbottomConstrainPatch->enable();
 	
+	// DEBUG - позволяет смотреть оффсеты полей
 	//ErGui::objectCfg = data;
 	//std::cout
 	//	<< "Offset ColorSelectPopup::m_touchTriggered = "
@@ -652,7 +699,7 @@ $on_mod(Loaded) {
 				ErGui::renderEditColor();
 				ErGui::renderGameWindow();
 
-				ImGui::ShowStyleEditor();
+				//ImGui::ShowStyleEditor();
 
 			}
 			else {

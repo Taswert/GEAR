@@ -26,8 +26,6 @@ namespace ErGui {
 
 	void initImGuiStyling();
 
-	void enableClicks();
-
 	void addObjectToUndoList(GameObject* obj, UndoCommand command);
 	void addObjectsToUndoList(CCArray* objArr, UndoCommand command);
 
@@ -48,4 +46,5 @@ namespace ErGui {
 	inline CCDrawNode* touchedDN = nullptr;
 	inline CCPoint touchedDNFirstPoint = { 0.f, 0.f };
 	inline bool dbgTDN = false;
+	inline GLuint gameFrame;
 };

@@ -10,27 +10,11 @@ namespace ErGui {
 
 void ErGui::renderGameWindow() {
 
-	auto renderedScreen = ScreenRenderer::render();
+	auto renderedScreen = ScreenRenderer::RenderedTexture((ImTextureID)(intptr_t)ErGui::gameFrame, CCDirector::sharedDirector()->getWinSize());
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
 
 	ImGui::Begin("Game");
-	//if (ImGui::Button("Save")) {
-	//	auto winSize = CCDirector::sharedDirector()->getWinSize();
-	//	auto rt = CCRenderTexture::create(winSize.width, winSize.height, kTexture2DPixelFormat_RGBA8888);
-	//	rt->begin();
-	//	CCDirector::sharedDirector()->getRunningScene()->visit();
-	//	rt->end();
 
-	//	// Собираем полный путь
-	//	std::string path = "coolName.png";
-	//	bool ok = rt->saveToFile(path.c_str(), cocos2d::kCCImageFormatPNG);
-	//	if (ok) {
-	//		std::cout << "Done! Saved to %s";
-	//	}
-	//	else {
-	//		std::cout << "Nah...";
-	//	}
-	//}
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObject ? lel->getLastObjectX() : std::max(lel->getLastObjectX(), 32470.f);
@@ -58,10 +42,11 @@ void ErGui::renderGameWindow() {
 		lel->m_editorUI->onSettings(nullptr);
 	}
 
-	ImGui::SameLine();
-	if (ImGui::Button("Save Game Viewport Screenshot")) {
-		ScreenRenderer::getCCRenderTexture()->saveToFile("viewport.png");
-	}
+	// DEBUG - Сохранение вьюпорта в пнг, в корне игры.
+	//ImGui::SameLine();
+	//if (ImGui::Button("Save Game Viewport Screenshot")) {
+	//	ScreenRenderer::getCCRenderTexture()->saveToFile("viewport.png");
+	//}
 
 	ImVec2 gameWinSize = ImGui::GetContentRegionAvail();
 	ImVec2 cursorStart = ImGui::GetCursorPos();
@@ -83,8 +68,6 @@ void ErGui::renderGameWindow() {
 		drawOffset.y = (gameWinSize.y - drawSize.y) / 2;
 	}
 
-
-
 	ImGui::SetCursorPos(ImVec2(cursorStart.x + drawOffset.x, cursorStart.y + drawOffset.y));
 	ImGui::Image(renderedScreen.tex, drawSize, ImVec2(0, 1), ImVec2(1, 0));
 
@@ -101,7 +84,7 @@ void ErGui::renderGameWindow() {
 		ErGui::isGameWindowHovered = false;
 	}
 
-	//Vertical slider lol
+	// Vertical slider - Возможно добавить в будущем...
 	//ImGui::SameLine();
 	//float objectLayerY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
 	//if (ImGui::VSliderFloat("##LevelPositionSliderY", ImVec2(20.f, drawSize.y), &objectLayerY, 0.f, 29800.f))

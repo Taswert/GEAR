@@ -184,7 +184,6 @@ CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
 
 void ErGui::renderSelectFilter() {
 	ImGui::Begin("SelectFilter-Module");
-	ErGui::enableClicks();
 
 
 	if (ImGui::CollapsingHeader("Main Settings")) {

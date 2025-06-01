@@ -4,7 +4,6 @@
 namespace ErGui {
 	void renderCameraSettings() {
 		ImGui::Begin("CameraSettings-Module");
-		ErGui::enableClicks();
 
 
 		ImGui::SetNextItemWidth(120.f);

@@ -1,14 +1,11 @@
 {
-	"geode": "4.4.0",
+	"geode": "4.5.0",
 	"gd": {
-		"win": "2.2074",
-		"android": "2.2074",
-		"mac": "2.2074",
-		"ios": "2.2074"
+		"win": "2.2074"
 	},
 	"id": "taswert.gear",
-	"name": "G.E.A.R.",
-	"version": "v0.0.0-alpha",
+	"name": "GEAR",
+	"version": "v0.1.0-beta",
 	"developers": [ "Taswert", "RainixGD", "RaZooM" ],
 	"description": "",
 	"resources": {

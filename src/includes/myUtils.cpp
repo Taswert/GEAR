@@ -1,11 +1,5 @@
 #include "myUtils.hpp"
 
-//gd::string LevelEditorLayer::getSFXIDs() {
-//	gd::string str;
-//	reinterpret_cast<void(__fastcall*)(LevelEditorLayer*, gd::string*)>(geode::base::get() + 0x2cec40)(this, &str);
-//	return str;
-//}
-
 namespace ErGui {
 	bool isPointInPolygon(const cocos2d::CCPoint& pt, const std::vector<cocos2d::CCPoint>& polygon) {
 		bool inside = false;
@@ -75,6 +69,8 @@ namespace ErGui {
 		ImGui::PopID();
 		return result;
 	}
+
+	// To Do: Отказаться от этой функции.
 	void drawSpriteInImGui(CCSprite* tempSprite) {
 		auto quad = tempSprite->getQuad();
 
@@ -222,12 +218,6 @@ namespace ErGui {
 		colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-	}
-
-	void enableClicks() {
-		//if (ImGui::IsItemHovered() || ImGui::IsWindowHovered()) {
-		//	ImGuiCocos::get().setShouldPassClicks(false);
-		//}
 	}
 
 	void addObjectToUndoList(GameObject* obj, UndoCommand command) {
