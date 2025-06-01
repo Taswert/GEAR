@@ -154,6 +154,9 @@ void exitEditor() { // EditorUI is already destroyed here
 	oCfgFile.write(j.dump().c_str(), j.dump().size());
 	oCfgFile.close();
 
+	ErGui::lastObj = nullptr;
+	ErGui::lastObjCount = 0;
+
 	ErGui::clearObjectListCache();
 }
 
@@ -370,9 +373,9 @@ class $modify(EditorUI) {
 
 	bool init(LevelEditorLayer* lel) {
 		ErGui::editorUIDrawNode = CCDrawNode::create();
-		lel->addChild(ErGui::editorUIDrawNode);
+		lel->m_objectParent->addChild(ErGui::editorUIDrawNode);
 		ErGui::touchedDN = CCDrawNode::create();
-		lel->addChild(ErGui::touchedDN);
+		lel->m_objectParent->addChild(ErGui::touchedDN);
 		auto ret = EditorUI::init(lel);
 
 		m_fields->nothing = 42; // trigger m_fields lazy initialization

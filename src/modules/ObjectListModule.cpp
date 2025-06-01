@@ -118,6 +118,7 @@ void ErGui::reloadCustomObjects() {
 
 
 bool ImageButtonFromFrameName(ErGui::ObjectConfig const &objCfg, int j, const char* str_id, ImVec2 imageSize = ImVec2(30.f, 30.f), bool isFavourite = false) {
+	bool ret = false;
 	int objId = objCfg.objectIdVector[j];
 	EditorUI* editorUI = EditorUI::get();
 
@@ -137,8 +138,10 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig const &objCfg, int j, const ch
 	ImTextureID texture = (ImTextureID)(intptr_t)getObjectSprite(objId)->getTexture()->getName();
 
 	if (ImGui::ImageButton(str_id, texture, imageSize, ImVec2(0,1), ImVec2(1,0))) {
+		ret = true;
 		editorUI->m_selectedObjectIndex = (editorUI->m_selectedObjectIndex != objId) ? objId : 0;
 		editorUI->updateGridNodeSize();
+
 	}
 	
 	//Pop color for selected object
@@ -178,7 +181,7 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig const &objCfg, int j, const ch
 		ImGui::SetTooltip(newFrameName.c_str());
 	}
 
-	return true;
+	return ret;
 }
 
 void ImageFolderButton(std::vector<ErGui::ObjectConfig> const &visibleButtons, int i, ImVec2 buttonSize = ImVec2(30.f, 30.f)) {
@@ -257,7 +260,9 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 					for (int j = 0; j < objects.size(); j++) {
 						std::string strId = "##OBJECT-" + name + std::to_string(objects[j]);
 
-						ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab);
+						if (ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab)) {
+							ImGui::CloseCurrentPopup();
+						}
 
 						if (j + 1 < objects.size() && (j + 1) % 6 != 0)
 							ImGui::SameLine();

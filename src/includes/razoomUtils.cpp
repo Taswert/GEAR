@@ -175,8 +175,6 @@ float ErGui::getFPS() { // stolen from GDH
 }
 
 float ErGui::getLastObjectXFast() {
-    static int lastObjCount = 0;
-    static GameObject* lastObj = nullptr;
 
     auto lel = LevelEditorLayer::get();
 
@@ -195,6 +193,8 @@ float ErGui::getLastObjectXFast() {
             }
         }
     }
+
+    if (!lastObj) return 0.f;
 
     return lastObj->getPositionX();
 }

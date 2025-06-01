@@ -14,4 +14,6 @@ namespace ErGui {
     float getFPS(); // must be called exactly once per frame
     float getLastObjectXFast();
 
+    inline int lastObjCount = 0;
+    inline GameObject* lastObj = nullptr;
 } // ErGui
