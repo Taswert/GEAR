@@ -1,4 +1,6 @@
 #include "razoomUtils.hpp"
+#include <numeric>
+
 
 const float defaultObjSprSize = 60.f;
 
@@ -151,6 +153,27 @@ CCSprite* ErGui::getGameObjectsAsSingleSprite(const std::string &objString) {
 
     return renderSprites(spr, size);
 }
+
+
+
+
+float ErGui::getFPS() { // stolen from GDH
+    static std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
+    static std::vector<float> frameTimes;
+
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    float deltaTime = std::chrono::duration<float>(now - lastTime).count();
+    lastTime = now;
+
+    frameTimes.push_back(deltaTime);
+    if (frameTimes.size() > 60)
+        frameTimes.erase(frameTimes.begin());
+
+    float avgTime = std::accumulate(frameTimes.begin(), frameTimes.end(), 0.0f);
+    avgTime /= frameTimes.size();
+    return 1.f / avgTime;
+}
+
 
 
 

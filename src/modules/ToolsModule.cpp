@@ -23,7 +23,11 @@ void EditorUI_toggleSpecialEditButtons(EditorUI* eui) {
 }
 
 void ErGui::renderToolsModule1() {
-	ImGui::Begin("Tools-Module1");
+	if (!ImGui::Begin("Tools-Module1")) {
+		ImGui::End();
+		return;
+	}
+	
 	ErGui::enableClicks();
 		
 	auto gameManager = GameManager::sharedState();
@@ -193,7 +197,10 @@ void ErGui::renderToolsModule1() {
 
 
 void ErGui::renderToolsModule2() {
-	ImGui::Begin("Tools-Module2");
+	if (!ImGui::Begin("Tools-Module2")) {
+		ImGui::End();
+		return;
+	}
 
 	auto gameManager = GameManager::sharedState();
 	auto editorUI = gameManager->getEditorLayer()->m_editorUI;

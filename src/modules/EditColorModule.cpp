@@ -672,7 +672,10 @@ void renderForArrayEC(CCArray* objArr) {
 
 
 void ErGui::renderEditColor() {
-	ImGui::Begin("EditColor-Module");
+	if (!ImGui::Begin("EditColor-Module")) {
+		ImGui::End();
+		return;
+	}
 	auto gameManager = GameManager::sharedState();
 	auto effectManager = gameManager->m_levelEditorLayer->m_levelSettings->m_effectManager;
 

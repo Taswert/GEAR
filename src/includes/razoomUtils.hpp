@@ -11,4 +11,6 @@ namespace ErGui {
     CCSprite* getGameObjectAsSingleSpriteById(uint16_t objId);
     CCSprite* getGameObjectsAsSingleSprite(const std::string &objString);
 
+    float getFPS(); // must be called exactly once per frame
+
 } // ErGui

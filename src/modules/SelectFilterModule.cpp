@@ -1,5 +1,6 @@
 #pragma once
 #include "SelectFilterModule.hpp"
+
 bool ErGui::selectFilterRealization(GameObject* obj) {
 	bool isFilterOn = false;
 	bool shouldSelect = false;
@@ -183,7 +184,11 @@ CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
 }
 
 void ErGui::renderSelectFilter() {
-	ImGui::Begin("SelectFilter-Module");
+	if (!ImGui::Begin("SelectFilter-Module")) {
+		ImGui::End();
+		return;
+	}
+	
 	ErGui::enableClicks();
 
 

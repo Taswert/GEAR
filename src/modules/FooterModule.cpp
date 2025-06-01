@@ -1,4 +1,5 @@
 ﻿#include "FooterModule.hpp"
+#include "razoomUtils.hpp"
 
 int getLengthKey(int time, bool isPlat) {
 	if (isPlat) return 5;
@@ -11,7 +12,10 @@ int getLengthKey(int time, bool isPlat) {
 }
 
 void ErGui::renderFooter() {
-	ImGui::Begin("Footer");
+	if(!ImGui::Begin("Footer")) {
+		ImGui::End();
+		return;
+	}
 	ErGui::enableClicks();
 
 
@@ -78,6 +82,10 @@ void ErGui::renderFooter() {
 	ImGui::Text("|");
 	ImGui::SameLine();
 	ImGui::Text(geode::getMod()->getVersion().toVString().c_str());
+	ImGui::SameLine();
+	ImGui::Text("|");
+	ImGui::SameLine();
+	ImGui::Text("FPS: %d", (int) ErGui::getFPS());
 
 	//ImGui::Text("ArraySizes: %d %d %d %d %d %d %d %d %d %d %d", lel->m_unkArr0->count(), lel->m_unkArr1->count(), lel->m_unkArr2->count(),
 	//lel->m_unkArr3->count(), lel->m_unkArr4->count(), lel->m_unkArr5->count(), lel->m_unkArr7->count(),

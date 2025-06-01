@@ -10,10 +10,16 @@ namespace ErGui {
 
 void ErGui::renderGameWindow() {
 
+	if (!ImGui::Begin("Game")) {
+		ImGui::End();
+		return;
+	}
+	
+
 	auto renderedScreen = ScreenRenderer::render();
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
 
-	ImGui::Begin("Game");
+	// ImGui::Begin("Game");
 	//if (ImGui::Button("Save")) {
 	//	auto winSize = CCDirector::sharedDirector()->getWinSize();
 	//	auto rt = CCRenderTexture::create(winSize.width, winSize.height, kTexture2DPixelFormat_RGBA8888);
