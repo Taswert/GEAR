@@ -20,7 +20,7 @@ void ErGui::renderGameWindow() {
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObject ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 4.f);
+	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 3.5f);
 	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX))
 		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
 
@@ -39,9 +39,21 @@ void ErGui::renderGameWindow() {
 			lel->m_currentLayer = -1;
 	}
 
+	// Vertical slider - Возможно добавить в будущем...
+	//ImGui::SameLine();
+	float objectLayerY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
+	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 3.5f);
+	if (ImGui::SliderFloat("##LevelPositionSliderY", &objectLayerY, 0.f, 29800.f))
+		lel->m_objectLayer->setPositionY(objectLayerY * -1 * lel->m_objectLayer->getScale());
+
 	ImGui::SameLine();
 	if (ImGui::Button("Level Settings")) {
-		lel->m_editorUI->onSettings(nullptr);
+		bool foundSettings = false;
+		for (auto child : CCArrayExt<CCNode*>(CCDirector::sharedDirector()->getRunningScene()->getChildren())) {
+			if (dynamic_cast<LevelSettingsLayer*>(child)) foundSettings = true;
+		}
+		if (!foundSettings)
+			lel->m_editorUI->onSettings(nullptr);
 	}
 
 	// DEBUG - Сохранение вьюпорта в пнг, в корне игры.
@@ -85,13 +97,6 @@ void ErGui::renderGameWindow() {
 	else {
 		ErGui::isGameWindowHovered = false;
 	}
-
-	// Vertical slider - Возможно добавить в будущем...
-	//ImGui::SameLine();
-	//float objectLayerY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
-	//if (ImGui::VSliderFloat("##LevelPositionSliderY", ImVec2(20.f, drawSize.y), &objectLayerY, 0.f, 29800.f))
-	//	lel->m_objectLayer->setPositionY(objectLayerY * -1 * lel->m_objectLayer->getScale());
-	
 
 	ImGui::End();
 }

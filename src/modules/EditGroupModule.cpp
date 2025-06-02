@@ -188,8 +188,11 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 				}
 			}
 		}
-	}
-	if (ImGui::CollapsingHeader("-----| Groups |-----")) {
+
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+		ImGui::SeparatorText("Groups");
+		ImGui::PopStyleColor();
+
 		//ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
 		for (int i = 0; i < obj->m_groupCount; i++) {
 			int groupInt = obj->m_groups->at(i);
@@ -433,9 +436,11 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				}
 			}
 		}
-	}
+		
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+		ImGui::SeparatorText("Groups");
+		ImGui::PopStyleColor();
 
-	if (ImGui::CollapsingHeader("-----| Groups |-----")) {
 		int groupsSize = groupsFromObjArr.size();
 		for (int i = 0; i < groupsSize; i++) {
 			int groupInt = groupsFromObjArr[i].first;
@@ -492,7 +497,6 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		//}
 		//ImGui::PopStyleVar();
 	}
-
 	
 
 	if (ImGui::CollapsingHeader("-----| Layer & Z-Order |-----")) {

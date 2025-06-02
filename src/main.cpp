@@ -422,6 +422,9 @@ class $modify(EditorUI) {
 	}
 
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
+		// Fix for touch
+		if (m_touchID == 0) m_touchID = -1;
+
 		//DEBUG TOUCH POS
 		if (ErGui::dbgTDN) {
 			ErGui::touchedDNFirstPoint = touch->getLocation();
