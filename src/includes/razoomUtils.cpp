@@ -178,27 +178,50 @@ float ErGui::getLastObjectXFast() {
 
     auto lel = LevelEditorLayer::get();
 
-    if (lastObjCount != lel->m_objectCount) {
-        lastObjCount = lel->m_objectCount;
+    if (lastObjCountX != lel->m_objectCount) {
+        lastObjCountX = lel->m_objectCount;
         
         if (!lel->m_objects) return 0.f;
         if (lel->m_objects->count() == 0) return 0.f;
 
-        lastObj = static_cast<GameObject*>(lel->m_objects->objectAtIndex(0));
-        float maxX = lastObj->getPositionX();
+        lastObjX = static_cast<GameObject*>(lel->m_objects->objectAtIndex(0));
+        float maxX = lastObjX->getPositionX();
         for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
             if (maxX < obj->getPositionX()) {
                 maxX = obj->getPositionX();
-                lastObj = obj;
+                lastObjX = obj;
             }
         }
     }
 
-    if (!lastObj) return 0.f;
+    if (!lastObjX) return 0.f;
 
-    return lastObj->getPositionX();
+    return lastObjX->getPositionX();
 }
 
+float ErGui::getLastObjectYFast() {
 
+    auto lel = LevelEditorLayer::get();
+
+    if (lastObjCountY != lel->m_objectCount) {
+        lastObjCountY = lel->m_objectCount;
+
+        if (!lel->m_objects) return 0.f;
+        if (lel->m_objects->count() == 0) return 0.f;
+
+        lastObjY = static_cast<GameObject*>(lel->m_objects->objectAtIndex(0));
+        float maxY = lastObjY->getPositionY();
+        for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+            if (maxY < obj->getPositionY()) {
+                maxY = obj->getPositionY();
+                lastObjY = obj;
+            }
+        }
+    }
+
+    if (!lastObjY) return 0.f;
+
+    return lastObjY->getPositionY();
+}
 
 

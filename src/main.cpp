@@ -154,8 +154,10 @@ void exitEditor() { // EditorUI is already destroyed here
 	oCfgFile.write(j.dump().c_str(), j.dump().size());
 	oCfgFile.close();
 
-	ErGui::lastObj = nullptr;
-	ErGui::lastObjCount = 0;
+	ErGui::lastObjX = nullptr;
+	ErGui::lastObjY = nullptr;
+	ErGui::lastObjCountX = 0;
+	ErGui::lastObjCountY = 0;
 
 	ErGui::clearObjectListCache();
 }
@@ -184,6 +186,20 @@ class $modify(ObjectToolbox) {
 	}
 };
 
+
+
+void selectObjectsWithFilter(CCArray* objArr, bool p1) {
+	CCArray* sfr = ErGui::selectFilterRealization(objArr);
+	EditorUI::get()->selectObjects(sfr, p1);
+}
+
+void selectObjectWithFilter(GameObject* obj, bool p1) {
+	if (ErGui::selectFilterRealization(obj)) {
+		EditorUI::get()->selectObject(obj, p1);
+	}
+}
+
+
 void manualObjectsSelect(CCArray* objsInShape) {
 	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
 
@@ -198,12 +214,13 @@ void manualObjectsSelect(CCArray* objsInShape) {
 			}
 			EditorUI::get()->deselectAll();
 			if (objArr->count() > 0) {
-				EditorUI::get()->selectObjects(objArr, false);
+				selectObjectsWithFilter(objArr, false);
 			}
 			break;
 		}
 		case 2: { // Subtractive
-			for (auto obj : CCArrayExt<GameObject*>(objsInShape)) {
+			CCArray* sfr = ErGui::selectFilterRealization(objsInShape);
+			for (auto obj : CCArrayExt<GameObject*>(sfr)) {
 				EditorUI::get()->deselectObject(obj);
 			}
 			if (EditorUI::get()->m_selectedObjects->count() == 1) {
@@ -214,7 +231,7 @@ void manualObjectsSelect(CCArray* objsInShape) {
 		}
 		case 1: // Additive
 		default: {
-			EditorUI::get()->selectObjects(objsInShape, false);
+			selectObjectsWithFilter(objsInShape, false);
 			break;
 		}
 	}
@@ -224,26 +241,30 @@ void manualObjectSelect(GameObject* objInShape) {
 	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
 
 	switch (selectMode) {
-	case 3: {
+	case 3: { // Intersective
 		EditorUI::get()->deselectAll();
-		EditorUI::get()->selectObject(objInShape, false);
+		selectObjectWithFilter(objInShape, false);
 		break;
 	}
-	case 2: {
-		EditorUI::get()->deselectObject(objInShape);
-		if (EditorUI::get()->m_selectedObjects->count() == 1) {
-			EditorUI::get()->m_selectedObject = static_cast<GameObject*>(EditorUI::get()->m_selectedObjects->objectAtIndex(0));
-			EditorUI::get()->m_selectedObjects->removeAllObjects();
+	case 2: { // Subtractive
+		if (ErGui::selectFilterRealization(objInShape)) {
+			EditorUI::get()->deselectObject(objInShape);
+			if (EditorUI::get()->m_selectedObjects->count() == 1) {
+				EditorUI::get()->m_selectedObject = static_cast<GameObject*>(EditorUI::get()->m_selectedObjects->objectAtIndex(0));
+				EditorUI::get()->m_selectedObjects->removeAllObjects();
+			}
 		}
 		break;
 	}
-	case 1:
+	case 1: // Additive
 	default: {
-		EditorUI::get()->selectObject(objInShape, false);
+		selectObjectWithFilter(objInShape, false);
 		break;
 	}
 	}
 }
+
+
 
 
 class $modify(EditorUI) {
@@ -354,28 +375,31 @@ class $modify(EditorUI) {
 	}
 
 	void selectObject(GameObject* obj, bool p1) {
-		if (ErGui::selectFilterRealization(obj)) {
-			if (auto eObj = static_cast<EffectGameObject*>(obj)) 
-				ErGui::saveHueValues(&eObj->m_triggerTargetColor);
-			EditorUI::selectObject(obj, p1);
-		}
-		return;
+		if (auto eObj = static_cast<EffectGameObject*>(obj))
+			ErGui::saveHueValues(&eObj->m_triggerTargetColor);
+		EditorUI::selectObject(obj, p1);
 	}
 
-	void selectObjects(CCArray* objArrInRect, bool p1) {
-		CCArray* sfr = ErGui::selectFilterRealization(objArrInRect);
-		EditorUI::selectObjects(sfr, p1);
+	void selectObjects(CCArray* objArr, bool p1) {
+		EditorUI::selectObjects(objArr, p1);
 		ErGui::groupInfoUpdate();
 	}
 
+	void processSelectObjects(CCArray* objArr) { // I hope this would not cause some more bugs, gosh...
+		CCArray* sfr = ErGui::selectFilterRealization(objArr);
+		EditorUI::processSelectObjects(sfr);
+	}
 
 	
 
 	bool init(LevelEditorLayer* lel) {
 		ErGui::editorUIDrawNode = CCDrawNode::create();
 		lel->m_objectParent->addChild(ErGui::editorUIDrawNode);
+		ErGui::editorUIDrawNode->setZOrder(2);
+
 		ErGui::touchedDN = CCDrawNode::create();
 		lel->m_objectParent->addChild(ErGui::touchedDN);
+		ErGui::touchedDN->setZOrder(2);
 		auto ret = EditorUI::init(lel);
 
 		m_fields->nothing = 42; // trigger m_fields lazy initialization
@@ -402,7 +426,13 @@ class $modify(EditorUI) {
 		//}
 
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_A) {
-			EditorUI::processSelectObjects(this->m_editorLayer->m_objects);
+			CCArray* objsInCurrentLayer = CCArray::create();
+			for (auto obj : CCArrayExt<GameObject*>(this->m_editorLayer->m_objects)) {
+				if (obj->m_editorLayer == this->m_editorLayer->m_currentLayer || (obj->m_editorLayer2 == this->m_editorLayer->m_currentLayer && obj->m_editorLayer2 != 0)) {
+					objsInCurrentLayer->addObject(obj);
+				}
+			}
+			EditorUI::processSelectObjects(objsInCurrentLayer);
 			EditorUI::updateButtons();
 			//EditorUI::deactivateRotationControl();
 			EditorUI::deactivateScaleControl();
@@ -410,6 +440,8 @@ class $modify(EditorUI) {
 			EditorUI::updateObjectInfoLabel();
 			
 		}
+
+		// todo: select all right / select all left
 
 		EditorUI::keyDown(p0);
 	}
@@ -545,6 +577,8 @@ class $modify(EditorUI) {
 			CCArray* objArr = CCArray::create();
 			for (auto obj : CCArrayExt<GameObject*>(GameManager::sharedState()->getEditorLayer()->m_objects)) {
 
+				if (!(obj->m_editorLayer == LevelEditorLayer::get()->m_currentLayer || (obj->m_editorLayer2 == LevelEditorLayer::get()->m_currentLayer && obj->m_editorLayer2 != 0))) continue;
+
 				auto editorLayer = GameManager::sharedState()->getEditorLayer();
 				auto cameraPos = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
 				auto cameraScale = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getScale();
@@ -560,21 +594,30 @@ class $modify(EditorUI) {
 				}
 			}
 
-			if (objArr->count() > 0) {
-				this->createUndoSelectObject(false);
-				manualObjectsSelect(objArr);
-			}
-			ErGui::editorUIDrawNode->clear();
+			// saving selected objects
+			CCArray* selectedObjs = CCArray::create();
+			selectedObjs->addObjectsFromArray(this->m_selectedObjects);
+			GameObject* selectedObj = this->m_selectedObject; // could be nullptr
 
 			CCArray* undoObjects = CCArray::create();
 			undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
 			EditorUI::ccTouchEnded(touch, event);
 			LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
 			LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+			this->deselectAll();
+
+			this->selectObjects(selectedObjs, false);
+			if (selectedObj) this->selectObject(selectedObj, false);
+
+			if (objArr->count() > 0) {
+				this->createUndoSelectObject(false);
+				manualObjectsSelect(objArr);
+			}
+			ErGui::editorUIDrawNode->clear();
 
 			return;
 		}
-		// SWIPE & Single Touch
+		// SWIPE + Swiping Single Touches
 		else if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 			// saving selected objects
 			CCArray* selectedObjs = CCArray::create();
@@ -612,6 +655,15 @@ class $modify(EditorUI) {
 			}
 
 			return;
+		}
+		// Single Touches without swiping
+		else if (this->m_selectedMode == 3) {
+			EditorUI::ccTouchEnded(touch, event);
+			if (auto singleSelectedObject = this->m_selectedObject) {
+				if (ErGui::selectFilterRealization(singleSelectedObject)) {
+					EditorUI::get()->selectObject(singleSelectedObject, false);
+				}
+			}
 		}
 
 		EditorUI::ccTouchEnded(touch, event);

@@ -6,7 +6,8 @@ namespace ErGui {
 	bool isGameWindowHovered = false;
 	CCPoint gameWindowTouchCoordinatesConvertedToWorld;
 	CCPoint gameWindowTouchCoordinatesConvertedToWorldForZoom;
-	static bool constrainByLastObject = false;
+	static bool constrainByLastObjectX = false;
+	static bool constrainByLastObjectY = false;
 }
 
 void ErGui::renderGameWindow() {
@@ -18,16 +19,16 @@ void ErGui::renderGameWindow() {
 
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
-	float maxPosX = ErGui::constrainByLastObject ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
+	float maxPosX = ErGui::constrainByLastObjectX ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
 
 	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 3.5f);
 	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX))
 		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
 
 	ImGui::SameLine();
-	ImGui::Checkbox("##Constrain-By-Last-Object", &ErGui::constrainByLastObject);
+	ImGui::Checkbox("##Constrain-By-Last-ObjectX", &ErGui::constrainByLastObjectX);
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Constrain By Last Object");
+		ImGui::SetTooltip("Constrain By Last Object X");
 
 	ImGui::SameLine();
 	ImGui::SameLine();
@@ -42,9 +43,16 @@ void ErGui::renderGameWindow() {
 	// Vertical slider - Возможно добавить в будущем...
 	//ImGui::SameLine();
 	float objectLayerY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
+	float maxPosY = ErGui::constrainByLastObjectY ? getLastObjectYFast() : std::max(getLastObjectYFast(), 29800.f);
+
 	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 3.5f);
-	if (ImGui::SliderFloat("##LevelPositionSliderY", &objectLayerY, 0.f, 29800.f))
+	if (ImGui::SliderFloat("##LevelPositionSliderY", &objectLayerY, 0.f, maxPosY))
 		lel->m_objectLayer->setPositionY(objectLayerY * -1 * lel->m_objectLayer->getScale());
+
+	ImGui::SameLine();
+	ImGui::Checkbox("##Constrain-By-Last-ObjectY", &ErGui::constrainByLastObjectY);
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Constrain By Last Object Y");
 
 	ImGui::SameLine();
 	if (ImGui::Button("Level Settings")) {
