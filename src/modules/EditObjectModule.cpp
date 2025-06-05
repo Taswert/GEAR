@@ -853,7 +853,7 @@ void renderMultiObjectSettings(CCArray* objArr) {
 }
 
 void ErGui::renderEditObjectModule() {
-	if (!ImGui::Begin("EditObject-Module")) {
+	if (!ImGui::Begin("Edit")) {
 		ImGui::End();
 		return;
 	}

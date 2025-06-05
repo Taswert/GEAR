@@ -235,4 +235,13 @@ namespace ErGui {
 		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(copyObjArr, command));
 		GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
 	}
+
+	bool compareCCArrays(CCArray* arr1, CCArray* arr2) {
+		if (arr1->count() != arr2->count()) return false;
+		for (int i = 0; i < arr1->count(); i++) {
+			if (!arr1->objectAtIndex(i)->isEqual(arr2->objectAtIndex(i))) 
+				return false;
+		}
+		return true;
+	}
 }

@@ -293,6 +293,7 @@ void renderForObject(GameObject* obj) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	if (ImGui::InputFloat("##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f")) {
 		int mod = 1;
+		//if (scaleX < 0.01f) scaleX = 0.01f; // ВРЕМЕННО
 		if (oldScaleX > scaleX) mod = -1;
 
 		short flipX = obj->isFlipX() ? -1 : 1;
@@ -312,6 +313,7 @@ void renderForObject(GameObject* obj) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	if (ImGui::InputFloat("##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f")) {
 		int mod = 1;
+		//if (scaleY < 0.01f) scaleY = 0.01f; // ВРЕМЕННО
 		if (oldScaleY > scaleY) mod = -1;
 
 		short flipY = obj->isFlipY() ? -1 : 1;
@@ -484,25 +486,39 @@ void renderForArray(CCArray* objArr) {
 		if (!scaleObjectsPositionSnap) {
 			CCPoint groupCenter = lel->m_editorUI->getGroupCenter(objArr, false);
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				CCPoint offset = { (obj->getPosition().x - groupCenter.x) / obj->getScaleX(), (obj->getPosition().y - groupCenter.y) / obj->getScaleY() };
+				CCPoint offset = { 
+					obj->getScaleX() != 0.f ? (obj->getPosition().x - groupCenter.x) / obj->getScaleX() : (obj->getPosition().x - groupCenter.x),
+					obj->getScaleY() != 0.f ? (obj->getPosition().y - groupCenter.y) / obj->getScaleY() : (obj->getPosition().y - groupCenter.y)
+				};
 
 				float scaleX = obj->m_scaleX;
 				float scaleY = obj->m_scaleY;
 
+				float resultScaleX = scaleX + scaleDelta + scaleDeltaX;
+				float resultScaleY = scaleY + scaleDelta + scaleDeltaY;
+
 				short flipX = obj->isFlipX() ? -1 : 1;
 				short flipY = obj->isFlipY() ? -1 : 1;
 
-				obj->setScaleX((scaleX + scaleDelta + scaleDeltaX) * flipX);
-				obj->setScaleY((scaleY + scaleDelta + scaleDeltaY) * flipY);
-				obj->m_scaleX = scaleX + scaleDelta + scaleDeltaX;
-				obj->m_scaleY = scaleY + scaleDelta + scaleDeltaY;
+				obj->setScaleX((resultScaleX) * flipX);
+				obj->setScaleY((resultScaleY) * flipY);
+				obj->m_scaleX = resultScaleX;
+				obj->m_scaleY = resultScaleY;
 
-				if (scaleDelta)
+				if (scaleDelta) {
+					//std::cout << offset.x << " - " << obj->getScaleX() << " - " << groupCenter.x << "\n";
+					//std::cout << offset.x * obj->getScaleX() + groupCenter.x << "\n";
 					obj->setPosition({ offset.x * obj->getScaleX() + groupCenter.x , offset.y * obj->getScaleY() + groupCenter.y });
-				else if (scaleDeltaX)
+					
+				}
+				else if (scaleDeltaX) {
 					obj->setPosition({ offset.x * obj->getScaleX() + groupCenter.x , obj->getPosition().y });
-				else if (scaleDeltaY)
+					
+				}
+				else if (scaleDeltaY) {
 					obj->setPosition({ obj->getPosition().x , offset.y * obj->getScaleY() + groupCenter.y });
+					
+				}
 			}
 		}
 		else {
@@ -510,13 +526,16 @@ void renderForArray(CCArray* objArr) {
 				float scaleX = obj->m_scaleX;
 				float scaleY = obj->m_scaleY;
 
+				float resultScaleX = scaleX + scaleDelta + scaleDeltaX;
+				float resultScaleY = scaleY + scaleDelta + scaleDeltaY;
+
 				short flipX = obj->isFlipX() ? -1 : 1;
 				short flipY = obj->isFlipY() ? -1 : 1;
 
-				obj->setScaleX((scaleX + scaleDelta + scaleDeltaX) * flipX);
-				obj->setScaleY((scaleY + scaleDelta + scaleDeltaY) * flipY);
-				obj->m_scaleX = scaleX + scaleDelta + scaleDeltaX;
-				obj->m_scaleY = scaleY + scaleDelta + scaleDeltaY;
+				obj->setScaleX((resultScaleX) * flipX);
+				obj->setScaleY((resultScaleY) * flipY);
+				obj->m_scaleX = resultScaleX;
+				obj->m_scaleY = resultScaleY;
 			}
 		}
 	}
@@ -568,7 +587,7 @@ void renderForArray(CCArray* objArr) {
 }
 
 void ErGui::renderTransformation() {
-	ImGui::Begin("Transformation-Module");
+	ImGui::Begin("Transform");
 
 
 	auto obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject;

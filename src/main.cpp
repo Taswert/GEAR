@@ -11,6 +11,7 @@
 #include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/CCEGLView.hpp>
+#include <Geode/modify/CCDirector.hpp>
 #include <Geode/modify/EditorPauseLayer.hpp>
 
 #include <IconsMaterialDesignIcons.h>
@@ -508,6 +509,19 @@ class $modify(EditorUI) {
 		//	return;
 		//}
 
+		cocos2d::ccColor4F lassoColor = { 0.f, 1.f, 0.f, 1.f };
+		switch (Mod::get()->getSavedValue<int>("select-mode")) {
+		case 2:	// Subtractive
+			lassoColor = { 1.f, 0.f, 1.f, 1.f };
+			break;
+		case 3: // Intersective
+			lassoColor = { 1.f, 0.6f, 0.f, 1.f };
+			break;
+		case 1: // Additive
+		default:
+			break;
+		}
+
 		//LASSO
 		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 			CCPoint pt = touch->getLocation();
@@ -515,7 +529,7 @@ class $modify(EditorUI) {
 			ErGui::editorUIDrawNode->clear();
 
 			if (ErGui::editorUISwipePoints.size() > 1) {
-				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
+				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
 			}
 			return;
 		}
@@ -532,7 +546,7 @@ class $modify(EditorUI) {
 			ErGui::editorUISwipePoints.push_back({ ptEnd.x, ptStart.y });
 		
 			if (ErGui::editorUISwipePoints.size() > 1) {
-				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
+				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
 			}
 		}
 		EditorUI::ccTouchMoved(touch, event);
@@ -609,11 +623,13 @@ class $modify(EditorUI) {
 			this->selectObjects(selectedObjs, false);
 			if (selectedObj) this->selectObject(selectedObj, false);
 
-			if (objArr->count() > 0) {
-				this->createUndoSelectObject(false);
-				manualObjectsSelect(objArr);
-			}
+			this->createUndoSelectObject(false);
+			manualObjectsSelect(objArr);
 			ErGui::editorUIDrawNode->clear();
+
+			if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
+				LevelEditorLayer::get()->m_undoObjects->removeLastObject();
+			}
 
 			return;
 		}
@@ -649,8 +665,7 @@ class $modify(EditorUI) {
 
 			this->createUndoSelectObject(false);
 			manualObjectsSelect(selectedObjsDelta);
-
-			if (this->m_selectedObjects->isEqualToArray(selectedObjs) && this->m_selectedObject == selectedObj) {
+			if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
 				LevelEditorLayer::get()->m_undoObjects->removeLastObject();
 			}
 
@@ -671,6 +686,16 @@ class $modify(EditorUI) {
 
 };
 
+
+//class $modify(CCDirector) {
+//	void drawScene() {
+//		CCDirector::drawScene();
+//		//if (ImGuiCocos::get().isInitialized())
+//		//	ImGuiCocos::get().drawFrame();
+//		ErGui::gameFrame = captureScreenToGLTexture();
+//		
+//	}
+//};
 
 class $modify(CCEGLView) {
 	void swapBuffers() {
@@ -723,22 +748,32 @@ class $modify(CCTouchDispatcher) {
 	void touches(CCSet * touches, CCEvent * event, unsigned int type) {
 		auto& io = ImGui::GetIO();
 		auto* touch = static_cast<CCTouch*>(touches->anyObject());
+		if (!touch) return;
 
-		if (touch == nullptr) {
-			return;
+
+
+		if (type == CCTOUCHBEGAN && ErGui::isGameWindowHovered) {
+			ErGui::isGameWindowTouching = true;
 		}
 
-		if (ErGui::isGameWindowHovered) {
+		if (ErGui::isGameWindowTouching) {
 			ImGui::GetIO().WantCaptureMouse = false;
 			touch->setTouchInfo(touch->getID(), ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
+			ImGui::ClearActiveID();
 		}
+
+		if (type == CCTOUCHENDED || type == CCTOUCHCANCELLED) {
+			ErGui::isGameWindowTouching = false;
+		}
+
+		
 		CCTouchDispatcher::touches(touches, event, type);
 	}
 };
 
 $on_mod(Loaded) {
-	//AllocConsole();
-	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (Mod::get()->getSavedValue<float>("grid-size") == 0.f) Mod::get()->setSavedValue("grid-size", 30.f);
 	if (Mod::get()->getSavedValue<float>("zoom-multiplier") == 0.f) Mod::get()->setSavedValue("zoom-multiplier", 1.f);
@@ -831,7 +866,6 @@ $on_mod(Loaded) {
 
 		ErGui::setupTriggersSettings();
 		}).draw([] {
-
 			if (auto lel = GameManager::sharedState()->getEditorLayer()) {
 				ErGui::renderGlobalDockingView();
 				ErGui::renderEditGroupModule();

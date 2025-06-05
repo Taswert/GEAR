@@ -110,6 +110,14 @@ void ErGui::renderToolsModule1() {
 		ImGui::SetTooltip("Snap");
 		
 	ImGui::Separator();
+	if (ImGui::Selectable(ICON_MDI_CONTENT_DUPLICATE, false, 0, BTN_SIZE)) {
+		//if (ImGui::Button("Delete##Perm")) {	//ICON_MDI_DELETE_FOREVER
+		editorUI->onDuplicate(nullptr);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Duplicate");
+	ImGui::Dummy(DUMMY_PAD);
+
 	if (ImGui::Selectable(ICON_MDI_DELETE_FOREVER, false, 0, BTN_SIZE)) {
 	//if (ImGui::Button("Delete##Perm")) {	//ICON_MDI_DELETE_FOREVER
 		if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
@@ -118,6 +126,7 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Delete Selected");
 	ImGui::Dummy(DUMMY_PAD);
+
 	if (ImGui::Selectable(ICON_MDI_VECTOR_SQUARE, false, 0, BTN_SIZE)) {
 	//if (ImGui::Button("Warp")) {	//ICON_MDI_VECTOR_SQUARE
 		editorUI->activateTransformControl(nullptr);
@@ -125,6 +134,7 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Warp Selected");
 	ImGui::Dummy(DUMMY_PAD);
+
 	if (ImGui::Selectable(ICON_MDI_SELECTION_OFF, false, 0, BTN_SIZE)) {
 	//if (ImGui::Button("Deselect")) { //ICON_MDI_SELECTION_OFF
 		editorUI->createUndoSelectObject(false);
@@ -199,6 +209,7 @@ void ErGui::renderToolsModule2() {
 		return;
 	}
 
+	const ImVec2 BTN_SIZE = ImVec2(24.f, 30.f);
 
 	if (auto dockNode = ImGui::GetWindowDockNode()) {
 		if (dockNode->Windows.size() == 1)
@@ -342,9 +353,9 @@ void ErGui::renderToolsModule2() {
 		}
 		case 4: //Zoom
 		{
-			if (ImGui::Button("Zoom+")) editorUI->zoomIn(nullptr);
+			if (ImGui::Selectable(ICON_MDI_MAGNIFY_PLUS, false, 0, BTN_SIZE)) editorUI->zoomIn(nullptr);
 			ImGui::SameLine();
-			if (ImGui::Button("Zoom-")) editorUI->zoomOut(nullptr);
+			if (ImGui::Selectable(ICON_MDI_MAGNIFY_MINUS, false, 0, BTN_SIZE)) editorUI->zoomOut(nullptr);
 
 			//ImGui::SameLine();
 			//ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);

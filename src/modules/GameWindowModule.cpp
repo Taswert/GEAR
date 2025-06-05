@@ -2,12 +2,22 @@
 #include "../helpers/ScreenRenderer.h"
 #include "razoomUtils.hpp"
 
+
 namespace ErGui {
 	bool isGameWindowHovered = false;
 	CCPoint gameWindowTouchCoordinatesConvertedToWorld;
 	CCPoint gameWindowTouchCoordinatesConvertedToWorldForZoom;
 	static bool constrainByLastObjectX = false;
 	static bool constrainByLastObjectY = false;
+}
+
+void updateMousePos(ImVec2 drawSize) {
+	auto mouse = ImGui::GetMousePos();
+	ImVec2 windowStart = ImGui::GetItemRectMin();
+	ImVec2 windowMouseCoordinates = ImVec2(mouse.x - windowStart.x, mouse.y - windowStart.y);
+	auto winSize = CCDirector::sharedDirector()->getWinSize();
+	ErGui::gameWindowTouchCoordinatesConvertedToWorld = CCPoint(windowMouseCoordinates.x / drawSize.x * winSize.width, windowMouseCoordinates.y / drawSize.y * winSize.height);
+	ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom = CCPoint(ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, winSize.height - ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
 }
 
 void ErGui::renderGameWindow() {
@@ -95,15 +105,13 @@ void ErGui::renderGameWindow() {
 
 	if (ImGui::IsItemHovered()) {
 		ErGui::isGameWindowHovered = true;
-		auto mouse = ImGui::GetMousePos();
-		ImVec2 windowStart = ImGui::GetItemRectMin();
-		ImVec2 windowMouseCoordinates = ImVec2(mouse.x - windowStart.x, mouse.y - windowStart.y);
-		auto winSize = CCDirector::sharedDirector()->getWinSize();
-		ErGui::gameWindowTouchCoordinatesConvertedToWorld = CCPoint(windowMouseCoordinates.x / drawSize.x * winSize.width, windowMouseCoordinates.y / drawSize.y * winSize.height);
-		ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom = CCPoint(gameWindowTouchCoordinatesConvertedToWorld.x, winSize.height - gameWindowTouchCoordinatesConvertedToWorld.y);
+		updateMousePos(drawSize);
 	}
 	else {
 		ErGui::isGameWindowHovered = false;
+		if (ErGui::isGameWindowTouching) { // Нужно для вычисления позиции мыши, когда она не перекрывает Image, но ещё не отпущено
+			updateMousePos(drawSize);
+		}
 	}
 
 	ImGui::End();

@@ -41,10 +41,14 @@ namespace ErGui {
 		return found;
 	}
 
+	bool compareCCArrays(CCArray* arr1, CCArray* arr2);
+
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;
 	inline CCDrawNode* touchedDN = nullptr;
 	inline CCPoint touchedDNFirstPoint = { 0.f, 0.f };
 	inline bool dbgTDN = false;
 	inline GLuint gameFrame;
+
+	inline bool isGameWindowTouching = false;
 };

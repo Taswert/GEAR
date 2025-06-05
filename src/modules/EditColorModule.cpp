@@ -672,7 +672,7 @@ void renderForArrayEC(CCArray* objArr) {
 
 
 void ErGui::renderEditColor() {
-	if (!ImGui::Begin("EditColor-Module")) {
+	if (!ImGui::Begin("Color")) {
 		ImGui::End();
 		return;
 	}
