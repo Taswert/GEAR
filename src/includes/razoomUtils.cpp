@@ -224,4 +224,10 @@ float ErGui::getLastObjectYFast() {
     return lastObjY->getPositionY();
 }
 
+static char fakePauseLayer[sizeof(EditorPauseLayer)] = {0};
+
+EditorPauseLayer* ErGui::getFakePauseLayer() {
+    ((EditorPauseLayer*)fakePauseLayer)->m_editorLayer = LevelEditorLayer::get();
+    return (EditorPauseLayer*)fakePauseLayer;
+}
 

@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/EditColorModule.cpp
     src/modules/GameWindowModule.cpp
     src/modules/SettingsModule.cpp
+    src/modules/EditorUtilsModule.cpp
     src/includes/razoomUtils.cpp
  "src/modules/GlobalDockingView.cpp")
 

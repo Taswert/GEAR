@@ -15,6 +15,8 @@ namespace ErGui {
     float getLastObjectXFast();
     float getLastObjectYFast();
 
+    EditorPauseLayer* getFakePauseLayer();
+
     inline int lastObjCountX = 0;
     inline int lastObjCountY = 0;
     inline GameObject* lastObjX = nullptr;

@@ -28,6 +28,7 @@
 #include "modules/GameWindowModule.hpp"
 #include "modules/GlobalDockingView.hpp"
 #include "modules/SettingsModule.hpp"
+#include "modules/EditorUtilsModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
@@ -880,6 +881,7 @@ $on_mod(Loaded) {
 				ErGui::renderActionHistoryModule();
 				ErGui::renderEditColor();
 				ErGui::renderSettingsModule();
+				ErGui::renderEditorUtilsModule();
 				ErGui::renderGameWindow();
 
 				//ImGui::ShowStyleEditor();

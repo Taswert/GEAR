@@ -1,5 +1,5 @@
 #include "SettingsModule.hpp"
-
+#include "razoomUtils.hpp"
 
 bool previewAnimations;
 bool previewParticles;
@@ -38,9 +38,7 @@ void ErGui::renderSettingsModule() {
     
     if (ImGui::Checkbox("Preview animations", &previewAnimations)) {
         // gm->setGameVariable("0118", previewAnimations);
-        char* fake[sizeof(EditorPauseLayer)];
-        ((EditorPauseLayer*)fake)->m_editorLayer = LevelEditorLayer::get();
-        ((EditorPauseLayer*)fake)->togglePreviewAnim(nullptr);
+        getFakePauseLayer()->togglePreviewAnim(nullptr);
     }
 
     if (ImGui::Checkbox("Preview particles", &previewParticles)) {
