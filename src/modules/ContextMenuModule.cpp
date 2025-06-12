@@ -175,13 +175,13 @@ void ErGui::renderContextMenu() {
 	}
 
 	
-	bool isOpen = ImGui::IsPopupOpen(contextMenuName.c_str(), ImGuiPopupFlags_None);
+	isContextMenuOpen = ImGui::IsPopupOpen(contextMenuName.c_str(), ImGuiPopupFlags_None);
 
-	if (wasOpen && !isOpen) {
+	if (wasOpen && !isContextMenuOpen) {
 		objectUnderCursor = nullptr;
 	}
 
-	wasOpen = isOpen;
+	wasOpen = isContextMenuOpen;
 
 
 	if (ImGui::BeginPopup(contextMenuName.c_str())) {

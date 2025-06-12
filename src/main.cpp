@@ -732,13 +732,13 @@ class $modify(CCEGLView) {
 		CCEGLView::swapBuffers();
 	}
 	
-	void onGLFWMouseCallback(GLFWwindow* window, int button, int action, int mods) {
-		CCEGLView::onGLFWMouseCallBack(window, button, action, mods);
-		std::cout
-			<< "Button: " << button << "\n"
-			<< "Action: " << action << "\n"
-			<< "Mods: " << mods << "\n";
-	}
+	//void onGLFWMouseCallback(GLFWwindow* window, int button, int action, int mods) {
+	//	CCEGLView::onGLFWMouseCallBack(window, button, action, mods);
+	//	std::cout
+	//		<< "Button: " << button << "\n"
+	//		<< "Action: " << action << "\n"
+	//		<< "Mods: " << mods << "\n";
+	//}
 
 	void pollEvents() {
 		auto& io = ImGui::GetIO();
@@ -755,10 +755,10 @@ class $modify(CCEGLView) {
 				continue;
 			}
 
-
 			if (EditorUI::get() && !EditorUI::get()->m_isPaused && !io.WantCaptureMouse) {
 				switch (msg.message) {
 					case WM_RBUTTONDOWN: {
+
 						ErGui::rightTouch = new CCTouch;
 						ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
 
@@ -769,16 +769,19 @@ class $modify(CCEGLView) {
 						break;
 					}
 					case WM_MOUSEMOVE: {
-						if (ErGui::rightTouch) {
-							ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
+						if (!ErGui::rightTouch) break;
 
-							auto setMoved = CCSet::create();
-							setMoved->addObject(ErGui::rightTouch);
-							CCDirector::sharedDirector()->getTouchDispatcher()->touchesMoved(setMoved, nullptr);
-						}
+						ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
+
+						auto setMoved = CCSet::create();
+						setMoved->addObject(ErGui::rightTouch);
+						CCDirector::sharedDirector()->getTouchDispatcher()->touchesMoved(setMoved, nullptr);
+
 						break;
 					}
 					case WM_RBUTTONUP: {
+						if (!ErGui::rightTouch) break;
+
 						ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
 
 						auto setEnded = CCSet::create();

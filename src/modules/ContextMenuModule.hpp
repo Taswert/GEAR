@@ -11,4 +11,5 @@ namespace ErGui {
 	inline CCTouch* rightTouch = nullptr;
 	inline bool shouldOpenContextMenu = false;
 	inline GameObject* objectUnderCursor = nullptr;
+	inline bool isContextMenuOpen = false;
 }
