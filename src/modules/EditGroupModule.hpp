@@ -65,7 +65,7 @@ namespace ErGui {
 	static int chosenGroupEGM = 0;
 	static int groupOffset = 1;
 
-	inline std::vector<std::pair<int, int>> groupsFromObjArr;
+	inline std::vector<std::pair<int, int>> groupsFromObjArr; // First - Key (GroupID), Second - Object Count
 	inline std::vector<int> groupsCommonCount; //This array count groups for common objects. Needed for colored group buttons (array object)
 
 	inline CopyEGMState copyStateObject;

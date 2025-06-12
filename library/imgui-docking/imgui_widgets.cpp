@@ -5825,6 +5825,12 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
             }
             float cos_hue_angle = ImCos(-H * 2.0f * IM_PI);
             float sin_hue_angle = ImSin(-H * 2.0f * IM_PI);
+
+            if (flags & ImGuiColorEditFlags_DisableWheelRot) {
+                cos_hue_angle = ImCos(0 * 2.0f * IM_PI);
+                sin_hue_angle = ImSin(0 * 2.0f * IM_PI);
+            }
+
             if (ImTriangleContainsPoint(triangle_pa, triangle_pb, triangle_pc, ImRotate(initial_off, cos_hue_angle, sin_hue_angle)))
             {
                 // Interacting with SV triangle
@@ -6034,6 +6040,12 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         draw_list->AddCircle(hue_cursor_pos, hue_cursor_rad + 1, col_midgrey, hue_cursor_segments);
         draw_list->AddCircle(hue_cursor_pos, hue_cursor_rad, col_white, hue_cursor_segments);
 
+        // Turning off triangle rotation
+        if (flags & ImGuiColorEditFlags_DisableWheelRot) {
+            cos_hue_angle = ImCos(0 * 2.0f * IM_PI);
+            sin_hue_angle = ImSin(0 * 2.0f * IM_PI);
+        }
+
         // Render SV triangle (rotated according to hue)
         ImVec2 tra = wheel_center + ImRotate(triangle_pa, cos_hue_angle, sin_hue_angle);
         ImVec2 trb = wheel_center + ImRotate(triangle_pb, cos_hue_angle, sin_hue_angle);
@@ -6043,7 +6055,7 @@ bool ImGui::ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags fl
         draw_list->PrimVtx(tra, uv_white, hue_color32);
         draw_list->PrimVtx(trb, uv_white, col_black);
         draw_list->PrimVtx(trc, uv_white, col_white);
-        draw_list->AddTriangle(tra, trb, trc, col_midgrey, 1.5f);
+        draw_list->AddTriangle(tra, trb, trc, IM_COL32(0, 0, 0, 0), 0.f); //tra, trb, trc, col_midgrey, 1.5f
         sv_cursor_pos = ImLerp(ImLerp(trc, tra, ImSaturate(S)), trb, ImSaturate(1 - V));
     }
     else if (flags & ImGuiColorEditFlags_PickerHueBar)

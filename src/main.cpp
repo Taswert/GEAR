@@ -27,6 +27,7 @@
 #include "modules/EditColorModule.hpp"
 #include "modules/GameWindowModule.hpp"
 #include "modules/GlobalDockingView.hpp"
+#include "modules/ContextMenuModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
@@ -186,7 +187,6 @@ class $modify(ObjectToolbox) {
 		return size;
 	}
 };
-
 
 
 void selectObjectsWithFilter(CCArray* objArr, bool p1) {
@@ -418,6 +418,7 @@ class $modify(EditorUI) {
 	}
 
 	virtual void keyDown(cocos2d::enumKeyCodes p0) {
+
 		if (p0 == cocos2d::enumKeyCodes::KEY_Four) {
 			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
 		}
@@ -427,19 +428,7 @@ class $modify(EditorUI) {
 		//}
 
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_A) {
-			CCArray* objsInCurrentLayer = CCArray::create();
-			for (auto obj : CCArrayExt<GameObject*>(this->m_editorLayer->m_objects)) {
-				if (obj->m_editorLayer == this->m_editorLayer->m_currentLayer || (obj->m_editorLayer2 == this->m_editorLayer->m_currentLayer && obj->m_editorLayer2 != 0)) {
-					objsInCurrentLayer->addObject(obj);
-				}
-			}
-			EditorUI::processSelectObjects(objsInCurrentLayer);
-			EditorUI::updateButtons();
-			//EditorUI::deactivateRotationControl();
-			EditorUI::deactivateScaleControl();
-			EditorUI::deactivateTransformControl();
-			EditorUI::updateObjectInfoLabel();
-			
+			ErGui::selectAllObjects();
 		}
 
 		// todo: select all right / select all left
@@ -455,6 +444,8 @@ class $modify(EditorUI) {
 	}
 
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
+		if (ErGui::rightTouch) return CCLayer::ccTouchBegan (touch, event);
+
 		// Fix for touch
 		if (m_touchID == 0) m_touchID = -1;
 
@@ -465,21 +456,37 @@ class $modify(EditorUI) {
 			ErGui::touchedDN->drawDot(ErGui::touchedDNFirstPoint, 1.5f, { 0.82f, 0.25f, 0.82f, 1.f });
 		}
 
-		//LASSO + SWIPE
-		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			ErGui::editorUISwipePoints.clear();
-			CCPoint pt = touch->getLocation();
-			ErGui::editorUISwipePoints.push_back(pt);
-			ErGui::editorUIDrawNode->clear();
-			//return true;
-		}
+		auto cameraPos = this->m_editorLayer->m_objectLayer->getPosition();
+		auto cameraScale = this->m_editorLayer->m_objectLayer->getScale();
+		CCPoint touchConverted = CCPoint(
+			(touch->getLocation() - cameraPos) / cameraScale
+		);
 
+		//FREE MOVE CONDITION
+		if (!(this->m_editorLayer->objectAtPosition(touchConverted) && this->m_freeMoveEnabled)) {
+			ErGui::isFreeMoveAndObjectTouching = false;
+			//LASSO + SWIPE
+			if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+				ErGui::editorUISwipePoints.clear();
+				CCPoint pt = touch->getLocation();
+				ErGui::editorUISwipePoints.push_back(pt);
+				ErGui::editorUIDrawNode->clear();
+				//return true;
+			}
+		}
+		else {
+			ErGui::isFreeMoveAndObjectTouching = true;
+		}
 
 		return EditorUI::ccTouchBegan(touch, event);
 	}
 
 
 	void ccTouchMoved(CCTouch* touch, CCEvent* event) {
+		if (ErGui::rightTouch) {
+			CCLayer::ccTouchMoved(touch, event);
+			return;
+		}
 
 		//DEBUG TOUCH POS
 		if (ErGui::dbgTDN) {
@@ -522,37 +529,55 @@ class $modify(EditorUI) {
 			break;
 		}
 
-		//LASSO
-		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			CCPoint pt = touch->getLocation();
-			ErGui::editorUISwipePoints.push_back(pt);
-			ErGui::editorUIDrawNode->clear();
+		if (!ErGui::isFreeMoveAndObjectTouching) {
+			//LASSO
+			if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+				CCPoint pt = touch->getLocation();
+				ErGui::editorUISwipePoints.push_back(pt);
+				ErGui::editorUIDrawNode->clear();
 
-			if (ErGui::editorUISwipePoints.size() > 1) {
-				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
+				if (ErGui::editorUISwipePoints.size() > 1) {
+					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
+				}
+				return;
 			}
-			return;
+
+			//SWIPE
+			if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+				CCPoint ptStart = ErGui::editorUISwipePoints.at(0);
+				CCPoint ptEnd = touch->getLocation();
+				ErGui::editorUIDrawNode->clear();
+				ErGui::editorUISwipePoints.clear();
+				ErGui::editorUISwipePoints.push_back(ptStart);
+				ErGui::editorUISwipePoints.push_back({ ptStart.x, ptEnd.y });
+				ErGui::editorUISwipePoints.push_back(ptEnd);
+				ErGui::editorUISwipePoints.push_back({ ptEnd.x, ptStart.y });
+
+				if (ErGui::editorUISwipePoints.size() > 1) {
+					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
+				}
+			}
 		}
 
-		//SWIPE
-		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			CCPoint ptStart = ErGui::editorUISwipePoints.at(0);
-			CCPoint ptEnd = touch->getLocation();
-			ErGui::editorUIDrawNode->clear();
-			ErGui::editorUISwipePoints.clear();
-			ErGui::editorUISwipePoints.push_back(ptStart);
-			ErGui::editorUISwipePoints.push_back({ ptStart.x, ptEnd.y });
-			ErGui::editorUISwipePoints.push_back(ptEnd);
-			ErGui::editorUISwipePoints.push_back({ ptEnd.x, ptStart.y });
-		
-			if (ErGui::editorUISwipePoints.size() > 1) {
-				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
-			}
-		}
 		EditorUI::ccTouchMoved(touch, event);
 	}
 
 	void ccTouchEnded(CCTouch* touch, CCEvent* event) {
+		if (ErGui::rightTouch) {
+			auto cameraPos = this->m_editorLayer->m_objectLayer->getPosition();
+			auto cameraScale = this->m_editorLayer->m_objectLayer->getScale();
+			CCPoint touchConverted = CCPoint(
+				(touch->getLocation() - cameraPos) / cameraScale
+			);
+			if (auto obj = this->m_editorLayer->objectAtPosition(touchConverted)) {
+				ErGui::objectUnderCursor = obj;
+				//obj->setColor({ 255, 50, 190 });
+				//obj->setChildColor({ 190, 40, 140 });
+			}
+
+			ErGui::shouldOpenContextMenu = true;
+			return CCLayer::ccTouchEnded(touch, event);
+		}
 
 		ErGui::touchedDN->clear();
 		ErGui::editorUIDrawNode->clear();
@@ -583,103 +608,106 @@ class $modify(EditorUI) {
 		//	return;
 		//}
 
-		//LASSO
-		if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
-			this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
+		if (!ErGui::isFreeMoveAndObjectTouching) {
+			//LASSO
+			if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
+				this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
 
-			CCArray* objArr = CCArray::create();
-			for (auto obj : CCArrayExt<GameObject*>(GameManager::sharedState()->getEditorLayer()->m_objects)) {
+				CCArray* objArr = CCArray::create();
+				for (auto obj : CCArrayExt<GameObject*>(GameManager::sharedState()->getEditorLayer()->m_objects)) {
 
-				if (!(obj->m_editorLayer == LevelEditorLayer::get()->m_currentLayer || (obj->m_editorLayer2 == LevelEditorLayer::get()->m_currentLayer && obj->m_editorLayer2 != 0))) continue;
+					if (!(obj->m_editorLayer == LevelEditorLayer::get()->m_currentLayer || (obj->m_editorLayer2 == LevelEditorLayer::get()->m_currentLayer && obj->m_editorLayer2 != 0) || this->m_editorLayer->m_currentLayer == -1)) continue;
 
-				auto editorLayer = GameManager::sharedState()->getEditorLayer();
-				auto cameraPos = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
-				auto cameraScale = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getScale();
+					auto editorLayer = GameManager::sharedState()->getEditorLayer();
+					auto cameraPos = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
+					auto cameraScale = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getScale();
 
-				auto objPos = obj->getPosition();
-				auto newPos = cocos2d::CCPoint(
-					(objPos.x * cameraScale) + cameraPos.x,
-					(objPos.y * cameraScale) + cameraPos.y
-				);
+					auto objPos = obj->getPosition();
+					auto newPos = cocos2d::CCPoint(
+						(objPos.x * cameraScale) + cameraPos.x,
+						(objPos.y * cameraScale) + cameraPos.y
+					);
 
-				if (ErGui::isPointInPolygon(newPos, ErGui::editorUISwipePoints)) {
-					objArr->addObject(obj);
+					if (ErGui::isPointInPolygon(newPos, ErGui::editorUISwipePoints)) {
+						objArr->addObject(obj);
+					}
+				}
+
+				// saving selected objects
+				CCArray* selectedObjs = CCArray::create();
+				selectedObjs->addObjectsFromArray(this->m_selectedObjects);
+				GameObject* selectedObj = this->m_selectedObject; // could be nullptr
+
+				CCArray* undoObjects = CCArray::create();
+				undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
+				EditorUI::ccTouchEnded(touch, event);
+				LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
+				LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+				this->deselectAll();
+
+				this->selectObjects(selectedObjs, false);
+				if (selectedObj) this->selectObject(selectedObj, false);
+
+				this->createUndoSelectObject(false);
+				manualObjectsSelect(objArr);
+				ErGui::editorUIDrawNode->clear();
+
+				if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
+					LevelEditorLayer::get()->m_undoObjects->removeLastObject();
+				}
+
+				return;
+			}
+			// SWIPE + Swiping Single Touches
+			else if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+				// saving selected objects
+				CCArray* selectedObjs = CCArray::create();
+				selectedObjs->addObjectsFromArray(this->m_selectedObjects);
+				GameObject* selectedObj = this->m_selectedObject; // could be nullptr
+
+				this->deselectAll();
+
+				// saving undo list
+				CCArray* undoObjects = CCArray::create();
+				undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
+
+
+				EditorUI::ccTouchEnded(touch, event);
+
+				// saving delta objs
+				CCArray* selectedObjsDelta = CCArray::create();
+				selectedObjsDelta->addObjectsFromArray(this->m_selectedObjects);
+				if (this->m_selectedObject) selectedObjsDelta->addObject(this->m_selectedObject);
+				this->deselectAll();
+
+				// loading selected objects
+				this->selectObjects(selectedObjs, false);
+				if (selectedObj) this->selectObject(selectedObj, false);
+
+				// loading undo list
+				LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
+				LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+
+				this->createUndoSelectObject(false);
+				manualObjectsSelect(selectedObjsDelta);
+				if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
+					LevelEditorLayer::get()->m_undoObjects->removeLastObject();
+				}
+
+				return;
+			}
+			// Single Touches without swiping
+			else if (this->m_selectedMode == 3) {
+				EditorUI::ccTouchEnded(touch, event);
+				if (auto singleSelectedObject = this->m_selectedObject) {
+					if (ErGui::selectFilterRealization(singleSelectedObject)) {
+						EditorUI::get()->selectObject(singleSelectedObject, false);
+					}
 				}
 			}
-
-			// saving selected objects
-			CCArray* selectedObjs = CCArray::create();
-			selectedObjs->addObjectsFromArray(this->m_selectedObjects);
-			GameObject* selectedObj = this->m_selectedObject; // could be nullptr
-
-			CCArray* undoObjects = CCArray::create();
-			undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
-			EditorUI::ccTouchEnded(touch, event);
-			LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
-			LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
-			this->deselectAll();
-
-			this->selectObjects(selectedObjs, false);
-			if (selectedObj) this->selectObject(selectedObj, false);
-
-			this->createUndoSelectObject(false);
-			manualObjectsSelect(objArr);
-			ErGui::editorUIDrawNode->clear();
-
-			if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
-				LevelEditorLayer::get()->m_undoObjects->removeLastObject();
-			}
-
-			return;
 		}
-		// SWIPE + Swiping Single Touches
-		else if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-			// saving selected objects
-			CCArray* selectedObjs = CCArray::create();
-			selectedObjs->addObjectsFromArray(this->m_selectedObjects);
-			GameObject* selectedObj = this->m_selectedObject; // could be nullptr
-
-			this->deselectAll();
-
-			// saving undo list
-			CCArray* undoObjects = CCArray::create();
-			undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
-
-
-			EditorUI::ccTouchEnded(touch, event);
-
-			// saving delta objs
-			CCArray* selectedObjsDelta = CCArray::create();
-			selectedObjsDelta->addObjectsFromArray(this->m_selectedObjects);
-			if (this->m_selectedObject) selectedObjsDelta->addObject(this->m_selectedObject);
-			this->deselectAll();
-
-			// loading selected objects
-			this->selectObjects(selectedObjs, false);
-			if (selectedObj) this->selectObject(selectedObj, false);
-
-			// loading undo list
-			LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
-			LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
-
-			this->createUndoSelectObject(false);
-			manualObjectsSelect(selectedObjsDelta);
-			if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
-				LevelEditorLayer::get()->m_undoObjects->removeLastObject();
-			}
-
-			return;
-		}
-		// Single Touches without swiping
-		else if (this->m_selectedMode == 3) {
-			EditorUI::ccTouchEnded(touch, event);
-			if (auto singleSelectedObject = this->m_selectedObject) {
-				if (ErGui::selectFilterRealization(singleSelectedObject)) {
-					EditorUI::get()->selectObject(singleSelectedObject, false);
-				}
-			}
-		}
+		
 
 		EditorUI::ccTouchEnded(touch, event);
 	}
@@ -702,6 +730,15 @@ class $modify(CCEGLView) {
 		ErGui::gameFrame = captureScreenToGLTexture();
 		CCEGLView::swapBuffers();
 	}
+	
+	void onGLFWMouseCallback(GLFWwindow* window, int button, int action, int mods) {
+		CCEGLView::onGLFWMouseCallBack(window, button, action, mods);
+		std::cout
+			<< "Button: " << button << "\n"
+			<< "Action: " << action << "\n"
+			<< "Mods: " << mods << "\n";
+	}
+
 	void pollEvents() {
 		auto& io = ImGui::GetIO();
 
@@ -712,11 +749,52 @@ class $modify(CCEGLView) {
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 
-
 			if (msg.message == WM_MOUSEHWHEEL) {
 				CCDirector::sharedDirector()->getMouseDispatcher()->dispatchScrollMSG(0, GET_WHEEL_DELTA_WPARAM(msg.wParam) * 0.4f * -1);
 				continue;
 			}
+
+
+			if (EditorUI::get() && !EditorUI::get()->m_isPaused && !io.WantCaptureMouse) {
+				switch (msg.message) {
+					case WM_RBUTTONDOWN: {
+						ErGui::rightTouch = new CCTouch;
+						ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
+
+						auto setBegan = CCSet::create();
+						setBegan->addObject(ErGui::rightTouch);
+
+						CCDirector::sharedDirector()->getTouchDispatcher()->touchesBegan(setBegan, nullptr);
+						break;
+					}
+					case WM_MOUSEMOVE: {
+						if (ErGui::rightTouch) {
+							ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
+
+							auto setMoved = CCSet::create();
+							setMoved->addObject(ErGui::rightTouch);
+							CCDirector::sharedDirector()->getTouchDispatcher()->touchesMoved(setMoved, nullptr);
+						}
+						break;
+					}
+					case WM_RBUTTONUP: {
+						ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
+
+						auto setEnded = CCSet::create();
+						setEnded->addObject(ErGui::rightTouch);
+						CCDirector::sharedDirector()->getTouchDispatcher()->touchesEnded(setEnded, nullptr);
+
+						auto setCancelled = CCSet::create();
+						setCancelled->addObject(ErGui::rightTouch);
+						CCDirector::sharedDirector()->getTouchDispatcher()->touchesCancelled(setCancelled, nullptr);
+
+						ErGui::rightTouch->release();
+						ErGui::rightTouch = nullptr;
+						break;
+					}
+				}
+			}
+
 
 			if (io.WantCaptureMouse) {
 				switch (msg.message) {
@@ -750,7 +828,7 @@ class $modify(CCTouchDispatcher) {
 		auto* touch = static_cast<CCTouch*>(touches->anyObject());
 		if (!touch) return;
 
-
+		
 
 		if (type == CCTOUCHBEGAN && ErGui::isGameWindowHovered) {
 			ErGui::isGameWindowTouching = true;
@@ -879,6 +957,7 @@ $on_mod(Loaded) {
 				ErGui::renderActionHistoryModule();
 				ErGui::renderEditColor();
 				ErGui::renderGameWindow();
+				ErGui::renderContextMenu();
 
 				//ImGui::ShowStyleEditor();
 

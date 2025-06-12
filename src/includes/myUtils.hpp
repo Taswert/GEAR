@@ -42,6 +42,8 @@ namespace ErGui {
 	}
 
 	bool compareCCArrays(CCArray* arr1, CCArray* arr2);
+	void selectAllObjects();
+	void selectAllObjectWithDirection(bool rightDir);
 
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;
@@ -51,4 +53,6 @@ namespace ErGui {
 	inline GLuint gameFrame;
 
 	inline bool isGameWindowTouching = false;
+
+	inline bool isFreeMoveAndObjectTouching = false;
 };

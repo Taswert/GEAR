@@ -18,12 +18,30 @@ namespace ErGui {
 			ImGuiWindowFlags_NoResize |
 			ImGuiWindowFlags_NoMove |
 			ImGuiWindowFlags_NoBringToFrontOnFocus |
-			ImGuiWindowFlags_NoNavFocus;
+			ImGuiWindowFlags_NoNavFocus |
+			ImGuiWindowFlags_MenuBar;
 
 		ImGui::Begin("GD", nullptr, window_flags);
 		ImGui::PopStyleVar(2);
 		ImGuiID dockspace_id = ImGui::GetID("GlobalDocking");
 		ImGui::DockSpace(dockspace_id, ImVec2(0.f, 0.f), ImGuiDockNodeFlags_None);
+
+		if (ImGui::BeginMenuBar()) {
+			if (ImGui::MenuItem("Undo")) {
+				EditorUI::get()->undoLastAction(nullptr);
+			}
+			if (ImGui::MenuItem("Redo")) {
+				EditorUI::get()->redoLastAction(nullptr);
+			}
+			if (ImGui::BeginMenu("Settings")) {
+				ImGui::MenuItem("Rotate Color Wheel");
+				ImGui::MenuItem("Select Direction From Cursor");
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
+		
 		ImGui::End();
 	}
 }

@@ -190,11 +190,11 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Unlink Selected");
 
-	//ImGui::Separator();
-	//ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
-	//if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-	//	ImGui::SetTooltip("DEBUG: Shows touched position");
-	//ImGui::Checkbox("DbgTDN", &ErGui::dbgTDN;
+	ImGui::Separator();
+	ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("DEBUG: Shows touched position");
+	//ImGui::Checkbox("DbgTDN", &ErGui::dbgTDN);
 
 	ImGui::PopStyleColor();
 
