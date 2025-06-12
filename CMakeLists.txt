@@ -23,6 +23,7 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/ActionHistoryModule.cpp
     src/modules/EditColorModule.cpp
     src/modules/GameWindowModule.cpp
+    src/modules/SettingsModule.cpp
     src/includes/razoomUtils.cpp
  "src/modules/GlobalDockingView.cpp")
 
