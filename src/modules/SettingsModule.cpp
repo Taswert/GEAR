@@ -16,7 +16,7 @@ bool showHitboxes;
 
 
 void ErGui::renderSettingsModule() {
-    if (!ImGui::Begin("Settings-Module")) {
+    if (!ImGui::Begin("View")) {
         ImGui::End();
         return;
     }

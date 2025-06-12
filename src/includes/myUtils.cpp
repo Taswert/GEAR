@@ -244,4 +244,46 @@ namespace ErGui {
 		}
 		return true;
 	}
+
+	void selectAllObjects() {
+		auto editorUI = EditorUI::get();
+		if (editorUI) {
+			CCArray* objsInCurrentLayer = CCArray::create();
+			for (auto obj : CCArrayExt<GameObject*>(editorUI->m_editorLayer->m_objects)) {
+				if (obj->m_editorLayer == editorUI->m_editorLayer->m_currentLayer || (obj->m_editorLayer2 == editorUI->m_editorLayer->m_currentLayer && obj->m_editorLayer2 != 0) || editorUI->m_editorLayer->m_currentLayer == -1) {
+					objsInCurrentLayer->addObject(obj);
+				}
+			}
+			editorUI->processSelectObjects(objsInCurrentLayer);
+			editorUI->updateButtons();
+			//EditorUI::deactivateRotationControl();
+			editorUI->deactivateScaleControl();
+			editorUI->deactivateTransformControl();
+			editorUI->updateObjectInfoLabel();
+		}
+	}
+
+	void selectAllObjectWithDirection(bool rightDir) {
+		auto editorUI = EditorUI::get();
+		if (editorUI) {
+			auto cameraPos = editorUI->m_editorLayer->m_objectLayer->getPosition();
+			auto cameraScale = editorUI->m_editorLayer->m_objectLayer->getScale();
+			int centerX = (CCDirector::sharedDirector()->getWinSize().width / 2 - cameraPos.x) / cameraScale;
+
+			CCArray* objsInCurrentLayer = CCArray::create();
+			for (auto obj : CCArrayExt<GameObject*>(editorUI->m_editorLayer->m_objects)) {
+				if (obj->m_editorLayer == editorUI->m_editorLayer->m_currentLayer || (obj->m_editorLayer2 == editorUI->m_editorLayer->m_currentLayer && obj->m_editorLayer2 != 0) || editorUI->m_editorLayer->m_currentLayer == -1) {
+					if ((rightDir && obj->getPositionX() >= centerX) || 
+						(!rightDir && obj->getPositionX() <= centerX))
+					objsInCurrentLayer->addObject(obj);
+				}
+			}
+			editorUI->processSelectObjects(objsInCurrentLayer);
+			editorUI->updateButtons();
+			//EditorUI::deactivateRotationControl();
+			editorUI->deactivateScaleControl();
+			editorUI->deactivateTransformControl();
+			editorUI->updateObjectInfoLabel();
+		}
+	}
 }

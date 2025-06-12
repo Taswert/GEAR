@@ -45,12 +45,40 @@ void ErGui::renderGameWindow() {
 	short step = 1;
 	short fastStep = 5;
 	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
-	if (ImGui::InputScalar("Layer", ImGuiDataType_S16, &lel->m_currentLayer, &step, &fastStep)) {
+	if (ImGui::InputScalar("##Layer", ImGuiDataType_S16, &lel->m_currentLayer, &step, &fastStep)) {
 		if (lel->m_currentLayer < -1) 
 			lel->m_currentLayer = -1;
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("All")) {
+		lel->m_currentLayer = -1;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("NF")) {
+		std::set<int> layersSet;
+		for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+			if (obj->m_editorLayer >= 0)
+				layersSet.insert(obj->m_editorLayer);
+			if (obj->m_editorLayer2 > 0)
+				layersSet.insert(obj->m_editorLayer2);
+		}
+		
+		int result = *std::prev(layersSet.end()) + 1;
+		for (int i = 0; i < *std::prev(layersSet.end()); i++) {
+			if (!layersSet.contains(i)) {
+				result = i;
+				break;
+			}
+		}
 
-	// Vertical slider - Возможно добавить в будущем...
+		lel->m_currentLayer = result;
+	}
+	ImGui::SetItemTooltip("Next object free Editor Layer");
+	ImGui::SameLine();
+	ImGui::Text("Layer");
+
+
+	// Vertical slider
 	//ImGui::SameLine();
 	float objectLayerY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
 	float maxPosY = ErGui::constrainByLastObjectY ? getLastObjectYFast() : std::max(getLastObjectYFast(), 29800.f);
@@ -113,6 +141,10 @@ void ErGui::renderGameWindow() {
 			updateMousePos(drawSize);
 		}
 	}
+
+	
+	
+
 
 	ImGui::End();
 }

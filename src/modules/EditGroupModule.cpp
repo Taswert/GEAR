@@ -1,6 +1,19 @@
 #include "EditGroupModule.hpp"
 using namespace ErGui;
 
+const char* layerTypeItems[] = {
+	"Bottom 5", "Bottom 4", "Bottom 3", "Bottom 2", "Bottom 1",
+	"Top 1", "Top 2", "Top 3", "Top 4",
+	"Default"
+};
+
+const int layerIntItems[] = {
+	-5, -3, -1, 1, 3,
+	5, 7, 9, 11,
+	0
+};
+
+
 void ErGui::CopyEGMState::copyState(GameObject* obj) {
 	if (obj->m_groups) {
 		for (int i = 0; i < 10; i++) {
@@ -224,38 +237,65 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 	if (ImGui::CollapsingHeader("-----| Layer & Z-Order |-----")) {
 		int el1 = obj->m_editorLayer;
 		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("EditorL1", &el1);
+		ImGui::InputInt("##EditorL1", &el1);
 		setMin(el1, 0);
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL1")) el1 = LevelEditorLayer::get()->m_currentLayer;
+		ImGui::SetItemTooltip("Set to current Editor Layer");
+		ImGui::SameLine();
+		ImGui::Text("EditorL1");
 		obj->m_editorLayer = el1;
+		
 
 		int el2 = obj->m_editorLayer2;
 		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("EditorL2", &el2);
+		ImGui::InputInt("##EditorL2", &el2);
 		setMin(el2, 0);
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL2")) el2 = LevelEditorLayer::get()->m_currentLayer;
+		ImGui::SetItemTooltip("Set to current Editor Layer");
+		ImGui::SameLine();
+		ImGui::Text("EditorL2");
 		obj->m_editorLayer2 = el2;
 
+		
 		std::string zOrderStr = "Z-Order";
 		int zord = obj->m_zOrder;
 		if (zord == 0) zOrderStr = zOrderStr + " (" + std::to_string(obj->m_defaultZOrder) + ")";
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt(zOrderStr.c_str(), &zord);
 		obj->m_zOrder = zord;
+		obj->m_shouldUpdateColorSprite = 1;
 
-		//ImGui::Text("Z-Layer: %d", static_cast<int>(obj->m_zLayer));
+
 		int* zLayer = reinterpret_cast<int*>(&obj->m_zLayer);
 		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("Z-Layer", zLayer);
-		//setMaxMin(*zLayer, 11, -5);
-		ImGui::SameLine();
-		std::string zLayerString = "(UNKNOWN)";
-		float zLayerStringFloat = (std::abs(*zLayer - 4) + 1) / 2.f;
-		int zLayerStringInt = std::floor(zLayerStringFloat);
-		std::string postfix = zLayerStringFloat > std::floor(zLayerStringFloat) ? "/2)" : ")";
-		if (*zLayer == 0) zLayerString = "(Default)";
-		else if (*zLayer < 4) zLayerString = "(B" + std::to_string(zLayerStringInt) + postfix;
-		else if (*zLayer > 4) zLayerString = "(T" + std::to_string(zLayerStringInt) + postfix;
-		else if (*zLayer == 4) zLayerString = "(M)";
-		ImGui::Text(zLayerString.c_str());
+
+		int layerIndex = 0;
+		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
+			if (static_cast<int>(obj->m_zLayer) == layerIntItems[i]) {
+				layerIndex = i;
+				break;
+			}
+		}
+
+		if (ImGui::Combo("Z-Layer", &layerIndex, layerTypeItems, IM_ARRAYSIZE(layerTypeItems))) {
+			int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer); 
+			*objLayer = layerIntItems[layerIndex];
+		}
+
+		//ImGui::InputInt("Z-Layer", zLayer);
+		////setMaxMin(*zLayer, 11, -5);
+		//ImGui::SameLine();
+		//std::string zLayerString = "(UNKNOWN)";
+		//float zLayerStringFloat = (std::abs(*zLayer - 4) + 1) / 2.f;
+		//int zLayerStringInt = std::floor(zLayerStringFloat);
+		//std::string postfix = zLayerStringFloat > std::floor(zLayerStringFloat) ? "/2)" : ")";
+		//if (*zLayer == 0) zLayerString = "(Default)";
+		//else if (*zLayer < 4) zLayerString = "(B" + std::to_string(zLayerStringInt) + postfix;
+		//else if (*zLayer > 4) zLayerString = "(T" + std::to_string(zLayerStringInt) + postfix;
+		//else if (*zLayer == 4) zLayerString = "(M)";
+		//ImGui::Text(zLayerString.c_str());
 
 		
 		//if (ImGui::Button("Copy##EGM-COPY")) {
@@ -395,6 +435,103 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 	if (ImGui::Button("Paste##PASTESTATE")) {
 		copyStateObject.pasteState(objArr);
 	}
+
+	if (ImGui::CollapsingHeader("-----| Advanced ReGroup |-----")) {
+		static int regroupStart = 0; // Initial group (where it starts before regroup)
+		static int regroupEnd = 0; // Initial group (where it ends before regroup)
+		static int regroupFrom = 0; // Regrouped Offset (where it would start after regroup)
+
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("Regroup Start", &regroupStart);
+		setMaxMin(groupOffset, 9999, 1);
+
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("Regroup End", &regroupEnd);
+		setMaxMin(groupOffset, 9999, 1);
+
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("Regroup From", &regroupFrom);
+		setMaxMin(chosenGroupEGM, 9999, 1);
+
+		//if (ImGui::Button("Target Remap")) {
+		//	std::map<int, int> regroupedMap;
+		//	int regroupedID = regroupFrom;
+		//	std::cout << "Map:\n";
+		//	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		//		if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
+		//			if (eObj->m_centerGroupID >= regroupStart && eObj->m_centerGroupID <= regroupEnd) {
+		//				std::cout << "center: " << eObj->m_centerGroupID << " " << regroupedID << "\n";
+		//				regroupedMap.emplace(eObj->m_centerGroupID, regroupedID);
+		//				regroupedID++;
+		//			}
+		//			if (eObj->m_targetGroupID >= regroupStart && eObj->m_targetGroupID <= regroupEnd && !regroupedMap.contains(eObj->m_targetGroupID)) {
+		//				std::cout << "target: " << eObj->m_targetGroupID << " " << regroupedID << "\n";
+		//				regroupedMap.emplace(eObj->m_targetGroupID, regroupedID);
+		//				regroupedID++;
+		//			}
+		//		}
+		//	}
+		//	std::cout << "\n";
+
+		//	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		//		for (auto pair : regroupedMap) {
+		//			if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
+		//				if (eObj->m_centerGroupID == pair.first)
+		//					eObj->m_centerGroupID = pair.second;
+		//				if (eObj->m_targetGroupID == pair.first)
+		//					eObj->m_targetGroupID = pair.second;
+
+		//				lel->updateObjectLabel(eObj);
+		//			}
+		//		}
+		//	}
+		//	groupInfoUpdate();
+		//}
+
+		if (ImGui::Button("Regroup")) { // Регруп стоит сделать ещё таким образом, чтобы он мог только таргеты регруппать
+			std::map<int, int> regroupedMap;
+			int regroupedID = regroupFrom;
+			std::cout << "Map:\n";
+			for (int i = 0; i < groupsFromObjArr.size(); i++) {
+				if (groupsFromObjArr[i].first >= regroupStart && groupsFromObjArr[i].first <= regroupEnd) {
+					std::cout << groupsFromObjArr[i].first << " " << regroupedID << "\n";
+					regroupedMap.emplace(groupsFromObjArr[i].first, regroupedID);
+					regroupedID++;
+				}
+			}
+			std::cout << "\n";
+			
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				for (auto pair : regroupedMap) {
+					if (static_cast<CCArray*>(lel->m_groups[pair.first])->containsObject(obj)) {
+						obj->removeFromGroup(pair.first);
+						static_cast<CCArray*>(lel->m_groups[pair.first])->removeObject(obj, false);
+
+						if (!lel->m_groups[pair.second]) {
+							CCArray* arr = CCArray::create();
+							arr->retain();
+							lel->m_groups[pair.second] = arr;
+						}
+						static_cast<CCArray*>(lel->m_groups[pair.second])->addObject(obj);
+						obj->addToGroup(pair.second);
+					}
+
+					if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
+						if (eObj->m_objectID != 1006 || eObj->m_pulseTargetType == 1) {
+							if (eObj->m_centerGroupID == pair.first)
+								eObj->m_centerGroupID = pair.second;
+							if (eObj->m_targetGroupID == pair.first)
+								eObj->m_targetGroupID = pair.second;
+						}
+
+						lel->updateObjectLabel(eObj);
+					}
+				}
+			}
+			groupInfoUpdate();
+		}
+	}
+
 	if (ImGui::CollapsingHeader("-----| Groups Settings |-----")) {
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("ID Offset", &groupOffset);
@@ -508,6 +645,14 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			}
 			groupInfoUpdate();
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL1")) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_editorLayer = LevelEditorLayer::get()->m_currentLayer;
+			}
+			groupInfoUpdate();
+		}
+		ImGui::SetItemTooltip("Set to current Editor Layer");
 
 		if (int delta = deltaInputIntImproved("EditorL2", maxEl2, minEl2, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -516,6 +661,15 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			}
 			groupInfoUpdate();
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL2")) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_editorLayer2 = LevelEditorLayer::get()->m_currentLayer;
+			}
+			groupInfoUpdate();
+		}
+		ImGui::SetItemTooltip("Set to current Editor Layer");
+
 
 		if (int delta = deltaInputIntImproved("Z-Order", maxZOrder, minZOrder, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -524,18 +678,37 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				//stupid default order check
 				if (oldOrder == 1 && delta == -1) obj->m_zOrder = -1;
 				if (oldOrder == -1 && delta == 1) obj->m_zOrder = 1;
+
+				obj->m_shouldUpdateColorSprite = 1;
 			}
 			groupInfoUpdate();
 		}
 
-		if (int delta = deltaInputIntImproved("Z-Layer", maxZLayer, minZLayer, 1)) {
+		int layerIndex = 0;
+		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
+			if (minZLayer == layerIntItems[i]) {
+				layerIndex = i;
+				break;
+			}
+		}
+		if (ImGui::Combo("Z-Layer", &layerIndex, layerTypeItems, IM_ARRAYSIZE(layerTypeItems))) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				int* zLayer = reinterpret_cast<int*>(&obj->m_zLayer);
-				*zLayer += delta;
-				setMaxMin(*zLayer, 11, -5);
+				int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+				*objLayer = layerIntItems[layerIndex];
+				obj->m_shouldUpdateColorSprite = 1;
 			}
 			groupInfoUpdate();
 		}
+
+
+		//if (int delta = deltaInputIntImproved("Z-Layer", maxZLayer, minZLayer, 1)) {
+		//	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		//		int* zLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+		//		*zLayer += delta;
+		//		setMaxMin(*zLayer, 11, -5);
+		//	}
+		//	groupInfoUpdate();
+		//}
 	}
 
 	if (ImGui::CollapsingHeader("-----| Extra |-----")) {

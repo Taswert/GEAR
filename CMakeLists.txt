@@ -26,7 +26,7 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/SettingsModule.cpp
     src/modules/EditorUtilsModule.cpp
     src/includes/razoomUtils.cpp
- "src/modules/GlobalDockingView.cpp")
+ "src/modules/GlobalDockingView.cpp" "src/modules/ContextMenuModule.cpp")
 
 
 #include(FetchContent)
