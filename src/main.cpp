@@ -27,6 +27,7 @@
 #include "modules/EditColorModule.hpp"
 #include "modules/GameWindowModule.hpp"
 #include "modules/GlobalDockingView.hpp"
+#include "modules/SettingsModule.hpp"
 #include "modules/ContextMenuModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
@@ -956,6 +957,7 @@ $on_mod(Loaded) {
 				ErGui::renderEditObjectModule();
 				ErGui::renderActionHistoryModule();
 				ErGui::renderEditColor();
+				ErGui::renderSettingsModule();
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
 
