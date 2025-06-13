@@ -286,4 +286,24 @@ namespace ErGui {
 			editorUI->updateObjectInfoLabel();
 		}
 	}
+
+	void nextFreeLayer() {
+		std::set<int> layersSet;
+		for (auto obj : CCArrayExt<GameObject*>(LevelEditorLayer::get()->m_objects)) {
+			if (obj->m_editorLayer >= 0)
+				layersSet.insert(obj->m_editorLayer);
+			if (obj->m_editorLayer2 > 0)
+				layersSet.insert(obj->m_editorLayer2);
+		}
+
+		int result = *std::prev(layersSet.end()) + 1;
+		for (int i = 0; i < *std::prev(layersSet.end()); i++) {
+			if (!layersSet.contains(i)) {
+				result = i;
+				break;
+			}
+		}
+
+		LevelEditorLayer::get()->m_currentLayer = result;
+	}
 }

@@ -55,24 +55,9 @@ void ErGui::renderGameWindow() {
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("NF")) {
-		std::set<int> layersSet;
-		for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
-			if (obj->m_editorLayer >= 0)
-				layersSet.insert(obj->m_editorLayer);
-			if (obj->m_editorLayer2 > 0)
-				layersSet.insert(obj->m_editorLayer2);
-		}
-		
-		int result = *std::prev(layersSet.end()) + 1;
-		for (int i = 0; i < *std::prev(layersSet.end()); i++) {
-			if (!layersSet.contains(i)) {
-				result = i;
-				break;
-			}
-		}
-
-		lel->m_currentLayer = result;
+		ErGui::nextFreeLayer();
 	}
+
 	ImGui::SetItemTooltip("Next object free Editor Layer");
 	ImGui::SameLine();
 	ImGui::Text("Layer");

@@ -135,6 +135,11 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 	if (ImGui::Button("Paste##PASTESTATE")) {
 		copyStateObject.pasteState(obj);
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Go To Layer")) {
+		LevelEditorLayer::get()->m_currentLayer = obj->m_editorLayer;
+	}
+
 	if (ImGui::CollapsingHeader("-----| Object Info |-----")) {
 		ImGui::Text("Object Address: %p", obj);
 		ImGui::SameLine();
@@ -437,98 +442,99 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 	}
 
 	if (ImGui::CollapsingHeader("-----| Advanced ReGroup |-----")) {
-		static int regroupStart = 0; // Initial group (where it starts before regroup)
-		static int regroupEnd = 0; // Initial group (where it ends before regroup)
-		static int regroupFrom = 0; // Regrouped Offset (where it would start after regroup)
+		static int regroupStart = 1;	// Initial group (where it starts before regroup)
+		static int regroupEnd = 9999;	// Initial group (where it ends before regroup)
+		static int regroupFrom = 1;		// Regrouped Offset (where it would start after regroup)
+		static bool regroupOnlyFree = false;
 
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("Regroup Start", &regroupStart);
-		setMaxMin(groupOffset, 9999, 1);
+		setMaxMin(regroupStart, 9999, 1);
 
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("Regroup End", &regroupEnd);
-		setMaxMin(groupOffset, 9999, 1);
+		setMaxMin(regroupEnd, 9999, 1);
 
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("Regroup From", &regroupFrom);
-		setMaxMin(chosenGroupEGM, 9999, 1);
+		setMaxMin(regroupFrom, 9999, 1);
 
-		//if (ImGui::Button("Target Remap")) {
-		//	std::map<int, int> regroupedMap;
-		//	int regroupedID = regroupFrom;
-		//	std::cout << "Map:\n";
-		//	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-		//		if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
-		//			if (eObj->m_centerGroupID >= regroupStart && eObj->m_centerGroupID <= regroupEnd) {
-		//				std::cout << "center: " << eObj->m_centerGroupID << " " << regroupedID << "\n";
-		//				regroupedMap.emplace(eObj->m_centerGroupID, regroupedID);
-		//				regroupedID++;
-		//			}
-		//			if (eObj->m_targetGroupID >= regroupStart && eObj->m_targetGroupID <= regroupEnd && !regroupedMap.contains(eObj->m_targetGroupID)) {
-		//				std::cout << "target: " << eObj->m_targetGroupID << " " << regroupedID << "\n";
-		//				regroupedMap.emplace(eObj->m_targetGroupID, regroupedID);
-		//				regroupedID++;
-		//			}
-		//		}
-		//	}
-		//	std::cout << "\n";
+		ImGui::Checkbox("Only Free Groups", &regroupOnlyFree);
 
-		//	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-		//		for (auto pair : regroupedMap) {
-		//			if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
-		//				if (eObj->m_centerGroupID == pair.first)
-		//					eObj->m_centerGroupID = pair.second;
-		//				if (eObj->m_targetGroupID == pair.first)
-		//					eObj->m_targetGroupID = pair.second;
-
-		//				lel->updateObjectLabel(eObj);
-		//			}
-		//		}
-		//	}
-		//	groupInfoUpdate();
-		//}
-
-		if (ImGui::Button("Regroup")) { // Регруп стоит сделать ещё таким образом, чтобы он мог только таргеты регруппать
+		if (ImGui::Button("Regroup")) {
 			std::map<int, int> regroupedMap;
 			int regroupedID = regroupFrom;
+			bool offlimit = false;
+
 			std::cout << "Map:\n";
 			for (int i = 0; i < groupsFromObjArr.size(); i++) {
 				if (groupsFromObjArr[i].first >= regroupStart && groupsFromObjArr[i].first <= regroupEnd) {
+					
+					if (regroupOnlyFree) {
+						//std::cout << regroupedID << " " << lel->m_groups[regroupedID] << "\n";
+						while (regroupedID <= 9999 && lel->m_groups[regroupedID] && lel->m_groups[regroupedID]->count() > 0) {
+							//std::cout << regroupedID << " - Not Free, adding...\n";
+							regroupedID++;
+						}
+					}
+					
+					if (regroupedID > 9999) {
+						offlimit = true;
+						std::cout << "OFFLIMIT! BREAKING REGROUP!\n";
+						break;
+					}
+
 					std::cout << groupsFromObjArr[i].first << " " << regroupedID << "\n";
 					regroupedMap.emplace(groupsFromObjArr[i].first, regroupedID);
 					regroupedID++;
+
 				}
 			}
 			std::cout << "\n";
 			
-			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				for (auto pair : regroupedMap) {
-					if (static_cast<CCArray*>(lel->m_groups[pair.first])->containsObject(obj)) {
-						obj->removeFromGroup(pair.first);
-						static_cast<CCArray*>(lel->m_groups[pair.first])->removeObject(obj, false);
+			if (!offlimit) {
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					std::unordered_set<int> idsToAdd;
+					int idToRetarget = 0;
+					int idToRecenter = 0;
 
-						if (!lel->m_groups[pair.second]) {
+					// Group Removing and Buffering
+					for (auto pair : regroupedMap) {
+						if (static_cast<CCArray*>(lel->m_groups[pair.first]) && static_cast<CCArray*>(lel->m_groups[pair.first])->containsObject(obj)) {
+							obj->removeFromGroup(pair.first);
+							static_cast<CCArray*>(lel->m_groups[pair.first])->removeObject(obj, false);
+
+							idsToAdd.emplace(pair.second);
+						}
+
+						if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
+							if (eObj->m_objectID != 1006 || eObj->m_pulseTargetType == 1) {
+								if (idToRecenter == 0 && eObj->m_centerGroupID == pair.first)
+									idToRecenter = pair.second;
+								if (idToRetarget == 0 && eObj->m_targetGroupID == pair.first)
+									idToRetarget = pair.second;
+							}
+
+							lel->updateObjectLabel(eObj);
+						}
+					}
+
+					// Actuall Group Adding
+					for (int i : idsToAdd) {
+						if (!lel->m_groups[i]) {
 							CCArray* arr = CCArray::create();
 							arr->retain();
-							lel->m_groups[pair.second] = arr;
+							lel->m_groups[i] = arr;
 						}
-						static_cast<CCArray*>(lel->m_groups[pair.second])->addObject(obj);
-						obj->addToGroup(pair.second);
+						static_cast<CCArray*>(lel->m_groups[i])->addObject(obj);
+						obj->addToGroup(i);
 					}
 
-					if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
-						if (eObj->m_objectID != 1006 || eObj->m_pulseTargetType == 1) {
-							if (eObj->m_centerGroupID == pair.first)
-								eObj->m_centerGroupID = pair.second;
-							if (eObj->m_targetGroupID == pair.first)
-								eObj->m_targetGroupID = pair.second;
-						}
-
-						lel->updateObjectLabel(eObj);
-					}
+					if (idToRetarget != 0 && dynamic_cast<EffectGameObject*>(obj)) dynamic_cast<EffectGameObject*>(obj)->m_targetGroupID = idToRetarget;
+					if (idToRecenter != 0 && dynamic_cast<EffectGameObject*>(obj)) dynamic_cast<EffectGameObject*>(obj)->m_centerGroupID = idToRecenter;
 				}
+				groupInfoUpdate();
 			}
-			groupInfoUpdate();
 		}
 	}
 

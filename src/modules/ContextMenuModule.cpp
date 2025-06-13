@@ -64,8 +64,23 @@ void renderContextForSingleObject() {
 	if (ImGui::Selectable("Copy Color##Single")) {
 		LevelEditorLayer::get()->copyObjectState(ErGui::objectUnderCursor);
 	}
-	if (ImGui::Selectable("Paste Color##Single")) {
+	if (ImGui::Selectable("Paste Color##Single") && LevelEditorLayer::get()->m_copyStateObject) {
+		auto copyStateObj = LevelEditorLayer::get()->m_copyStateObject;
+		auto gjBaseColor = ErGui::objectUnderCursor->m_baseColor;
+		auto gjDetailColor = ErGui::objectUnderCursor->m_detailColor;
 
+		gjBaseColor->m_colorID = copyStateObj->m_baseColor->m_colorID;
+		gjBaseColor->m_usesHSV = copyStateObj->m_baseColor->m_usesHSV;
+		gjBaseColor->m_hsv = copyStateObj->m_baseColor->m_hsv;
+		gjBaseColor->m_opacity = copyStateObj->m_baseColor->m_opacity;
+		if (gjDetailColor) {
+			gjDetailColor->m_colorID = copyStateObj->m_detailColor->m_colorID;
+			gjDetailColor->m_usesHSV = copyStateObj->m_detailColor->m_usesHSV;
+			gjDetailColor->m_hsv = copyStateObj->m_detailColor->m_hsv;
+			gjDetailColor->m_opacity = copyStateObj->m_detailColor->m_opacity;
+		}
+
+		ErGui::objectUnderCursor->m_customColorType = copyStateObj->m_customColorType;
 	}
 
 	ImGui::Dummy({ 5.f, 5.f });
@@ -75,6 +90,12 @@ void renderContextForSingleObject() {
 	}
 	if (ImGui::Selectable("Paste State##Single")) {
 		ErGui::copyStateObject.pasteState(ErGui::objectUnderCursor);
+	}
+
+	ImGui::Dummy({ 5.f,5.f });
+
+	if (ImGui::Selectable("Go To Layer##Single")) {
+		LevelEditorLayer::get()->m_currentLayer = ErGui::objectUnderCursor->m_editorLayer;
 	}
 }
 
@@ -104,26 +125,38 @@ void renderContextForMultipleObjects() {
 
 	ImGui::Dummy({ 5.f, 5.f });
 
-	ImGui::Selectable("Paste Color");
-	ImGui::Selectable("Paste State");
+	if (ImGui::Selectable("Paste Color")) {
+		for (auto obj : CCArrayExt<GameObject*>(selectedObjects)) {
+			auto gjBaseColor = obj->m_baseColor;
+			auto gjDetailColor = obj->m_detailColor;
+			auto copyStateObj = GameManager::sharedState()->m_levelEditorLayer->m_copyStateObject;
+
+			gjBaseColor->m_colorID = copyStateObj->m_baseColor->m_colorID;
+			gjBaseColor->m_usesHSV = copyStateObj->m_baseColor->m_usesHSV;
+			gjBaseColor->m_hsv = copyStateObj->m_baseColor->m_hsv;
+			gjBaseColor->m_opacity = copyStateObj->m_baseColor->m_opacity;
+			if (gjDetailColor) {
+				gjDetailColor->m_colorID = copyStateObj->m_detailColor->m_colorID;
+				gjDetailColor->m_usesHSV = copyStateObj->m_detailColor->m_usesHSV;
+				gjDetailColor->m_hsv = copyStateObj->m_detailColor->m_hsv;
+				gjDetailColor->m_opacity = copyStateObj->m_detailColor->m_opacity;
+			}
+
+			obj->m_customColorType = copyStateObj->m_customColorType;
+		}
+	}
+	if (ImGui::Selectable("Paste State")) {
+		ErGui::copyStateObject.pasteState(selectedObjects);
+	}
 
 	ImGui::Dummy({ 5.f, 5.f });
 
-	ImGui::Selectable("Align X");
-	ImGui::Selectable("Align Y");
-
-	ImGui::Dummy({ 5.f, 5.f });
-
-	ImGui::Selectable("Build Helper");
-	ImGui::Selectable("Re-Group");
-	ImGui::Selectable("New Group X");
-	ImGui::Selectable("New Group Y");
-
-	ImGui::Dummy({ 5.f, 5.f });
-
-	ImGui::Selectable("Create Loop");
-	ImGui::Selectable("Create Extras");
-
+	if (ImGui::Selectable("Align X")) {
+		ErGui::getFakePauseLayer()->onAlignX(nullptr);
+	}
+	if (ImGui::Selectable("Align Y")) {
+		ErGui::getFakePauseLayer()->onAlignY(nullptr);
+	}
 }
 
 void renderContextForNoObjects() {
@@ -151,17 +184,18 @@ void renderContextForNoObjects() {
 
 	ImGui::Dummy({ 5.f, 5.f });
 
-	ImGui::Selectable("Next Free Layer");
-	ImGui::Selectable("All Layer");
+	if (ImGui::Selectable("All Layer")) {
+		LevelEditorLayer::get()->m_currentLayer = -1;
+	}
+	if (ImGui::Selectable("Next Free Layer")) {
+		ErGui::nextFreeLayer();
+	}
 
 	ImGui::Dummy({ 5.f, 5.f });
 
-	ImGui::Selectable("Uncheck All Portals");
-	ImGui::Selectable("Reset Unused Colors");
-
-	ImGui::Dummy({ 5.f, 5.f });
-
-	ImGui::Selectable("Level Settings");
+	if (ImGui::Selectable("Level Settings")) {
+		LevelEditorLayer::get()->m_editorUI->onSettings(nullptr);
+	}
 }
 
 
@@ -173,7 +207,6 @@ void ErGui::renderContextMenu() {
 		ImGui::OpenPopup(contextMenuName.c_str());
 		ErGui::shouldOpenContextMenu = false;
 	}
-
 	
 	isContextMenuOpen = ImGui::IsPopupOpen(contextMenuName.c_str(), ImGuiPopupFlags_None);
 
@@ -193,14 +226,14 @@ void ErGui::renderContextMenu() {
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { 0.f, 0.5f });
 		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
 
-		if (objectUnderCursor) {
-			ImGui::SeparatorText("Single");
-			renderContextForSingleObject();
-		}
-
 		if (objectUnderCursor && selectedObjects && selectedObjects->containsObject(objectUnderCursor)) {
 			ImGui::SeparatorText("Multiple");
 			renderContextForMultipleObjects();
+		}
+
+		if (objectUnderCursor) {
+			ImGui::SeparatorText("Single");
+			renderContextForSingleObject();
 		}
 
 		if (!objectUnderCursor) {

@@ -9,21 +9,7 @@ void ErGui::renderEditorUtilsModule() {
         return;
     }
 
-    if (ImGui::Button("Create Loop")) {
-        getFakePauseLayer()->onCreateLoop(nullptr);
-    }
-
-    if (ImGui::Button("Re-Group")) {
-        getFakePauseLayer()->onReGroup(nullptr);
-    }
-
-    if (ImGui::Button("Align-X")) {
-        getFakePauseLayer()->onAlignX(nullptr);
-    }
-
-    if (ImGui::Button("Align-Y")) {
-        getFakePauseLayer()->onAlignY(nullptr);
-    }
+    // Selections
 
     if (ImGui::Button("Select All")) {
         getFakePauseLayer()->onSelectAll(nullptr);
@@ -37,6 +23,34 @@ void ErGui::renderEditorUtilsModule() {
         getFakePauseLayer()->onSelectAllLeft(nullptr);
     }
 
+    ImGui::Dummy({ 5.f, 5.f }); // Create / Edit
+
+    if (ImGui::Button("Align-X")) {
+        getFakePauseLayer()->onAlignX(nullptr);
+    }
+
+    if (ImGui::Button("Align-Y")) {
+        getFakePauseLayer()->onAlignY(nullptr);
+    }
+
+    if (ImGui::Button("Create Loop")) {
+        getFakePauseLayer()->onCreateLoop(nullptr);
+    }
+
+    if (ImGui::Button("Create Extras")) {
+        getFakePauseLayer()->onCreateExtras(nullptr);
+    }
+
+    ImGui::Dummy({ 5.f, 5.f }); // Group Change
+
+    if (ImGui::Button("Build Helper")) {
+        getFakePauseLayer()->onBuildHelper(nullptr);
+    }
+
+    if (ImGui::Button("Re-Group")) {
+        getFakePauseLayer()->onReGroup(nullptr);
+    }
+
     if (ImGui::Button("New Group X")) {
         getFakePauseLayer()->onNewGroupX(nullptr);
     }
@@ -45,11 +59,7 @@ void ErGui::renderEditorUtilsModule() {
         getFakePauseLayer()->onNewGroupY(nullptr);
     }
 
-    ImGui::Separator();
-
-    if (ImGui::Button("Build Helper")) {
-        getFakePauseLayer()->onBuildHelper(nullptr);
-    }
+    ImGui::Dummy({ 5.f, 5.f }); // Other
 
     if (ImGui::Button("Copy + Color")) {
         getFakePauseLayer()->onCopyWColor(nullptr);
@@ -57,10 +67,6 @@ void ErGui::renderEditorUtilsModule() {
 
     if (ImGui::Button("Paste + Color")) {
         getFakePauseLayer()->onPasteWColor(nullptr);
-    }
-
-    if (ImGui::Button("Create Extras")) {
-        getFakePauseLayer()->onCreateExtras(nullptr);
     }
 
     if (ImGui::Button("Unlock Layers")) {

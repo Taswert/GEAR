@@ -45,6 +45,8 @@ namespace ErGui {
 	void selectAllObjects();
 	void selectAllObjectWithDirection(bool rightDir);
 
+	void nextFreeLayer();
+
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;
 	inline CCDrawNode* touchedDN = nullptr;
