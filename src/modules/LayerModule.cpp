@@ -5,17 +5,20 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include "IconsMaterialDesignIcons.h"
 
 using namespace geode::prelude;
 
 #define DEFAULT_OPACITY 50
+#define BTN_SIZE ImVec2(24,30)
 
 
 struct LayerInfo {
     uint16_t saveId;
     std::string name;
     int opacity = DEFAULT_OPACITY;
-    ImTextureID image = 0;
+    bool isHidden = false;
+    bool isLocked = false;
     bool isEditingName = false;
     int objCount = 0;
 };
@@ -31,6 +34,7 @@ struct matjson::Serialize<LayerInfo> {
         if (ret.saveId < 0 || ret.saveId > 10000) return Err("");
 
         ret.name = value["name"].asString().unwrapOr("");
+        ret.isHidden = value["isHidden"].asBool().unwrapOr(false);
         ret.opacity = std::clamp((int)value["opacity"].asUInt().unwrapOr(0), 0, 255);
 
         return Ok(ret);
@@ -40,7 +44,8 @@ struct matjson::Serialize<LayerInfo> {
         return matjson::makeObject({
             { "id", layerInfo.saveId },
             { "name", layerInfo.name },
-            { "opacity", layerInfo.opacity }
+            { "opacity", layerInfo.opacity },
+            { "isHidden", layerInfo.isHidden }
         });
     }
 };
@@ -114,14 +119,18 @@ class $modify(LevelEditorLayer) {
         // log::debug("{}--{}", m_activeObjectsCount, m_activeObjects.size()); different
         for (int i = 0; i < m_activeObjectsCount; i++) {
             GameObject* obj = m_activeObjects[i];
-            bool isOnCurrentLayer = m_currentLayer == -1 || 
-                m_currentLayer == obj->m_editorLayer ||
-                m_currentLayer == obj->m_editorLayer2 && obj->m_editorLayer2 > 0;
-
-            if (isOnCurrentLayer) {
-                obj->setOpacity(255);
+            if (LAYER_STATE.layers[obj->m_editorLayer].isHidden) {
+                obj->setOpacity(0);
             } else {
-                obj->setOpacity(LAYER_STATE.layers[obj->m_editorLayer].opacity);
+                bool isOnCurrentLayer = m_currentLayer == -1 || 
+                    m_currentLayer == obj->m_editorLayer ||
+                    m_currentLayer == obj->m_editorLayer2 && obj->m_editorLayer2 > 0;
+    
+                if (isOnCurrentLayer) {
+                    obj->setOpacity(255);
+                } else {
+                    obj->setOpacity(LAYER_STATE.layers[obj->m_editorLayer].opacity);
+                }
             }
         }
     }
@@ -199,35 +208,39 @@ void ErGui::renderLayerModule() {
         do {layerId++;} while (!LAYER_STATE.layers.contains(layerId));
         auto &layer = LAYER_STATE.layers.at(layerId);
 
-        if (layer.name.empty() && layer.objCount == 0 && layer.image == 0 && layerId != lel->m_currentLayer) {
+        if (layer.name.empty() && layer.objCount == 0 && layerId != lel->m_currentLayer) {
             continue;
         }
 
         ImGui::PushID(layerId);
-
+        
         ImGui::BeginGroup();
-
+        
+        if (layer.isHidden) {
+            lel->m_lockedLayers[layerId] = true; // keep locked
+            if (ImGui::Selectable(ICON_MDI_EYE_OFF, false, 0, BTN_SIZE)) {
+                layer.isHidden = false;
+                lel->m_lockedLayers[layerId] = layer.isLocked; // update locked state
+            }
+        } else {
+            if (ImGui::Selectable(ICON_MDI_EYE, false, 0, BTN_SIZE)) {
+                layer.isHidden = true;
+            }
+        }
+        ImGui::SameLine();
+        
         // number
-        ImGui::Text(" %d.", layerId);
+        ImGui::Text("%d. ", layerId);
         ImGui::SameLine();
 
-        // image
-        ImVec2 imageSize = ImVec2(64, 64);
-        if (layer.image)
-            ImGui::Image(layer.image, imageSize);
-        else
-            ImGui::Dummy(imageSize);
-        
-        ImGui::SameLine();  
-
-        // все что справа от картинки
-        ImGui::BeginGroup();
-
+        // layer name
         if (layer.isEditingName) {
             char buffer[128];
             strncpy(buffer, layer.name.c_str(), sizeof(buffer));
             buffer[sizeof(buffer) - 1] = '\0';
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            // ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            
+            ImGui::SetNextItemWidth(std::max(60.f, ImGui::GetContentRegionAvail().x - 250));
             if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
                 layer.name = std::string(buffer);
             }
@@ -241,31 +254,43 @@ void ErGui::renderLayerModule() {
                 ImGui::Text("%s", layer.name.c_str());
             }
 
-            // ПКМ - изменить
-            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+            // double click - change
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
                 layer.isEditingName = true;
             }
-
-            ImGui::SameLine();
-            ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 1));
-        }
-
-        // lock button
-        bool isLocked = lel->m_lockedLayers[layerId];
-        if (ImGui::Selectable("[Lock]", &isLocked, 0, ImVec2(45, 15))) {
-            lel->m_lockedLayers[layerId] = !lel->m_lockedLayers[layerId];
         }
         ImGui::SameLine();
 
-        ImGui::Text("Obj: %d", layer.objCount);
+        // obj count
+        ImGui::Text("(Obj: %d)", layer.objCount);
+        ImGui::SameLine();
+
+        auto posX = ImGui::GetCursorPosX();
+        ImGui::SetCursorPosX(std::max(posX, posX + ImGui::GetContentRegionAvail().x - 140));
 
         // opacity slider
-        ImGui::SetNextItemWidth(50);
-        if (ImGui::DragInt("Opacity", &layer.opacity, 1, 0, 255)) {
+        ImGui::SetNextItemWidth(40);
+        if (ImGui::DragInt("Opacity  ", &layer.opacity, 1, 0, 255)) {
 
         }
 
-        ImGui::EndGroup();
+        ImGui::SameLine();
+
+        // lock button
+        if (layer.isLocked) {
+            if (ImGui::Selectable(ICON_MDI_LOCK, false, 0, BTN_SIZE)) {
+                layer.isLocked = false;
+                if (!layer.isHidden) {
+                    lel->m_lockedLayers[layerId] = false;
+                }
+            }
+        } else {
+            if (ImGui::Selectable(ICON_MDI_LOCK_OPEN_OUTLINE, false, 0, BTN_SIZE)) {
+                layer.isLocked = true;
+                lel->m_lockedLayers[layerId] = true;
+            }
+        }
+
 
         ImGui::Separator();
 
