@@ -962,6 +962,7 @@ $on_mod(Loaded) {
 				ErGui::renderActionHistoryModule();
 				ErGui::renderEditColor();
 				ErGui::renderSettingsModule();
+				ErGui::renderLayerModule();
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
 
