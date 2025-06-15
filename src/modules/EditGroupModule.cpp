@@ -357,7 +357,9 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		ImGui::Checkbox("No Particle", &obj->m_hasNoParticles);
 		ImGui::SameLine(160);
-		ImGui::Checkbox("High Detail", &obj->m_isHighDetail);
+		if (ImGui::Checkbox("High Detail", &obj->m_isHighDetail)) {
+			obj->setVisible(!ErGui::showLdm || !obj->m_isHighDetail);
+		}
 
 		ImGui::Checkbox("No Audio Scale", &obj->m_hasNoAudioScale);
 		ImGui::SameLine(160);
@@ -809,6 +811,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		if (ImGui::Checkbox("High Detail", &cb_HighDetail)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_isHighDetail = cb_HighDetail;
+				obj->setVisible(!ErGui::showLdm || !obj->m_isHighDetail);
 			}
 		}
 	
