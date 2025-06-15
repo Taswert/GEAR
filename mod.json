@@ -42,6 +42,7 @@
 	],
 	"dependencies": {
 		"geode.node-ids": ">=1.20.1",
-		"alphalaneous.object_popup_api": ">=v1.0.3"
+		"alphalaneous.object_popup_api": ">=v1.0.3",
+		"cvolton.level-id-api": ">=v1.2.0"
 	}
 }
