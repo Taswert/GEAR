@@ -934,15 +934,16 @@ $on_mod(Loaded) {
 		io.ConfigWindowsMoveFromTitleBarOnly = true;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-		auto fontDir = Mod::get()->getResourcesDir() / "Inter_18pt-Regular.ttf";
-		io.Fonts->AddFontFromFileTTF(fontDir.string().c_str(), 15.f);
+		auto interDir = Mod::get()->getResourcesDir() / "Inter_18pt-Regular.ttf";
+		auto mdiDir = Mod::get()->getResourcesDir() / "materialdesignicons-webfont.ttf";
+
+		io.Fonts->AddFontFromFileTTF(interDir.string().c_str(), 15.f);
 
 		static const ImWchar icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
 		ImFontConfig iconConfig;
 		iconConfig.MergeMode = true;
-		fontDir = Mod::get()->getResourcesDir() / "materialdesignicons-webfont.ttf";
-		io.Fonts->AddFontFromFileTTF(fontDir.string().c_str(), 24.f, &iconConfig, icons_ranges);
-
+		
+		io.Fonts->AddFontFromFileTTF(mdiDir.string().c_str(), 24.f, &iconConfig, icons_ranges);
 
 		ErGui::initImGuiStyling();
 	
@@ -966,7 +967,7 @@ $on_mod(Loaded) {
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
 
-				//ImGui::ShowStyleEditor();
+				ImGui::ShowStyleEditor();
 
 			}
 			else {

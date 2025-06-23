@@ -1,6 +1,6 @@
-#pragma once
+﻿#pragma once
 #include "LayerModule.hpp"
-#include <imgui.h>
+#include <imgui_internal.h>
 #include <algorithm>
 #include <Geode/Geode.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
@@ -10,7 +10,7 @@
 using namespace geode::prelude;
 
 #define DEFAULT_OPACITY 50
-#define BTN_SIZE ImVec2(24,30)
+#define BTN_SIZE ImVec2(16,20)
 
 
 struct LayerInfo {
@@ -137,6 +137,7 @@ class $modify(LevelEditorLayer) {
 };
 
 
+
 void ErGui::renderLayerModule() {
     if (!ImGui::Begin("Layers")) {
         ImGui::End();
@@ -194,7 +195,6 @@ void ErGui::renderLayerModule() {
 
 
     // --------------------- layers list ---------------------  
-
     ImVec2 scrollAvail = ImGui::GetContentRegionAvail();
 
     ImGui::BeginChild("ScrollList", ImVec2(0, scrollAvail.y), true, 0);
@@ -203,122 +203,136 @@ void ErGui::renderLayerModule() {
         LAYER_STATE.layers.insert({lel->m_currentLayer, LayerInfo()});
     }
     
+    //ImGui::GetFont()->Scale = 24.f;
     int layerId = -1;
-    for (int i = 0; i < LAYER_STATE.layers.size(); ++i) {
-        do {layerId++;} while (!LAYER_STATE.layers.contains(layerId));
-        auto &layer = LAYER_STATE.layers.at(layerId);
 
-        if (layer.name.empty() && layer.objCount == 0 && layerId != lel->m_currentLayer) {
-            continue;
-        }
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 14.f, 8.f });
+    ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { 0.5f, 1.f });
 
-        ImGui::PushID(layerId);
+    if (ImGui::BeginTable("Layers", 4, ImGuiTableFlags_BordersInnerH)) {
+        ImGui::TableSetupColumn("Visible", ImGuiTableColumnFlags_WidthFixed, BTN_SIZE.x + BTN_SIZE.x / 2.f);
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Opacity", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Locked", ImGuiTableColumnFlags_WidthFixed, BTN_SIZE.x + BTN_SIZE.x / 2.f);
+
         
-        ImGui::BeginGroup();
-        
-        if (layer.isHidden) {
-            lel->m_lockedLayers[layerId] = true; // keep locked
-            if (ImGui::Selectable(ICON_MDI_EYE_OFF, false, 0, BTN_SIZE)) {
-                layer.isHidden = false;
-                lel->m_lockedLayers[layerId] = layer.isLocked; // update locked state
+
+        for (int i = 0; i < LAYER_STATE.layers.size(); ++i) {
+            do { layerId++; } while (!LAYER_STATE.layers.contains(layerId));
+            auto& layer = LAYER_STATE.layers.at(layerId);
+
+            if (layer.name.empty() && layer.objCount == 0 && layerId != lel->m_currentLayer) {
+                continue;
             }
-        } else {
-            if (ImGui::Selectable(ICON_MDI_EYE, false, 0, BTN_SIZE)) {
-                layer.isHidden = true;
-            }
-        }
-        ImGui::SameLine();
-        
-        // number
-        ImGui::Text("%d. ", layerId);
-        ImGui::SameLine();
+            ImGui::PushID(layerId);
 
-        // layer name
-        if (layer.isEditingName) {
-            char buffer[128];
-            strncpy(buffer, layer.name.c_str(), sizeof(buffer));
-            buffer[sizeof(buffer) - 1] = '\0';
-            // ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            float rowH = ImGui::GetFrameHeightWithSpacing();
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, rowH);
+
             
-            ImGui::SetNextItemWidth(std::max(60.f, ImGui::GetContentRegionAvail().x - 250));
-            if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
-                layer.name = std::string(buffer);
-            }
-            if (!ImGui::IsItemActive() && ImGui::IsMouseClicked(0)) {
-                layer.isEditingName = false;
-            }
-        } else {
-            if (layer.name.empty()) {
-                ImGui::Text("Layer %d", layerId);
-            } else {
-                ImGui::Text("%s", layer.name.c_str());
-            }
+            // number
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SameLine();
+            ImGui::Text("%d. ", layerId);
+            ImGui::SameLine();
 
-            // double click - change
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-                layer.isEditingName = true;
-            }
-        }
-        ImGui::SameLine();
+            // layer name
+            if (layer.isEditingName) {
+                char buffer[128];
+                strncpy(buffer, layer.name.c_str(), sizeof(buffer));
+                buffer[sizeof(buffer) - 1] = '\0';
+                // ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-        // obj count
-        ImGui::Text("(Obj: %d)", layer.objCount);
-        ImGui::SameLine();
-
-        auto posX = ImGui::GetCursorPosX();
-        ImGui::SetCursorPosX(std::max(posX, posX + ImGui::GetContentRegionAvail().x - 140));
-
-        // opacity slider
-        ImGui::SetNextItemWidth(40);
-        if (ImGui::DragInt("Opacity  ", &layer.opacity, 1, 0, 255)) {
-
-        }
-
-        ImGui::SameLine();
-
-        // lock button
-        if (layer.isLocked) {
-            if (ImGui::Selectable(ICON_MDI_LOCK, false, 0, BTN_SIZE)) {
-                layer.isLocked = false;
-                if (!layer.isHidden) {
-                    lel->m_lockedLayers[layerId] = false;
+                ImGui::SetNextItemWidth(std::max(60.f, ImGui::GetContentRegionAvail().x - 250));
+                if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
+                    layer.name = std::string(buffer);
+                }
+                if (!ImGui::IsItemActive() && ImGui::IsMouseClicked(0)) {
+                    layer.isEditingName = false;
                 }
             }
-        } else {
-            if (ImGui::Selectable(ICON_MDI_LOCK_OPEN_OUTLINE, false, 0, BTN_SIZE)) {
-                layer.isLocked = true;
-                lel->m_lockedLayers[layerId] = true;
+            else {
+                if (layer.name.empty()) {
+                    ImGui::Text("Layer %d", layerId);
+                }
+                else {
+                    ImGui::Text("%s", layer.name.c_str());
+                }
+
+                // double click - change
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+                    layer.isEditingName = true;
+                }
             }
+            ImGui::SameLine();
+
+            // obj count
+            ImGui::Text("(Obj: %d)", layer.objCount);
+
+
+            ImGui::TableSetColumnIndex(0);
+            ImGui::SameLine(0.f, 0.f);
+            bool selected = (layerId == lel->m_currentLayer);
+            if (ImGui::Selectable("##row_select", &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap | ImGuiSelectableFlags_AllowDoubleClick , ImVec2(0, rowH))) {
+                lel->m_currentLayer = layerId;
+            }
+
+            ImGui::SameLine();
+            auto oldSize = ImGui::GetFont()->FontSize;
+            ImGui::GetFont()->FontSize = oldSize * 24.f / 15.f;
+            ImGui::AlignTextToFramePadding();
+            if (layer.isHidden) {
+                lel->m_lockedLayers[layerId] = true; // keep locked
+                if (ImGui::Selectable(ICON_MDI_EYE_OFF, false, 0, BTN_SIZE)) {
+                    layer.isHidden = false;
+                    lel->m_lockedLayers[layerId] = layer.isLocked; // update locked state
+                }
+            }
+            else {
+                if (ImGui::Selectable(ICON_MDI_EYE, false, 0, BTN_SIZE)) {
+                    layer.isHidden = true;
+                }
+            }
+
+            ImGui::GetFont()->FontSize = oldSize;
+
+            //ImGui::SameLine();
+            ImGui::TableSetColumnIndex(2);
+
+            auto posX = ImGui::GetCursorPosX();
+            ImGui::SetCursorPosX(std::max(posX, posX + ImGui::GetContentRegionAvail().x - 140));
+
+            // opacity slider
+            ImGui::SetNextItemWidth(40);
+            ImGui::DragInt("Opacity  ", &layer.opacity, 1, 0, 255);
+
+            //ImGui::SameLine();
+            ImGui::TableSetColumnIndex(3);
+            // lock button
+            ImGui::GetFont()->FontSize = oldSize * 24.f / 15.f;
+            ImGui::AlignTextToFramePadding();
+            if (layer.isLocked) {
+                if (ImGui::Selectable(ICON_MDI_LOCK, false, 0, BTN_SIZE)) {
+                    layer.isLocked = false;
+                    if (!layer.isHidden) {
+                        lel->m_lockedLayers[layerId] = false;
+                    }
+                }
+            }
+            else {
+                if (ImGui::Selectable(ICON_MDI_LOCK_OPEN_OUTLINE, false, 0, BTN_SIZE)) {
+                    layer.isLocked = true;
+                    lel->m_lockedLayers[layerId] = true;
+                }
+            }
+            ImGui::GetFont()->FontSize = oldSize;
+
+            ImGui::PopID();
         }
-
-
-        ImGui::Separator();
-
-        ImGui::EndGroup();
-        
-        ImVec2 groupMax = ImGui::GetItemRectMax();
-        ImVec2 groupMin = ImGui::GetItemRectMin();
-
-        // if current layer
-        if (layerId == lel->m_currentLayer) {
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
-            drawList->AddRectFilled(groupMin, groupMax, IM_COL32(155, 155, 155, 50), 0);
-        }
-
-        // hover
-        if (ImGui::IsItemHovered()) {
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
-            drawList->AddRectFilled(groupMin, groupMax, IM_COL32(155, 155, 155, 20), 0);
-        }
-
-        // on click
-        if (!ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemActive() && ImGui::IsItemClicked()) {
-            lel->m_currentLayer = layerId;
-        }
-
-        ImGui::PopID();
+        ImGui::EndTable();
     }
 
+    ImGui::PopStyleVar(2);
 
     ImGui::EndChild(); // scroll list
 
