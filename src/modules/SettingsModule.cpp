@@ -1,6 +1,8 @@
 #include "SettingsModule.hpp"
 #include "razoomUtils.hpp"
 #include <Geode/modify/EditorUI.hpp>
+#include <Geode/modify/DrawGridLayer.hpp>
+#include <Geode/modify/LevelEditorLayer.hpp>
 
 bool previewAnimations;
 bool previewParticles;
@@ -19,6 +21,9 @@ bool showPath;
 bool showClicks;
 bool showBackground;
 bool showParticleIcons;
+
+bool showCenter;
+bool showDashOrbs;
 
 
 void ErGui::renderSettingsModule() {
@@ -48,6 +53,8 @@ void ErGui::renderSettingsModule() {
     showBackground =    !gm->getGameVariable("0078");
     showParticleIcons = !gm->getGameVariable("0137");
 
+    showCenter = Mod::get()->getSavedValue<bool>("show-center"_spr);
+    showDashOrbs = Mod::get()->getSavedValue<bool>("show-dash-orbs"_spr);
 
     ImGui::SeparatorText("Previews");
 
@@ -89,6 +96,14 @@ void ErGui::renderSettingsModule() {
 
     if (ImGui::Checkbox("Song Guidelines", &songGuidelines)) {
         gm->m_showSongMarkers = songGuidelines;
+    }
+
+    if (ImGui::Checkbox("Show Center", &showCenter)) {
+        Mod::get()->setSavedValue("show-center"_spr, showCenter);
+    }
+
+    if (ImGui::Checkbox("Dash Orbs", &showDashOrbs)) {
+        Mod::get()->setSavedValue("show-dash-orbs"_spr, showDashOrbs);
     }
 
     // Ugly Looking :(
@@ -216,3 +231,76 @@ class $modify(EditorUI) {
         return ret;
     }
 };
+
+
+class $modify(DashOrbLevelEditorLayer, LevelEditorLayer) {
+    struct Fields {
+        Ref<CCArray> dashOrbs = CCArray::create();
+    };
+
+    $override
+    void addSpecial(GameObject* obj) {
+        LevelEditorLayer::addSpecial(obj);
+        if (obj->m_objectID == 1704 || obj->m_objectID == 1751) {
+            m_fields->dashOrbs->addObject(obj);
+        }
+    }
+
+    $override
+    void removeSpecial(GameObject* obj) {
+        LevelEditorLayer::removeSpecial(obj);
+        if (obj->m_objectID == 1704 || obj->m_objectID == 1751) {
+            m_fields->dashOrbs->removeObject(obj);
+        }
+    }
+};
+
+
+class $modify(DrawGridLayer) {
+    void draw() {
+        // show center
+        if (showCenter) {
+            bool tmp = m_editorLayer->m_previewMode;
+            m_editorLayer->m_previewMode = showCenter;
+            DrawGridLayer::draw();
+            m_editorLayer->m_previewMode = tmp;
+        } else {
+            DrawGridLayer::draw();
+        }
+
+        // orbs
+        if (showDashOrbs) {
+            auto orbs = reinterpret_cast<DashOrbLevelEditorLayer*>(m_editorLayer)->m_fields->dashOrbs;
+            for (int i = 0; i < orbs->count(); i++) {
+                auto const orb = static_cast<GameObject*>(orbs->objectAtIndex(i));
+                auto const begin = orb->getPosition();
+                auto end = begin + ccp(
+                    400 * cos(-orb->getRotation() / 180.f * M_PI),
+                    400 * sin(-orb->getRotation() / 180.f * M_PI)
+                );
+                ccDrawColor4B(orb->m_objectID == 1704 ? ccc4(0, 255, 0, 255) : ccc4(255, 90, 180, 255));
+                ccDrawLine(begin, end);
+            }
+        }
+
+        // pulse trigger in/hold/out
+        if (durationLines) {
+            ccDrawColor4B(100, 100, 100, 75);
+            for (auto* obj : CCArrayExt<EffectGameObject*>(m_effectGameObjects)) {
+                if (obj->m_objectID == 1006) {
+                    float const durs[] = {
+                        obj->m_fadeInDuration,
+                        obj->m_fadeInDuration + obj->m_holdDuration,
+                        obj->m_fadeInDuration + obj->m_holdDuration + obj->m_fadeOutDuration
+                    };
+                    for (int i = 0; i < 3; i++) {
+                        auto currTime = timeForPos(obj->getPosition(), obj->m_ordValue, obj->m_channelValue, 0, 1, 0, 0);
+                        auto durPos = posForTime(currTime + durs[i]);
+                        ccDrawFilledCircle(ccp(durPos.x, obj->getPositionY()), 1.5, 0, 10);
+                    }
+                }
+            }
+        }
+    }
+};
+
