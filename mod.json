@@ -30,6 +30,21 @@
 					}
 				]
 			}
+		},
+		"autosave-rate": {
+			"type": "int",
+			"name": "Autosave interval (minutes)",
+			"description": "Make level backup every N minutes so that you don't lose it if your game crashes, \n0 - never do backups",
+			"default": 5,
+			"min": 0,
+			"max": 30,
+			"control": {
+				"arrows": true,
+				"slider": true,
+				"slider-step": 1,
+				"big-arrows": false,
+				"arrow-step": 1
+			}
 		}
 	},
 	"tags": [

@@ -94,7 +94,7 @@ class $modify(LevelEditorLayer) {
             }
             Mod::get()->setSavedValue<matjson::Value>(fmt::format("layers_{}", levelId), values);
             LAYER_STATE.layers.clear();
-            log::debug("layers saved");
+            // log::debug("layers saved");
         }
     };
 

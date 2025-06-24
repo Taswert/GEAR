@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME} SHARED
     src/includes/razoomUtils.cpp
     src/modules/GlobalDockingView.cpp
     src/modules/ContextMenuModule.cpp
+    src/features/AutoSave.cpp
  )
 
 
