@@ -53,8 +53,8 @@ void ErGui::renderSettingsModule() {
     showBackground =    !gm->getGameVariable("0078");
     showParticleIcons = !gm->getGameVariable("0137");
 
-    showCenter = Mod::get()->getSavedValue<bool>("show-center"_spr);
-    showDashOrbs = Mod::get()->getSavedValue<bool>("show-dash-orbs"_spr);
+    showCenter = Mod::get()->getSavedValue<bool>("show-center");
+    showDashOrbs = Mod::get()->getSavedValue<bool>("show-dash-orbs");
 
     ImGui::SeparatorText("Previews");
 
@@ -89,21 +89,21 @@ void ErGui::renderSettingsModule() {
 
     ImGui::SeparatorText("Draws");
 
-    if (ImGui::Checkbox("Show Grid", &showGrid)) {
+    if (ImGui::Checkbox("Grid", &showGrid)) {
         gm->setGameVariable("0038", showGrid);
         LevelEditorLayer::get()->updateOptions();
     }
 
-    if (ImGui::Checkbox("Song Guidelines", &songGuidelines)) {
+    if (ImGui::Checkbox("Guidelines", &songGuidelines)) {
         gm->m_showSongMarkers = songGuidelines;
     }
 
-    if (ImGui::Checkbox("Show Center", &showCenter)) {
-        Mod::get()->setSavedValue("show-center"_spr, showCenter);
+    if (ImGui::Checkbox("Center", &showCenter)) {
+        Mod::get()->setSavedValue("show-center", showCenter);
     }
 
     if (ImGui::Checkbox("Dash Orbs", &showDashOrbs)) {
-        Mod::get()->setSavedValue("show-dash-orbs"_spr, showDashOrbs);
+        Mod::get()->setSavedValue("show-dash-orbs", showDashOrbs);
     }
 
     // Ugly Looking :(
@@ -137,30 +137,30 @@ void ErGui::renderSettingsModule() {
         LevelEditorLayer::get()->updateOptions();
     }
 
-    if (ImGui::Checkbox("Show Path", &showPath)) {
+    if (ImGui::Checkbox("Path", &showPath)) {
         gm->setGameVariable("0152", !showPath);
         LevelEditorLayer::get()->updateOptions();
     }
 
-    if (ImGui::Checkbox("Show Clicks", &showClicks)) {
+    if (ImGui::Checkbox("Clicks", &showClicks)) {
         gm->setGameVariable("0149", showClicks);
         LevelEditorLayer::get()->updateOptions();
     }
 
-    if (ImGui::Checkbox("Show Hitboxes", &showHitboxes)) {
+    if (ImGui::Checkbox("Hitboxes", &showHitboxes)) {
         gm->setGameVariable("0045", showHitboxes);
         LevelEditorLayer::get()->updateOptions();
     }
 
     ImGui::SeparatorText("Grounds");
 
-    if (ImGui::Checkbox("Show Ground", &showGround)) {
+    if (ImGui::Checkbox("Ground", &showGround)) {
         gm->setGameVariable("0037", showGround);
         LevelEditorLayer::get()->m_groundLayer->setVisible(showGround);
         LevelEditorLayer::get()->updateOptions();
     }
 
-    if (ImGui::Checkbox("Show Background", &showBackground)) {
+    if (ImGui::Checkbox("Background", &showBackground)) {
         gm->setGameVariable("0078", !showBackground);
         LevelEditorLayer::get()->updateOptions();
     }
@@ -259,14 +259,13 @@ class $modify(DashOrbLevelEditorLayer, LevelEditorLayer) {
 class $modify(DrawGridLayer) {
     void draw() {
         // show center
-        if (showCenter) {
-            bool tmp = m_editorLayer->m_previewMode;
-            m_editorLayer->m_previewMode = showCenter;
-            DrawGridLayer::draw();
-            m_editorLayer->m_previewMode = tmp;
-        } else {
-            DrawGridLayer::draw();
-        }
+        bool tmp = m_editorLayer->m_previewMode;
+        float tmp2 = m_editorLayer->m_editorUI->m_toolbarHeight;
+        m_editorLayer->m_previewMode = showCenter;
+        m_editorLayer->m_editorUI->m_toolbarHeight = 0;
+        DrawGridLayer::draw();
+        m_editorLayer->m_previewMode = tmp;
+        m_editorLayer->m_editorUI->m_toolbarHeight = tmp2;
 
         // orbs
         if (showDashOrbs) {
