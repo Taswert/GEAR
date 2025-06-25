@@ -162,7 +162,8 @@ void ErGui::renderSettingsModule() {
         LevelEditorLayer::get()->updateOptions();
     }
 
-    if (auto gjmg = dynamic_cast<GJMGLayer*>(LevelEditorLayer::get()->getChildByID("main-node")->getChildren()->objectAtIndex(1))) {
+
+    if (auto gjmg = dynamic_cast<GJMGLayer*>(dynamic_cast<CCNode*>(LevelEditorLayer::get()->m_objectLayer->getParent())->getChildren()->objectAtIndex(1))) {
         if (ImGui::Checkbox("Middleground", &showMG)) {
             Mod::get()->setSavedValue("show-mg", showMG);
             gjmg->setVisible(showMG);

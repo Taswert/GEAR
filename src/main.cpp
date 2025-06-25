@@ -622,8 +622,8 @@ class $modify(EditorUI) {
 					if (!(obj->m_editorLayer == LevelEditorLayer::get()->m_currentLayer || (obj->m_editorLayer2 == LevelEditorLayer::get()->m_currentLayer && obj->m_editorLayer2 != 0) || this->m_editorLayer->m_currentLayer == -1)) continue;
 
 					auto editorLayer = GameManager::sharedState()->getEditorLayer();
-					auto cameraPos = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
-					auto cameraScale = editorLayer->getChildByID("main-node")->getChildByID("batch-layer")->getScale();
+					auto cameraPos = editorLayer->m_objectLayer->getPosition();
+					auto cameraScale = editorLayer->m_objectLayer->getScale();
 
 					auto objPos = obj->getPosition();
 					auto newPos = cocos2d::CCPoint(
@@ -855,8 +855,8 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	AllocConsole();
-	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	//AllocConsole();
+	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (Mod::get()->getSavedValue<float>("grid-size") == 0.f) Mod::get()->setSavedValue("grid-size", 30.f);
 	if (Mod::get()->getSavedValue<float>("zoom-multiplier") == 0.f) Mod::get()->setSavedValue("zoom-multiplier", 1.f);
