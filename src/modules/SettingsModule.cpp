@@ -3,6 +3,7 @@
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/modify/DrawGridLayer.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
+#include <Geode/modify/GJMGLayer.hpp>
 
 bool previewAnimations;
 bool previewParticles;
@@ -24,7 +25,7 @@ bool showParticleIcons;
 
 bool showCenter;
 bool showDashOrbs;
-
+bool showMG;
 
 void ErGui::renderSettingsModule() {
     if (!ImGui::Begin("View")) {
@@ -53,8 +54,9 @@ void ErGui::renderSettingsModule() {
     showBackground =    !gm->getGameVariable("0078");
     showParticleIcons = !gm->getGameVariable("0137");
 
-    showCenter = Mod::get()->getSavedValue<bool>("show-center");
-    showDashOrbs = Mod::get()->getSavedValue<bool>("show-dash-orbs");
+    showCenter =    Mod::get()->getSavedValue<bool>("show-center");
+    showDashOrbs =  Mod::get()->getSavedValue<bool>("show-dash-orbs");
+    showMG =        Mod::get()->getSavedValue<bool>("show-mg");
 
     ImGui::SeparatorText("Previews");
 
@@ -160,6 +162,13 @@ void ErGui::renderSettingsModule() {
         LevelEditorLayer::get()->updateOptions();
     }
 
+    if (auto gjmg = dynamic_cast<GJMGLayer*>(LevelEditorLayer::get()->getChildByID("main-node")->getChildren()->objectAtIndex(1))) {
+        if (ImGui::Checkbox("Middleground", &showMG)) {
+            Mod::get()->setSavedValue("show-mg", showMG);
+            gjmg->setVisible(showMG);
+        }
+    }
+
     if (ImGui::Checkbox("Background", &showBackground)) {
         gm->setGameVariable("0078", !showBackground);
         LevelEditorLayer::get()->updateOptions();
@@ -229,6 +238,16 @@ class $modify(EditorUI) {
         }
 
         return ret;
+    }
+};
+
+class $modify(GJMGLayer) {
+    bool init(int p0) {
+        if (!GJMGLayer::init(p0)) return false;
+
+        this->setVisible(Mod::get()->getSavedValue<bool>("show-mg"));
+
+        return true;
     }
 };
 

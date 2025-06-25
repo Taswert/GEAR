@@ -967,7 +967,7 @@ $on_mod(Loaded) {
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
 
-				ImGui::ShowStyleEditor();
+				//ImGui::ShowStyleEditor();
 
 			}
 			else {

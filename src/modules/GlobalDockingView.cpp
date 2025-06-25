@@ -110,8 +110,72 @@ static void renderMenuBar() {
 		}
 
         if (ImGui::BeginMenu("Settings")) {
-            ImGui::MenuItem("Rotate Color Wheel");
-            ImGui::MenuItem("Select Direction From Cursor");
+
+            auto gm = GameManager::sharedState();
+
+            bool ptMusic =              gm->getGameVariable("0002");
+            bool ptNoGrid =             gm->getGameVariable("0079");
+            bool ptSmoothFix =          gm->getGameVariable("0102");
+            bool autoPause =            gm->getGameVariable("0150");
+            //bool swipeHold =          gm->getGameVariable("0057");    // Visuals should be reworked manually because of reworked selection system...
+            //bool swipeCycle =         gm->getGameVariable("0059");    // This should be reworked manually because of reworked selection system...
+            bool startOptimisation =    gm->getGameVariable("0151");
+            bool increaseUndoRedo =     gm->getGameVariable("0013");
+            bool smallWarpBtns =        gm->getGameVariable("0169");
+            bool ignoreDamage =         gm->getGameVariable("0009");
+            bool triangleColorWheel = geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel");
+            bool rotateColorWheel =     geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel");
+            //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
+            
+
+            ImGui::MenuItem("Playtest Music", NULL,         &ptMusic);
+            //ImGui::SetTooltip("Plays music during playtesting.");
+            ImGui::MenuItem("Playtest No Grid", NULL,       &ptNoGrid);
+            //ImGui::SetTooltip("Hides grid during playtesting.");
+            ImGui::MenuItem("Playtest Smooth Fix", NULL,    &ptSmoothFix);
+            //ImGui::SetTooltip("Enables smooth fix during playtesting.");
+            ImGui::MenuItem("Auto-Pause", NULL,             &autoPause);
+            //ImGui::SetTooltip("Pauses gameplay when starting from StartPos.");
+            ImGui::MenuItem("Ignore Damage", NULL,          &ignoreDamage);
+            //ImGui::SetTooltip("Disables damage during playtesting.");
+
+            //ImGui::Dummy({ 5.f, 5.f });
+
+            //ImGui::MenuItem("Hold To Swipe", NULL,        &swipeHold);       
+            //ImGui::MenuItem("Swipe Cycle Mode", NULL,     &swipeCycle);
+
+            ImGui::Dummy({ 5.f, 5.f });
+            
+            ImGui::MenuItem("Start Optimisation", NULL,     &startOptimisation);
+            //ImGui::SetTooltip("Tries to speed up StartPos loading. RobTop's Experimental option.");
+            ImGui::MenuItem("Increase Undo/Redo", NULL,     &increaseUndoRedo);
+            //ImGui::SetTooltip("Increases maximum Undo/Redo limit from 200 to 1000.");
+            ImGui::MenuItem("Small Warp Buttons", NULL,     &smallWarpBtns);
+            //ImGui::SetTooltip("Warp control buttons are 50% smaller (Restart editor to work).");
+
+            ImGui::Dummy({ 5.f, 5.f });
+
+            ImGui::MenuItem("Triangle Color Wheel", NULL,    &triangleColorWheel);
+            //ImGui::SetTooltip("Sets GEAR color wheel to triangle.");
+            ImGui::MenuItem("Rotate Color Wheel", NULL,     &rotateColorWheel);
+            //ImGui::SetTooltip("Enables color wheel rotation in GEAR. Only works with triangle color wheel.");
+            //ImGui::MenuItem("Select Direction From Cursor", NULL, &selectDirectionFromCursor);
+            
+
+            gm->setGameVariable("0002", ptMusic);
+            gm->setGameVariable("0079", ptNoGrid);
+            gm->setGameVariable("0102", ptSmoothFix);
+            gm->setGameVariable("0150", autoPause);
+            //gm->setGameVariable("0057", swipeHold);
+            //gm->setGameVariable("0059", swipeCycle);
+            gm->setGameVariable("0151", startOptimisation);
+            gm->setGameVariable("0013", increaseUndoRedo);
+            gm->setGameVariable("0169", smallWarpBtns);
+            gm->setGameVariable("0009", ignoreDamage);
+            geode::Mod::get()->setSavedValue<bool>("triangle-color-wheel", triangleColorWheel);
+            geode::Mod::get()->setSavedValue<bool>("rotate-color-wheel",   rotateColorWheel);
+            //geode::Mod::get()->setSavedValue<bool>("select-direction-from-cursor", selectDirectionFromCursor);
+
             ImGui::EndMenu();
         }
 

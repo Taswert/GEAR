@@ -83,7 +83,12 @@ void drawColorSettings(GameObject* obj) {
 	float r, g, b;
 	float hsv[4] = { savedHueEO, savedSaturationEO, savedValueEO, eObj->m_opacity };
 	ImGuiColorEditFlags flags =
-		ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar;
+		ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_AlphaBar;
+	if (geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel"))
+		flags |= ImGuiColorEditFlags_PickerHueWheel;
+	if (!geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel"))
+		flags |= ImGuiColorEditFlags_DisableWheelRot;
+
 	if (eObj->m_copyColorID == 0) {
 		ImGui::ColorPicker4((btnStr + "COLOR-SETTINGS").c_str(), hsv, flags);
 
