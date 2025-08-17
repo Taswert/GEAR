@@ -140,6 +140,7 @@ void drawColorSettings(GameObject* obj) {
 		if (targetID < 0)						targetID = 0;
 
 		eObj->m_targetColor = targetID;
+		LevelEditorLayer::get()->updateObjectLabel(eObj);
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);

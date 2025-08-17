@@ -7,6 +7,7 @@
 using namespace geode::prelude;
 
 namespace ErGui {
+	CCSprite* getObjectSprite(int id);
 	void renderObjectList();
 	void addRecentObjectToList(int objId);
 	void clearObjectListCache();

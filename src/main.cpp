@@ -13,6 +13,7 @@
 #include <Geode/modify/CCEGLView.hpp>
 #include <Geode/modify/CCDirector.hpp>
 #include <Geode/modify/EditorPauseLayer.hpp>
+#include <Geode/modify/DrawGridLayer.hpp>
 
 #include <IconsMaterialDesignIcons.h>
 #include "modules/EditGroupModule.hpp"
@@ -380,12 +381,43 @@ class $modify(EditorUI) {
 	void selectObject(GameObject* obj, bool p1) {
 		if (auto eObj = static_cast<EffectGameObject*>(obj))
 			ErGui::saveHueValues(&eObj->m_triggerTargetColor);
+
+		// orig
 		EditorUI::selectObject(obj, p1);
+
+		// Visible Selection
+		if (ErGui::isVisibleSelection) {
+			obj->m_isSelected = 1;
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
+		}
+		else {
+			obj->m_isSelected = 0;
+		}
 	}
 
 	void selectObjects(CCArray* objArr, bool p1) {
+		auto singleSelectedObject = EditorUI::get()->m_selectedObject;
+		
 		EditorUI::selectObjects(objArr, p1);
 		ErGui::groupInfoUpdate();
+
+		// Visible Selection
+		if (ErGui::isVisibleSelection) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isSelected = 1;
+			}
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
+		}
+		else {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isSelected = 0;
+			}
+
+			// Preventing one stupid bug, which causes that single selected object to turn green after this func call
+			if (singleSelectedObject) {
+				singleSelectedObject->m_isSelected = 0;
+			}
+		}
 	}
 
 	void processSelectObjects(CCArray* objArr) { // I hope this would not cause some more bugs, gosh...
@@ -403,6 +435,7 @@ class $modify(EditorUI) {
 		ErGui::touchedDN = CCDrawNode::create();
 		lel->m_objectParent->addChild(ErGui::touchedDN);
 		ErGui::touchedDN->setZOrder(2);
+
 		auto ret = EditorUI::init(lel);
 
 		m_fields->nothing = 42; // trigger m_fields lazy initialization
@@ -434,8 +467,13 @@ class $modify(EditorUI) {
 		}
 
 		// todo: select all right / select all left
-
+		ErGui::editorUIHoldingKeys.insert(p0);
 		EditorUI::keyDown(p0);
+	}
+
+	virtual void keyUp(cocos2d::enumKeyCodes p0) {
+		ErGui::editorUIHoldingKeys.erase(p0);
+		EditorUI::keyUp(p0);
 	}
 
 	void updateGridNodeSize() {
@@ -489,6 +527,8 @@ class $modify(EditorUI) {
 			CCLayer::ccTouchMoved(touch, event);
 			return;
 		}
+
+		//if (this->m_transformControl->active)
 
 		//DEBUG TOUCH POS
 		if (ErGui::dbgTDN) {
@@ -716,6 +756,61 @@ class $modify(EditorUI) {
 
 };
 
+//class $modify(DrawGridLayer) {
+//	void draw() {
+//		int colOffset = 0;
+//		int rowOffset = 0;
+//		float step = this->m_gridSize;
+//		auto lel = LevelEditorLayer::get();
+//
+//
+//		float botY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
+//		float botYRounded = std::round(botY / step) * step;
+//		float topY = CCDirector::sharedDirector()->getWinSize().height / lel->m_objectLayer->getScale() + botY;
+//
+//		do {
+//			botYRounded += step;
+//			rowOffset += 2;
+//		} while (botYRounded < topY);
+//
+//		//std::cout << rowOffset << "\n";
+//
+//
+//		float leftX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale();
+//		float leftXRounded = std::round(leftX / step) * step;
+//		float rightX = CCDirector::sharedDirector()->getWinSize().width / lel->m_objectLayer->getScale() + leftX;
+//
+//		do {
+//			leftXRounded += step;
+//			colOffset += 2;
+//		} while (leftXRounded < rightX);
+//
+//		//std::cout << colOffset << "\n";
+//		
+//		//Never ask man his salary, woman her age and Taswert, why is there +8
+//		unsigned int result = colOffset + rowOffset + 8;
+//		if (result > 398) result = 398;
+//
+//		//std::cout << result << "\n\n";
+//
+//		//std::cout << "Size: " << m_timeMarkers->count() << "\n";
+//		//std::cout << "String: " << m_timeMarkerString << "\n";
+//		//if (m_timeMarkers->count()) std::cout << static_cast<CCString*>(m_timeMarkers->objectAtIndex(1))->m_sString << "\n";
+//		//std::cout << "\n";
+//
+//
+//		if (GameManager::sharedState()->getGameVariable("0038")) {
+//			cocos2d::ccDrawColor4B(ErGui::gridColor[0], ErGui::gridColor[1], ErGui::gridColor[2], ErGui::gridColor[3]);		// Color (DefaultRGBA - 0, 0, 0, 150)
+//			glLineWidth(ErGui::gridWidth);																					// Width (Default - 1.f)
+//			cocos2d::ccDrawLines(reinterpret_cast<CCPoint*>(this->m_pointArray1), result);									// Point & Lines Number
+//			glLineWidth(1.f);
+//		}
+//
+//		DrawGridLayer::draw();
+//	}
+//};
+
+
 
 //class $modify(CCDirector) {
 //	void drawScene() {
@@ -800,8 +895,10 @@ class $modify(CCEGLView) {
 				}
 			}
 
-
 			if (io.WantCaptureMouse) {
+				if (!ErGui::editorUIHoldingKeys.empty()) {
+					ErGui::releaseEditorUIKeys();
+				}
 				switch (msg.message) {
 				case WM_RBUTTONDOWN:
 					io.AddMouseButtonEvent(1, true);
@@ -858,9 +955,30 @@ $on_mod(Loaded) {
 	//AllocConsole();
 	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
-	if (Mod::get()->getSavedValue<float>("grid-size") == 0.f) Mod::get()->setSavedValue("grid-size", 30.f);
-	if (Mod::get()->getSavedValue<float>("zoom-multiplier") == 0.f) Mod::get()->setSavedValue("zoom-multiplier", 1.f);
-	if (Mod::get()->getSavedValue<int>("select-mode") == 0) Mod::get()->setSavedValue("select-mode", 1);
+	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
+	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);
+	if (!Mod::get()->hasSavedValue("select-mode"))					Mod::get()->setSavedValue("select-mode", 1);
+	if (!Mod::get()->hasSavedValue("hide-object-list-popup"))		Mod::get()->setSavedValue("hide-object-list-popup", true);
+	if (!Mod::get()->hasSavedValue("autoswitch-to-build-mode"))		Mod::get()->setSavedValue("autoswitch-to-build-mode", false);
+	if (!Mod::get()->hasSavedValue("show-zoom-controls"))			Mod::get()->setSavedValue("show-zoom-controls", true);
+
+	if (!Mod::get()->hasSavedValue("soi-position"))					Mod::get()->setSavedValue("soi-position", true);
+	if (!Mod::get()->hasSavedValue("soi-rotation"))					Mod::get()->setSavedValue("soi-rotation", true);
+	if (!Mod::get()->hasSavedValue("soi-scale"))					Mod::get()->setSavedValue("soi-scale", true);
+	if (!Mod::get()->hasSavedValue("soi-color"))					Mod::get()->setSavedValue("soi-color", true);
+	if (!Mod::get()->hasSavedValue("soi-hsv"))						Mod::get()->setSavedValue("soi-hsv", false);
+	if (!Mod::get()->hasSavedValue("soi-groups"))					Mod::get()->setSavedValue("soi-groups", true);
+	if (!Mod::get()->hasSavedValue("soi-zlayer"))					Mod::get()->setSavedValue("soi-zlayer", true);
+	if (!Mod::get()->hasSavedValue("soi-zorder"))					Mod::get()->setSavedValue("soi-zorder", true);
+	if (!Mod::get()->hasSavedValue("soi-objectid"))					Mod::get()->setSavedValue("soi-objectid", false);
+	if (!Mod::get()->hasSavedValue("soi-targetgroup"))				Mod::get()->setSavedValue("soi-targetgroup", true);
+	if (!Mod::get()->hasSavedValue("soi-itemid"))					Mod::get()->setSavedValue("soi-itemid", false);
+	if (!Mod::get()->hasSavedValue("soi-blockid"))					Mod::get()->setSavedValue("soi-blockid", false);
+	if (!Mod::get()->hasSavedValue("soi-particles"))				Mod::get()->setSavedValue("soi-particles", true);
+	if (!Mod::get()->hasSavedValue("soi-hidden"))					Mod::get()->setSavedValue("soi-hidden", true);
+	if (!Mod::get()->hasSavedValue("soi-no-touch"))					Mod::get()->setSavedValue("soi-no-touch", true);
+	if (!Mod::get()->hasSavedValue("soi-high-detail"))				Mod::get()->setSavedValue("soi-high-detail", false);
+	if (!Mod::get()->hasSavedValue("soi-object-count"))				Mod::get()->setSavedValue("soi-object-count", true);
 	//if (Mod::get()->getSavedValue<int>("build-color-1") == 0) Mod::get()->setSavedValue("build-color-1", 1);
 	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
@@ -911,12 +1029,13 @@ $on_mod(Loaded) {
 	
 
 	ErGui::editorUIbottomConstrainPatch->enable();
+	//ErGui::vanillaGridOpaquePatch->enable();
 	
 	// DEBUG - позволяет смотреть оффсеты полей
 	//ErGui::objectCfg = data;
 	//std::cout
-	//	<< "Offset ColorSelectPopup::m_touchTriggered = "
-	//	<< offsetof(EffectGameObject, EffectGameObject::m_centerGroupID)
+	//	<< "Offset DrawGridLayer::m_gridSize = "
+	//	<< offsetof(DrawGridLayer, DrawGridLayer::m_gridSize)
 	//	<< " bytes\n";
 
 	ImGuiCocos::get().setup([] {

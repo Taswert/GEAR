@@ -30,7 +30,7 @@ std::vector<ErGui::ObjectConfig> getCustomObjectsConfig() {
 }
 
 
-CCSprite* getObjectSprite(int id) {
+CCSprite* ErGui::getObjectSprite(int id) {
 	if (id > 0) {
 		auto it = objectSpriteCache.find(id);
 		if (it != objectSpriteCache.end()) {
@@ -135,7 +135,7 @@ bool ImageButtonFromFrameName(ErGui::ObjectConfig const &objCfg, int j, const ch
 		shouldPopStyle = true;
 	}
 
-	ImTextureID texture = (ImTextureID)(intptr_t)getObjectSprite(objId)->getTexture()->getName();
+	ImTextureID texture = (ImTextureID)(intptr_t)ErGui::getObjectSprite(objId)->getTexture()->getName();
 
 	if (ImGui::ImageButton(str_id, texture, imageSize, ImVec2(0,1), ImVec2(1,0))) {
 		ret = true;
@@ -193,7 +193,7 @@ void ImageFolderButton(std::vector<ErGui::ObjectConfig> const &visibleButtons, i
 
 	ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_SeparatorActive));
 	
-	ImTextureID texture = (ImTextureID)(intptr_t)getObjectSprite(folderId)->getTexture()->getName();
+	ImTextureID texture = (ImTextureID)(intptr_t)ErGui::getObjectSprite(folderId)->getTexture()->getName();
 
 	std::string folderStrId = "##FOLDER-" + std::to_string(folderId);
 
@@ -261,7 +261,13 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 						std::string strId = "##OBJECT-" + name + std::to_string(objects[j]);
 
 						if (ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab)) {
-							ImGui::CloseCurrentPopup();
+							if (geode::Mod::get()->getSavedValue<bool>("autoswitch-to-build-mode")) {
+								EditorUI::get()->m_selectedMode = 2;
+							}
+
+							if (geode::Mod::get()->getSavedValue<bool>("hide-object-list-popup")) {
+								ImGui::CloseCurrentPopup();
+							}
 						}
 
 						if (j + 1 < objects.size() && (j + 1) % 6 != 0)
@@ -273,7 +279,11 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 			else {
 				for (int j = 0; j < objects.size(); j++) {
 					std::string strId = "##OBJECT-" + name + std::to_string(objects[j]);
-					ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab);
+					if (ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab)) {
+						if (geode::Mod::get()->getSavedValue<bool>("autoswitch-to-build-mode")) {
+							EditorUI::get()->m_selectedMode = 2;
+						}
+					}
 
 					float lastButtonX2 = ImGui::GetItemRectMax().x;
 					float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + buttonSize.x;

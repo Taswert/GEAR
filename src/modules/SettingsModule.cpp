@@ -1,4 +1,5 @@
 #include "SettingsModule.hpp"
+#include "myUtils.hpp"
 #include "razoomUtils.hpp"
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/modify/DrawGridLayer.hpp>
@@ -36,27 +37,27 @@ void ErGui::renderSettingsModule() {
     auto gm = GameManager::get();
 
     previewAnimations = gm->getGameVariable("0118");
-    previewParticles =  gm->getGameVariable("0117");
-    previewShaders =    gm->getGameVariable("0158");
+    previewParticles = gm->getGameVariable("0117");
+    previewShaders = gm->getGameVariable("0158");
     // ldm
-    previewMode =       gm->getGameVariable("0036");
-    songGuidelines =    gm->m_showSongMarkers;
+    previewMode = gm->getGameVariable("0036");
+    songGuidelines = gm->m_showSongMarkers;
     // showPos
-    durationLines =     gm->getGameVariable("0058");
-    effectLines =       gm->getGameVariable("0043");
-    showGrid =          gm->getGameVariable("0038");
-    showGround =        gm->getGameVariable("0037");
-    showHitboxes =      gm->getGameVariable("0045");
+    durationLines = gm->getGameVariable("0058");
+    effectLines = gm->getGameVariable("0043");
+    showGrid = gm->getGameVariable("0038");
+    showGround = gm->getGameVariable("0037");
+    showHitboxes = gm->getGameVariable("0045");
 
-    showInvisible =     !gm->getGameVariable("0121");
-    showPath =          !gm->getGameVariable("0152");
-    showClicks =        gm->getGameVariable("0149");
-    showBackground =    !gm->getGameVariable("0078");
+    showInvisible = !gm->getGameVariable("0121");
+    showPath = !gm->getGameVariable("0152");
+    showClicks = gm->getGameVariable("0149");
+    showBackground = !gm->getGameVariable("0078");
     showParticleIcons = !gm->getGameVariable("0137");
 
-    showCenter =    Mod::get()->getSavedValue<bool>("show-center");
-    showDashOrbs =  Mod::get()->getSavedValue<bool>("show-dash-orbs");
-    showMG =        Mod::get()->getSavedValue<bool>("show-mg");
+    showCenter = Mod::get()->getSavedValue<bool>("show-center");
+    showDashOrbs = Mod::get()->getSavedValue<bool>("show-dash-orbs");
+    showMG = Mod::get()->getSavedValue<bool>("show-mg");
 
     ImGui::SeparatorText("Previews");
 
@@ -76,7 +77,7 @@ void ErGui::renderSettingsModule() {
     }
 
     // if (ImGui::Checkbox("LDM", &ldm)) {
-        
+
     // }
 
     if (ImGui::Checkbox("Preview Mode", &previewMode)) {
@@ -91,6 +92,36 @@ void ErGui::renderSettingsModule() {
 
     ImGui::SeparatorText("Draws");
 
+
+    // ToDo: Saving
+    //float fGridColor[4] = { ErGui::gridColor[0] / 255.f, ErGui::gridColor[1] / 255.f, ErGui::gridColor[2] / 255.f, ErGui::gridColor[3] / 255.f };
+    //if (ImGui::ColorButton("##GridColor", ImVec4(fGridColor[0], fGridColor[1], fGridColor[2], fGridColor[3]))) {
+    //    ImGui::OpenPopup("GridColorPopup");
+    //}
+
+    //if (ImGui::BeginPopup("GridColorPopup")) {
+    //    ImGuiColorEditFlags flags =
+    //        ImGuiColorEditFlags_AlphaBar;
+    //    if (geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel"))
+    //        flags |= ImGuiColorEditFlags_PickerHueWheel;
+    //    if (!geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel"))
+    //        flags |= ImGuiColorEditFlags_DisableWheelRot;
+
+    //    ImGui::ColorPicker4("Grid Color", fGridColor, flags);
+    //    
+    //    ErGui::gridColor[0] = int(fGridColor[0] * 255);
+    //    ErGui::gridColor[1] = int(fGridColor[1] * 255);
+    //    ErGui::gridColor[2] = int(fGridColor[2] * 255);
+    //    ErGui::gridColor[3] = int(fGridColor[3] * 255);
+
+    //    ImGui::EndPopup();
+    //}
+
+    //ImGui::SameLine();
+    //ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 4.f);
+    //ImGui::DragFloat("##GridWidth", &ErGui::gridWidth, 0.1f, 0.f, 10.f, "%.2f");
+    //ImGui::SameLine();
+    
     if (ImGui::Checkbox("Grid", &showGrid)) {
         gm->setGameVariable("0038", showGrid);
         LevelEditorLayer::get()->updateOptions();

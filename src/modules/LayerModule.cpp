@@ -119,7 +119,7 @@ class $modify(LevelEditorLayer) {
         // log::debug("{}--{}", m_activeObjectsCount, m_activeObjects.size()); different
         for (int i = 0; i < m_activeObjectsCount; i++) {
             GameObject* obj = m_activeObjects[i];
-            if (LAYER_STATE.layers[obj->m_editorLayer].isHidden) {
+            if (LAYER_STATE.layers[obj->m_editorLayer].isHidden || (obj->m_isHide && GameManager::sharedState()->getGameVariable("0121"))) {
                 obj->setOpacity(0);
             } else {
                 bool isOnCurrentLayer = m_currentLayer == -1 || 

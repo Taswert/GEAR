@@ -249,6 +249,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SetItemTooltip("Set to current Editor Layer");
 		ImGui::SameLine();
 		ImGui::Text("EditorL1");
+		if (el1 < 0) el1 = 0;
 		obj->m_editorLayer = el1;
 		
 
@@ -261,6 +262,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SetItemTooltip("Set to current Editor Layer");
 		ImGui::SameLine();
 		ImGui::Text("EditorL2");
+		if (el2 < 0) el2 = 0;
 		obj->m_editorLayer2 = el2;
 
 		
@@ -656,7 +658,10 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL1")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_editorLayer = LevelEditorLayer::get()->m_currentLayer;
+				if (LevelEditorLayer::get()->m_currentLayer < 0) 
+					obj->m_editorLayer = 0;
+				else 
+					obj->m_editorLayer = LevelEditorLayer::get()->m_currentLayer;
 			}
 			groupInfoUpdate();
 		}
@@ -672,7 +677,10 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL2")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_editorLayer2 = LevelEditorLayer::get()->m_currentLayer;
+				if (LevelEditorLayer::get()->m_currentLayer < 0)
+					obj->m_editorLayer2 = 0;
+				else
+					obj->m_editorLayer2 = LevelEditorLayer::get()->m_currentLayer;
 			}
 			groupInfoUpdate();
 		}
@@ -839,7 +847,11 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::SameLine(160);
 		if (ImGui::Checkbox("No Touch", &cb_NoTouch)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				LevelEditorLayer::get()->removeObjectFromSection(obj);
 				obj->m_isNoTouch = cb_NoTouch;
+				obj->setType(obj->m_savedObjectType);
+				obj->saveActiveColors();
+				LevelEditorLayer::get()->addToSection(obj);
 			}
 		}
 	

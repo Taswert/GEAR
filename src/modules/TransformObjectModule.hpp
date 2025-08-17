@@ -12,7 +12,7 @@ namespace ErGui {
 	static float scaleStep = 0.5f;
 	static float skewStep = 15.f;
 
-	static bool rotLock = false;
+	static bool rotLock = true;
 	static bool scaleLock = false;
 
 	static float angleArc = 180.f;

@@ -254,16 +254,6 @@ void ErGui::renderSelectFilter() {
 
 
 	if (ImGui::CollapsingHeader("Main Color Filter")) {
-		ImGui::Text("ColorID");
-		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-		ImGui::InputInt("##MCOL-ColorID", &chosenMainColorSFM);
-		setMin(chosenMainColorSFM, 0);
-		ImGui::SameLine();
-		if (ImGui::Button("Add##MCOL") && chosenMainColorSFM > 0) {
-			mainColorsFilterSet.insert(chosenMainColorSFM);
-		}
-
 		ImGui::Text("Offset");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
@@ -277,6 +267,16 @@ void ErGui::renderSelectFilter() {
 					break;
 				}
 			}
+		}
+
+		ImGui::Text("ColorID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##MCOL-ColorID", &chosenMainColorSFM);
+		setMin(chosenMainColorSFM, 0);
+		ImGui::SameLine();
+		if (ImGui::Button("Add##MCOL") && chosenMainColorSFM > 0) {
+			mainColorsFilterSet.insert(chosenMainColorSFM);
 		}
 	
 		ImGui::Text("-----| Filter |-----");
@@ -295,16 +295,6 @@ void ErGui::renderSelectFilter() {
 	
 	
 	if (ImGui::CollapsingHeader("Detail Color Filter")) {
-		ImGui::Text("ColorID");
-		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-		ImGui::InputInt("##DCOL-ColorID", &chosenDetailColorSFM);
-		setMin(chosenDetailColorSFM, 0);
-		ImGui::SameLine();
-		if (ImGui::Button("Add##DCOL") && chosenDetailColorSFM > 0) {
-			detailColorsFilterSet.insert(chosenDetailColorSFM);
-		}
-
 		ImGui::Text("Offset");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
@@ -318,6 +308,16 @@ void ErGui::renderSelectFilter() {
 					break;
 				}
 			}
+		}
+
+		ImGui::Text("ColorID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##DCOL-ColorID", &chosenDetailColorSFM);
+		setMin(chosenDetailColorSFM, 0);
+		ImGui::SameLine();
+		if (ImGui::Button("Add##DCOL") && chosenDetailColorSFM > 0) {
+			detailColorsFilterSet.insert(chosenDetailColorSFM);
 		}
 	
 		ImGui::Text("-----| Filter |-----");
@@ -336,16 +336,6 @@ void ErGui::renderSelectFilter() {
 
 
 	if (ImGui::CollapsingHeader("GroupID Filter")) {
-		ImGui::Text("GroupID");
-		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-		ImGui::InputInt("##GROUP-ID", &chosenGroupSFM);
-		setMin(chosenGroupSFM, 1);
-		ImGui::SameLine();
-		if (ImGui::Button("Add##GROUP") && chosenGroupSFM > 0) {
-			groupsFilterSet.insert(chosenGroupSFM);
-		}
-
 		ImGui::Text("Offset");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
@@ -359,6 +349,16 @@ void ErGui::renderSelectFilter() {
 					break;
 				}
 			}
+		}
+
+		ImGui::Text("GroupID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##GROUP-ID", &chosenGroupSFM);
+		setMin(chosenGroupSFM, 1);
+		ImGui::SameLine();
+		if (ImGui::Button("Add##GROUP") && chosenGroupSFM > 0) {
+			groupsFilterSet.insert(chosenGroupSFM);
 		}
 
 		ImGui::Text("-----| Filter |-----");
@@ -377,16 +377,6 @@ void ErGui::renderSelectFilter() {
 	
 
 	if (ImGui::CollapsingHeader("Channel Filter")) {
-		ImGui::Text("ChannelID");
-		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-		ImGui::InputInt("##CHAN-ID", &chosenChannelSFM);
-		setMin(chosenChannelSFM, 0);
-		ImGui::SameLine();
-		if (ImGui::Button("Add##CHAN") && chosenChannelSFM > -1) {
-			channelFilterSet.insert(chosenChannelSFM);
-		}
-
 		ImGui::Text("Offset");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
@@ -400,6 +390,16 @@ void ErGui::renderSelectFilter() {
 					break;
 				}
 			}
+		}
+		
+		ImGui::Text("ChannelID");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ImGui::InputInt("##CHAN-ID", &chosenChannelSFM);
+		setMin(chosenChannelSFM, 0);
+		ImGui::SameLine();
+		if (ImGui::Button("Add##CHAN") && chosenChannelSFM > -1) {
+			channelFilterSet.insert(chosenChannelSFM);
 		}
 
 		ImGui::Text("-----| Filter |-----");

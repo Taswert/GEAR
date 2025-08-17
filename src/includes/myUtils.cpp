@@ -306,4 +306,11 @@ namespace ErGui {
 
 		LevelEditorLayer::get()->m_currentLayer = result;
 	}
+
+	void releaseEditorUIKeys() {
+		for (auto key : editorUIHoldingKeys) {
+			CCDirector::sharedDirector()->getKeyboardDispatcher()->dispatchKeyboardMSG(key, false, false);
+		}
+		editorUIHoldingKeys.clear();
+	}
 }

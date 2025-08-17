@@ -1,0 +1,1 @@
+inline bool g_soiNeedsUpdate = false;

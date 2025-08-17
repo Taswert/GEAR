@@ -1,6 +1,7 @@
 #include "ToolsModule.hpp"
 #include "EditColorModule.hpp"
 #include "IconsMaterialDesignIcons.h"
+#include "ObjectListModule.hpp"
 
 void parseObjects(const char* tabName, EditorUI* editorUI) {
 	auto bsl = static_cast<BoomScrollLayer*>(editorUI->getChildByID(tabName)->getChildren()->objectAtIndex(0));
@@ -120,7 +121,10 @@ void ErGui::renderToolsModule1() {
 
 	if (ImGui::Selectable(ICON_MDI_DELETE_FOREVER, false, 0, BTN_SIZE)) {
 	//if (ImGui::Button("Delete##Perm")) {	//ICON_MDI_DELETE_FOREVER
-		if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
+		if (editorUI->m_selectedObject) {
+			editorUI->deleteObject(editorUI->m_selectedObject, false);
+			editorUI->deselectAll();
+		}
 		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
@@ -133,6 +137,20 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Warp Selected");
+	ImGui::Dummy(DUMMY_PAD);
+
+	// Crashes :(
+	if (ImGui::Selectable(ICON_MDI_RESIZE, false, 0, BTN_SIZE)) {
+		//if (ImGui::Button("Link")) { //ICON_MDI_LINK
+		if (editorUI->m_scaleControl->isVisible()) {
+			editorUI->deactivateScaleControl();
+		}
+		else if ((editorUI->m_selectedObject || editorUI->m_selectedObjects->count() > 0))
+			editorUI->activateScaleControl(editorUI->getChildren()->firstObject());
+
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Scale Transform");
 	ImGui::Dummy(DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_SELECTION_OFF, false, 0, BTN_SIZE)) {
@@ -150,7 +168,7 @@ void ErGui::renderToolsModule1() {
 	if (mode == 1) playtestStr = ICON_MDI_PAUSE; //ICON_MDI_PAUSE
 
 
-	if (ImGui::Selectable(ICON_MDI_PLAY_OUTLINE, false, 0, BTN_SIZE)) {
+	if (ImGui::Selectable(ICON_MDI_MUSIC_NOTE, false, 0, BTN_SIZE)) {
 	//if (ImGui::Button("Playback")) { //ICON_MDI_PLAY_OUTLINE
 		editorUI->onPlayback(nullptr);
 	}
@@ -174,27 +192,42 @@ void ErGui::renderToolsModule1() {
 			ImGui::SetTooltip("Stop");
 	}
 
-	ImGui::Separator();
+	if (GameManager::sharedState()->getGameVariable("0097")) {
+		ImGui::Separator();
 
-	if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE)) {
-	//if (ImGui::Button("Link")) { //ICON_MDI_LINK
-		editorUI->onGroupSticky(nullptr);
+		if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE)) {
+			//if (ImGui::Button("Link")) { //ICON_MDI_LINK
+			editorUI->onGroupSticky(nullptr);
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			ImGui::SetTooltip("Link Selected");
+		ImGui::Dummy(DUMMY_PAD);
+		if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE)) {
+			//if (ImGui::Button("Unlink")) { //ICON_MDI_LINK_OFF
+			editorUI->onUngroupSticky(nullptr);
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			ImGui::SetTooltip("Unlink Selected");
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Link Selected");
-	ImGui::Dummy(DUMMY_PAD);
-	if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE)) {
-	//if (ImGui::Button("Unlink")) { //ICON_MDI_LINK_OFF
-		editorUI->onUngroupSticky(nullptr);
-	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Unlink Selected");
-
-	ImGui::Separator();
-	ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("DEBUG: Shows touched position");
+	//ImGui::Separator();
+	//ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
+	//if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	//	ImGui::SetTooltip("DEBUG: Shows touched position");
 	//ImGui::Checkbox("DbgTDN", &ErGui::dbgTDN);
+	if (geode::Mod::get()->getSavedValue<bool>("show-zoom-controls")) {
+		ImGui::Separator();
+
+		if (ImGui::Selectable(ICON_MDI_MAGNIFY_PLUS, false, 0, BTN_SIZE))
+			editorUI->zoomIn(nullptr);
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			ImGui::SetTooltip("Zoom In");
+		ImGui::Dummy(DUMMY_PAD);
+		if (ImGui::Selectable(ICON_MDI_MAGNIFY_MINUS, false, 0, BTN_SIZE))
+			editorUI->zoomOut(nullptr);
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+			ImGui::SetTooltip("Zoom Out");
+	}
+	
 
 	ImGui::PopStyleColor();
 
@@ -290,14 +323,23 @@ void ErGui::renderToolsModule2() {
 
 			ImGui::SameLine();
 
-			ImGui::Button("##SELECTED-OBJECT", { 30.f, 30.f });
+			//ImGui::Button("##SELECTED-OBJECT", { 30.f, 30.f });
 
-			std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(editorUI->m_selectedObjectIndex);
-			if (!newFrameName.empty()) {
-				CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
-				if (frame)
-					ErGui::drawFrameInImGui(frame);
+			//std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(editorUI->m_selectedObjectIndex);
+			//if (!newFrameName.empty()) {
+			//	CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
+			//	if (frame)
+			//		ErGui::drawFrameInImGui(frame);
+			//}
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+			if (editorUI->m_selectedObjectIndex) {
+				ImTextureID texture = (ImTextureID)(intptr_t)getObjectSprite(editorUI->m_selectedObjectIndex)->getTexture()->getName();
+				ImGui::ImageButton("##SELECTED-OBJECT", texture, { 27.f, 27.f }, ImVec2(0, 1), ImVec2(1, 0));
 			}
+			else {
+				ImGui::Button("##SELECTED-OBJECT", { 30.f, 30.f });
+			}
+			ImGui::PopStyleVar();
 
 			auto ccMyColor2 = effectManager->getColorSprite(color2);
 			if (ImGui::ColorButton("color2##COLOR-BUTTON", ImVec4(ccMyColor2->m_color.r / 255.f, ccMyColor2->m_color.g / 255.f, ccMyColor2->m_color.b / 255.f, 1.f))) {
@@ -366,12 +408,26 @@ void ErGui::renderToolsModule2() {
 			//}
 
 			ImGui::SameLine();
-			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+
+			
 			float gridSize = Mod::get()->template getSavedValue<float>("grid-size");
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			if (ImGui::DragFloat("Grid Size", &gridSize, 0.5f) && gridSize >= 0.1f) {
 				Mod::get()->setSavedValue("grid-size", gridSize);
 				editorUI->updateGridNodeSize();
 			}
+			
+			if (ImGui::Button("1##GridSizePreset"))		{ gridSize = 1.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine();
+			if (ImGui::Button("5##GridSizePreset"))		{ gridSize = 5.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine();
+			if (ImGui::Button("7.5##GridSizePreset"))	{ gridSize = 7.5f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.25 of block
+			if (ImGui::Button("10##GridSizePreset"))	{ gridSize = 10.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.33 of block
+			if (ImGui::Button("15##GridSizePreset"))	{ gridSize = 15.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.5 of block
+			if (ImGui::Button("30##GridSizePreset"))	{ gridSize = 30.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 1 block
+			if (ImGui::Button("90##GridSizePreset"))	{ gridSize = 90.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 3 blocks
+			if (ImGui::Button("150##GridSizePreset"))	{ gridSize = 150.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 5 blocks
+			ImGui::Text("Grid Presets");
+			//if (ImGui::Button("LOL"))
+			//	std::cout << editorUI->m_editorLayer->m_drawGridLayer->m_gridSize << "\n";
 			break;
 		}
 		case 5: //Image

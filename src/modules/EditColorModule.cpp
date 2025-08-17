@@ -14,6 +14,39 @@ float savedHueEC = 0;
 float savedSaturationEC = 0;
 float savedValueEC = 0;
 
+// Deactivates visible selection automatically when changing hue, saturation or brightness
+void autoVisibleSelectionRefresh(CCArray* objArr) {
+	if (ImGui::IsItemActivated()) {
+		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+			obj->m_isSelected = 0;
+		}
+	}
+
+	if (ImGui::IsItemDeactivated()) {
+		if (ErGui::isVisibleSelection) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isSelected = 1;
+			}
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
+		}
+	}
+}
+
+void autoVisibleSelectionRefresh(GameObject* obj) {
+	if (ImGui::IsItemActivated()) {
+		obj->m_isSelected = 0;
+	}
+
+	if (ImGui::IsItemDeactivated())	{
+		if (ErGui::isVisibleSelection)	{
+			obj->m_isSelected = 1;
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
+		}
+	}
+}
+
+
+
 void ErGui::clampHSV(ccHSVValue* hsvValue) {
 	if (!hsvValue->absoluteSaturation && hsvValue->s < 0.f)
 		 hsvValue->s = 0.f;
@@ -330,9 +363,13 @@ void renderForObjectEC(GameObject* obj) {
 		if (nextFreeOffset < 1)		nextFreeOffset = 1;
 	}
 
-	if (ImGui::Checkbox("Visible Selection", &obj->m_isSelected)) {
-		if (obj->m_isSelected) {
-			reinterpret_cast<void(__thiscall*)(EditorUI*)>(geode::base::get() + 0x11dd50)(GameManager::sharedState()->m_levelEditorLayer->m_editorUI); //->resetSelectedObjectsColor();
+	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
+		if (ErGui::isVisibleSelection) {
+			obj->m_isSelected = 1;
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
+		}
+		else {
+			obj->m_isSelected = 0;
 		}
 	}
 
@@ -341,17 +378,21 @@ void renderForObjectEC(GameObject* obj) {
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		ImGui::DragFloat("##Hue1", &gjBaseColor->m_hsv.h, 1.f, -180.f, 180.f);
+		autoVisibleSelectionRefresh(obj);
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		ImGui::DragFloat("##Hue2", &gjDetailColor->m_hsv.h, 1.f, -180.f, 180.f);
+		autoVisibleSelectionRefresh(obj);
 
 		ImGui::Text("Saturation");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		ImGui::DragFloat("##Saturation1", &gjBaseColor->m_hsv.s, 0.05f, -1.f, 2.f);
+		autoVisibleSelectionRefresh(obj);
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		ImGui::DragFloat("##Saturation2", &gjDetailColor->m_hsv.s, 0.05f, -1.f, 2.f);
+		autoVisibleSelectionRefresh(obj);
 		ImGui::SameLine();
 		ImGui::Checkbox("##AbsoluteSat1", &gjBaseColor->m_hsv.absoluteSaturation);
 		ImGui::SameLine();
@@ -361,9 +402,11 @@ void renderForObjectEC(GameObject* obj) {
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		ImGui::DragFloat("##Value1", &gjBaseColor->m_hsv.v, 0.05f, -1.f, 2.f);
+		autoVisibleSelectionRefresh(obj);
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		ImGui::DragFloat("##Value2", &gjDetailColor->m_hsv.v, 0.05f, -1.f, 2.f);
+		autoVisibleSelectionRefresh(obj);
 		ImGui::SameLine();
 		ImGui::Checkbox("##AbsoluteVal1", &gjBaseColor->m_hsv.absoluteBrightness);
 		ImGui::SameLine();
@@ -394,11 +437,13 @@ void renderForObjectEC(GameObject* obj) {
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::DragFloat("##Hue", &gjBaseColor->m_hsv.h, 1.f, -180.f, 180.f);
+		autoVisibleSelectionRefresh(obj);
 
 		ImGui::Text("Saturation");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::DragFloat("##Saturation", &gjBaseColor->m_hsv.s, 0.05f, -1.f, 2.f);
+		autoVisibleSelectionRefresh(obj);
 		ImGui::SameLine();
 		ImGui::Checkbox("##AbsoluteSat", &gjBaseColor->m_hsv.absoluteSaturation);
 
@@ -406,6 +451,7 @@ void renderForObjectEC(GameObject* obj) {
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::DragFloat("##Value", &gjBaseColor->m_hsv.v, 0.05f, -1.f, 2.f);
+		autoVisibleSelectionRefresh(obj);
 		ImGui::SameLine();
 		ImGui::Checkbox("##AbsoluteVal", &gjBaseColor->m_hsv.absoluteBrightness);
 
@@ -481,12 +527,12 @@ void renderForArrayEC(CCArray* objArr) {
 	}
 
 
-	if (ImGui::Checkbox("Visible Selection", &static_cast<GameObject*>(objArr->objectAtIndex(0))->m_isSelected)) {
-		if (static_cast<GameObject*>(objArr->objectAtIndex(0))->m_isSelected) {
+	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
+		if (ErGui::isVisibleSelection) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_isSelected = 1;
 			}
-			reinterpret_cast<void(__thiscall*)(EditorUI*)>(geode::base::get() + 0x11dd50)(GameManager::sharedState()->m_levelEditorLayer->m_editorUI); //->resetSelectedObjectsColor();
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
 		}
 		else {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -505,6 +551,8 @@ void renderForArrayEC(CCArray* objArr) {
 				obj->m_baseColor->m_hsv.h = gjBaseColor->m_hsv.h;
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		if (ImGui::DragFloat("##Hue2", &gjDetailColor->m_hsv.h, 1.f, -180.f, 180.f)) {
@@ -514,6 +562,8 @@ void renderForArrayEC(CCArray* objArr) {
 				}
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 
 		ImGui::Text("Saturation");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
@@ -524,6 +574,8 @@ void renderForArrayEC(CCArray* objArr) {
 				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		if (ImGui::DragFloat("##Saturation2", &gjDetailColor->m_hsv.s, 0.05f, -1.f, 2.f)) {
@@ -534,6 +586,8 @@ void renderForArrayEC(CCArray* objArr) {
 				}
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 		ImGui::SameLine();
 		if (ImGui::Checkbox("##AbsoluteSat1", &gjBaseColor->m_hsv.absoluteSaturation)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -548,6 +602,7 @@ void renderForArrayEC(CCArray* objArr) {
 			}
 		}
 
+
 		ImGui::Text("Value");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
@@ -557,6 +612,8 @@ void renderForArrayEC(CCArray* objArr) {
 				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
 		if (ImGui::DragFloat("##Value2", &gjDetailColor->m_hsv.v, 0.05f, -1.f, 2.f)) {
@@ -567,6 +624,8 @@ void renderForArrayEC(CCArray* objArr) {
 				}
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 		ImGui::SameLine();
 		if (ImGui::Checkbox("##AbsoluteVal1", &gjBaseColor->m_hsv.absoluteBrightness)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -620,6 +679,7 @@ void renderForArrayEC(CCArray* objArr) {
 				obj->m_baseColor->m_hsv.h = gjBaseColor->m_hsv.h;
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
 		
 		ImGui::Text("Saturation");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
@@ -630,6 +690,8 @@ void renderForArrayEC(CCArray* objArr) {
 				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 		ImGui::SameLine();
 		if (ImGui::Checkbox("##AbsoluteSaturation", &gjBaseColor->m_hsv.absoluteSaturation)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -646,6 +708,8 @@ void renderForArrayEC(CCArray* objArr) {
 				ErGui::clampHSV(&obj->m_baseColor->m_hsv);
 			}
 		}
+		autoVisibleSelectionRefresh(objArr);
+
 		ImGui::SameLine();
 		if (ImGui::Checkbox("##AbsoluteValue", &gjBaseColor->m_hsv.absoluteBrightness)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {

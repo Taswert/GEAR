@@ -18,8 +18,9 @@ namespace ErGui {
 	float deltaInputFloat(const char* label, float step);
 	int deltaInputIntImproved(const char* label, int max, int min, int step);
 
-	inline auto lassoPatch = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
-	inline auto editorUIbottomConstrainPatch = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto lassoPatch =					geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
+	inline auto editorUIbottomConstrainPatch =	geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto vanillaGridOpaquePatch =		geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x2dbe78), { 0x00 });
 
 	void drawSpriteInImGui(CCSprite* tempSprite);
 	void drawFrameInImGui(CCSpriteFrame* frame);
@@ -47,6 +48,8 @@ namespace ErGui {
 
 	void nextFreeLayer();
 
+	void releaseEditorUIKeys();
+
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;
 	inline CCDrawNode* touchedDN = nullptr;
@@ -57,4 +60,11 @@ namespace ErGui {
 	inline bool isGameWindowTouching = false;
 
 	inline bool isFreeMoveAndObjectTouching = false;
+
+	inline std::set<cocos2d::enumKeyCodes> editorUIHoldingKeys;
+
+	inline float gridWidth = 1.f;
+	inline int gridColor[4] = { 0, 0, 0, 150 };
+
+	inline bool isVisibleSelection = true;
 };
