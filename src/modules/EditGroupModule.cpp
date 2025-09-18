@@ -1,4 +1,5 @@
 #include "EditGroupModule.hpp"
+#include "CustomImGuiWidgets.hpp"
 using namespace ErGui;
 
 const char* layerTypeItems[] = {

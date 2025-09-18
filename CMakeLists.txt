@@ -29,7 +29,14 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/GlobalDockingView.cpp
     src/modules/ContextMenuModule.cpp
     src/features/AutoSave.cpp
-    src/features/SelectedObjectInfo.cpp)
+    src/features/SelectedObjectInfo.cpp 
+    src/features/ZoomToScroll.cpp 
+    src/features/FixBPMTriggerCrash.cpp 
+    src/features/MoreKeybinds.cpp
+    src/features/CustomGridResize.cpp 
+    src/features/ObjectListConfig.cpp 
+    src/features/Hovering.cpp
+    src/includes/CustomImGuiWidgets.cpp)
 
 
 #include(FetchContent)

@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <imgui-cocos.hpp>
 #include <Geode/Geode.hpp>
+#include <Geode/modify/GameObject.hpp>
 using namespace cocos2d;
 using namespace geode::prelude;
 //class LevelEditorLayer {
@@ -9,14 +10,13 @@ using namespace geode::prelude;
 //	gd::string getSongIDs(LevelEditorLayer* lel, bool* idk);
 //};
 
+
+
 namespace ErGui {
 	bool isPointInPolygon(const cocos2d::CCPoint& pt, const std::vector<cocos2d::CCPoint>& polygon);
 
 	void setMaxMin(int& value, int max, int min);
 	void setMin(int& value, int min);
-
-	float deltaInputFloat(const char* label, float step);
-	int deltaInputIntImproved(const char* label, int max, int min, int step);
 
 	inline auto lassoPatch =					geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
 	inline auto editorUIbottomConstrainPatch =	geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
@@ -42,6 +42,12 @@ namespace ErGui {
 		return found;
 	}
 
+	class $modify(GearGameObject, GameObject) {
+		struct Fields {
+			bool m_isHovered = false;
+		};
+	};
+
 	bool compareCCArrays(CCArray* arr1, CCArray* arr2);
 	void selectAllObjects();
 	void selectAllObjectWithDirection(bool rightDir);
@@ -49,22 +55,25 @@ namespace ErGui {
 	void nextFreeLayer();
 
 	void releaseEditorUIKeys();
+	CCRect normalizeRect(CCRect rect);
+
+	void forEachObject(GJBaseGameLayer const* game, std::function<void(GameObject*)> const& callback);
 
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;
 	inline CCDrawNode* touchedDN = nullptr;
 	inline CCPoint touchedDNFirstPoint = { 0.f, 0.f };
 	inline bool dbgTDN = false;
-	inline GLuint gameFrame;
 
 	inline bool isGameWindowTouching = false;
 
 	inline bool isFreeMoveAndObjectTouching = false;
 
-	inline std::set<cocos2d::enumKeyCodes> editorUIHoldingKeys;
-
 	inline float gridWidth = 1.f;
 	inline int gridColor[4] = { 0, 0, 0, 150 };
 
 	inline bool isVisibleSelection = true;
+
+	inline std::vector<cocos2d::CCPoint> editorUISwipePoints;
+	inline CCRect selectRect;
 };

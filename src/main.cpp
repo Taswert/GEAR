@@ -5,9 +5,6 @@
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/modify/CustomizeObjectLayer.hpp>
 
-#include <Geode/modify/CustomSongLayer.hpp>
-#include <Geode/modify/CustomSongWidget.hpp>
-#include <Geode/modify/ObjectToolbox.hpp>
 #include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/CCEGLView.hpp>
@@ -40,156 +37,18 @@
 
 #include <Geode/Result.hpp>
 
+#include "features/Hovering.hpp"
+
 using namespace geode::prelude;
 
-template <>
-struct matjson::Serialize<ErGui::ObjectConfig> {
-	static geode::Result<ErGui::ObjectConfig> fromJson(const matjson::Value& value) {
-		GEODE_UNWRAP_INTO(int thumbnailObjectId, value["thumbnailObjectId"].asInt());
-		GEODE_UNWRAP_INTO(std::vector<matjson::Value> arr, value["objectIdVector"].asArray());
-
-		// Преобразование каждого элемента в int
-		std::vector<int> vec;
-		vec.reserve(arr.size());
-		for (auto& item : arr) {
-			GEODE_UNWRAP_INTO(int id, item.asInt());
-			vec.push_back(id);
-		}
-
-		return geode::Ok(ErGui::ObjectConfig{
-			thumbnailObjectId,
-			std::move(vec)
-			});
-	}
-
-	static matjson::Value toJson(const ErGui::ObjectConfig& obj) {
-		// Собираем JSON-массив из вектора int
-		std::vector<matjson::Value> arr;
-		arr.reserve(obj.objectIdVector.size());
-		for (int id : obj.objectIdVector) {
-			arr.emplace_back(id);
-		}
-		// Value(std::vector<matjson::Value>) создаёт JSON-массив :contentReference[oaicite:0]{index=0}
-
-		// Собираем объект
-		return matjson::makeObject({
-			{ "thumbnailObjectId", obj.thumbnailObjectId },
-			{ "objectIdVector", matjson::Value(std::move(arr)) }
-			}); // makeObject(...) для создания JSON-объекта :contentReference[oaicite:1]{index=1}
-	}
-};
-
-// Написано нейронкой, т.к. я просто устану разбираться в этом сейчас. Основа от DevTools'ов.
-static GLuint captureScreenToGLTexture() {
-	static GLuint captureTexId = 0;    // хранит ID текстуры, куда мы копируем кадр
-	static int lastW = 0, lastH = 0;   // чтобы пересоздавать текстуру, если размер изменился
-
-	// 1) Узнаём, сколько пикселей реально сейчас на экране (viewport):
-	GLint vp[4];
-	glGetIntegerv(GL_VIEWPORT, vp);
-	int screenW = vp[2];
-	int screenH = vp[3];
-
-	// 2) Если размер изменился (например, игрок поменял окно), пересоздаём текстуру:
-	if (!captureTexId || lastW != screenW || lastH != screenH) {
-		if (captureTexId) {
-			glDeleteTextures(1, &captureTexId);
-			captureTexId = 0;
-		}
-		glGenTextures(1, &captureTexId);
-		glBindTexture(GL_TEXTURE_2D, captureTexId);
-
-		// Настраиваем фильтрацию — обычно LINEAR, чтобы превью при масштабировании было быстрее «размыто»
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		// Резервируем память под будущую копию экрана
-		glTexImage2D(
-			GL_TEXTURE_2D,		// таргет
-			0,					// LOD
-			GL_RGBA,			// внутренний формат (RGBA8)
-			screenW, screenH,	// ширина, высота
-			0,					 // border
-			GL_RGBA,			// формат поступающих данных
-			GL_UNSIGNED_BYTE,	// тип данных
-			nullptr				// пока нет данных (будет заполнено glCopyTexSubImage2D)
-		);
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		lastW = screenW;
-		lastH = screenH;
-	}
-
-	// 3) Привязываем нашу текстуру и копируем текущий back-buffer (FBO = 0) в неё:
-	glBindTexture(GL_TEXTURE_2D, captureTexId);
-
-	// Копируем целиком экран (вниз/влево от 0,0) в текстуру, начиная с 0,0
-	glCopyTexSubImage2D(
-		GL_TEXTURE_2D, 0,    // который уровень mipmap (0) и таргет
-		0, 0,                // смещение (xOffset, yOffset) в текстуре
-		0, 0,                // какая точка back-buffer берётся (x, y)
-		screenW, screenH     // сколько пикселей копировать
-	);
-
-	// 4) Бинд снова очищаем (не обязательно, но принято)
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// 5) Возвращаем ID текстуры, куда мы скопировали экран
-	return captureTexId;
-}
-
-
-bool filterSingleObj(bool filterBool, int objParameter, std::vector<int> vec) {
-	if (!filterBool) return true;
-	for (int i = 0; i < vec.size(); i++) {
-		if (objParameter == vec[i])
-			return true;
-	}
-	return false;
-}
-
-void exitEditor() { // EditorUI is already destroyed here
-	//Cfg Save
-	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
-	matjson::Value j;
-	for (auto key : ErGui::keyOrder) {
-		j[key] = ErGui::objectCfg[key];
-	}
-	std::ofstream oCfgFile = std::ofstream(cfgDir);
-	oCfgFile.write(j.dump().c_str(), j.dump().size());
-	oCfgFile.close();
-
-	ErGui::lastObjX = nullptr;
-	ErGui::lastObjY = nullptr;
-	ErGui::lastObjCountX = 0;
-	ErGui::lastObjCountY = 0;
-
-	ErGui::clearObjectListCache();
-}
-
-
-class $modify(LevelEditorLayer) {
-	void removeSpecial(GameObject * obj) {
-		if (obj->m_objectID == 3642) {
-			for (auto alObj : this->m_drawGridLayer->m_audioLineObjects) {
-				if (alObj.second == obj) {
-					this->m_drawGridLayer->m_audioLineObjects.erase(alObj.first);
-				}
-			}
-		}
-		LevelEditorLayer::removeSpecial(obj);
-	}
-};
-
-class $modify(ObjectToolbox) {
-	float gridNodeSizeForKey(int id) {
-		auto size = Mod::get()->template getSavedValue<float>("grid-size");
-		if (size < 1 || roundf(size) == 30) {
-			return ObjectToolbox::gridNodeSizeForKey(id);
-		}
-		return size;
-	}
-};
+//bool filterSingleObj(bool filterBool, int objParameter, std::vector<int> vec) {
+//	if (!filterBool) return true;
+//	for (int i = 0; i < vec.size(); i++) {
+//		if (objParameter == vec[i])
+//			return true;
+//	}
+//	return false;
+//}
 
 
 void selectObjectsWithFilter(CCArray* objArr, bool p1) {
@@ -202,7 +61,6 @@ void selectObjectWithFilter(GameObject* obj, bool p1) {
 		EditorUI::get()->selectObject(obj, p1);
 	}
 }
-
 
 void manualObjectsSelect(CCArray* objsInShape) {
 	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
@@ -241,35 +99,54 @@ void manualObjectsSelect(CCArray* objsInShape) {
 	}
 }
 
-void manualObjectSelect(GameObject* objInShape) {
-	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+//void manualObjectSelect(GameObject* objInShape) {
+//	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+//
+//	switch (selectMode) {
+//	case 3: { // Intersective
+//		EditorUI::get()->deselectAll();
+//		selectObjectWithFilter(objInShape, false);
+//		break;
+//	}
+//	case 2: { // Subtractive
+//		if (ErGui::selectFilterRealization(objInShape)) {
+//			EditorUI::get()->deselectObject(objInShape);
+//			if (EditorUI::get()->m_selectedObjects->count() == 1) {
+//				EditorUI::get()->m_selectedObject = static_cast<GameObject*>(EditorUI::get()->m_selectedObjects->objectAtIndex(0));
+//				EditorUI::get()->m_selectedObjects->removeAllObjects();
+//			}
+//		}
+//		break;
+//	}
+//	case 1: // Additive
+//	default: {
+//		selectObjectWithFilter(objInShape, false);
+//		break;
+//	}
+//	}
+//}
 
-	switch (selectMode) {
-	case 3: { // Intersective
-		EditorUI::get()->deselectAll();
-		selectObjectWithFilter(objInShape, false);
-		break;
+
+void exitEditor() { // EditorUI is already destroyed here
+	// Save Object Config
+	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
+	matjson::Value j;
+	for (auto key : ErGui::keyOrder) {
+		j[key] = ErGui::objectCfg[key];
 	}
-	case 2: { // Subtractive
-		if (ErGui::selectFilterRealization(objInShape)) {
-			EditorUI::get()->deselectObject(objInShape);
-			if (EditorUI::get()->m_selectedObjects->count() == 1) {
-				EditorUI::get()->m_selectedObject = static_cast<GameObject*>(EditorUI::get()->m_selectedObjects->objectAtIndex(0));
-				EditorUI::get()->m_selectedObjects->removeAllObjects();
-			}
-		}
-		break;
-	}
-	case 1: // Additive
-	default: {
-		selectObjectWithFilter(objInShape, false);
-		break;
-	}
-	}
+	std::ofstream oCfgFile = std::ofstream(cfgDir);
+	oCfgFile.write(j.dump().c_str(), j.dump().size());
+	oCfgFile.close();
+
+	// Nullify last Objects by X/Y
+	ErGui::lastObjX = nullptr;
+	ErGui::lastObjY = nullptr;
+	ErGui::lastObjCountX = 0;
+	ErGui::lastObjCountY = 0;
+
+	// Clear Object List Cache
+	ErGui::clearObjectListCache();
 }
-
-
-
 
 class $modify(EditorUI) {
 
@@ -280,62 +157,6 @@ class $modify(EditorUI) {
 			exitEditor();
 		}
 	};
-
-	void scrollWheel(float p0, float p1) {	
-		//Zoom To Cursor + Expanded constractions
-		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed()) {
-			auto winSize = CCDirector::sharedDirector()->getWinSize();
-			CCLayer* batchLayer = this->m_editorLayer->m_objectLayer;
-			if (batchLayer == nullptr) return EditorUI::scrollWheel(p0, p1);
-			
-			float oldScale = batchLayer->getScale();
-			CCPoint oldPosition = batchLayer->getPosition();
-			CCPoint visibleCursor;
-
-			if (ErGui::isGameWindowHovered)
-				visibleCursor = CCPoint{ ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom.x, ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom.y };
-			else {
-				CCPoint glPos = CCDirector::sharedDirector()->getOpenGLView()->getMousePosition();
-
-				CCSize frameSize = CCDirector::sharedDirector()->getOpenGLView()->getFrameSize();
-				CCSize visibleSize = CCDirector::sharedDirector()->getVisibleSize();
-				CCPoint visibleOrigin = CCDirector::sharedDirector()->getVisibleOrigin();
-
-				float vx = (glPos.x / frameSize.width) * visibleSize.width + visibleOrigin.x;
-				float vy = (glPos.y / frameSize.height) * visibleSize.height + visibleOrigin.y;
-				vy = visibleSize.height - vy;
-				visibleCursor = CCPoint{ vx, vy };
-			}
-
-			float scaleStep = oldScale * 0.1f;
-			float newScale = oldScale + (p0 > 0 ? -scaleStep : scaleStep);
-			newScale = clamp(newScale, 0.1f, 1000.0f);
-
-			float ratio = newScale / oldScale;
-
-			CCPoint delta = oldPosition - visibleCursor;
-			CCPoint newPos = visibleCursor + delta * ratio;
-
-			batchLayer->setScale(newScale);
-			batchLayer->setPosition(newPos);
-
-			if (this->m_rotationControl)
-				this->m_rotationControl->setScale(1.f / newScale);
-
-			return;
-		}
-
-
-
-		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())
-			EditorUI::scrollWheel(p1, p0);
-		else {
-			
-			EditorUI::scrollWheel(p0, p1);
-			
-		}
-	}
-
 
 	bool onCreate() {
 		bool ret = EditorUI::onCreate();
@@ -360,6 +181,7 @@ class $modify(EditorUI) {
 	}
 
 
+	// Colored object building
 	GameObject* createObject(int p0, CCPoint p1) {
 		bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
 		bool enableColorBuild2 = Mod::get()->getSavedValue<bool>("enable-build-color-2");
@@ -369,11 +191,9 @@ class $modify(EditorUI) {
 		auto obj = EditorUI::createObject(p0, p1);
 		if (obj->m_baseColor && enableColorBuild1) {
 			obj->m_baseColor->m_colorID = color1;
-			std::cout << "main\n";
 		}
 		if (obj->m_detailColor && enableColorBuild2) {
 			obj->m_detailColor->m_colorID = color2;
-			std::cout << "det\n";
 		}
 		return obj;
 	}
@@ -393,6 +213,8 @@ class $modify(EditorUI) {
 		else {
 			obj->m_isSelected = 0;
 		}
+
+		//std::cout << obj->m_colorSprite << "\n";
 	}
 
 	void selectObjects(CCArray* objArr, bool p1) {
@@ -439,41 +261,10 @@ class $modify(EditorUI) {
 		auto ret = EditorUI::init(lel);
 
 		m_fields->nothing = 42; // trigger m_fields lazy initialization
-		//ErGui::originalCameraPosition = lel->getChildByID("main-node")->getChildByID("batch-layer")->getPosition();
-
-		//ErGui::og_prevMode = lel->m_previewMode;
-		//ErGui::og_prevShad = lel->m_previewShaders;
-		//ErGui::og_prevPart = lel->m_previewParticles;
-		//ErGui::og_prevAnim = lel->m_previewAnimations;
 
 		this->setVisible(false);
-		//this->m_constrainedHeight = 0.f;
 
 		return ret;
-	}
-
-	virtual void keyDown(cocos2d::enumKeyCodes p0) {
-
-		if (p0 == cocos2d::enumKeyCodes::KEY_Four) {
-			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
-		}
-
-		//if (p0 == cocos2d::enumKeyCodes::KEY_Five) {
-		//	GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 5;
-		//}
-
-		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_A) {
-			ErGui::selectAllObjects();
-		}
-
-		// todo: select all right / select all left
-		ErGui::editorUIHoldingKeys.insert(p0);
-		EditorUI::keyDown(p0);
-	}
-
-	virtual void keyUp(cocos2d::enumKeyCodes p0) {
-		ErGui::editorUIHoldingKeys.erase(p0);
-		EditorUI::keyUp(p0);
 	}
 
 	void updateGridNodeSize() {
@@ -572,6 +363,10 @@ class $modify(EditorUI) {
 		}
 
 		if (!ErGui::isFreeMoveAndObjectTouching) {
+			ccColor4F selectionFillColor = Mod::get()->getSavedValue<bool>("fill-selection-zone") ?
+				ccColor4F{ lassoColor.r - lassoColor.r / 1.3f, lassoColor.g - lassoColor.g / 1.3f, lassoColor.b - lassoColor.b / 1.3f, 0.1f } :
+				ccColor4F{ 0, 0, 0, 0 };
+
 			//LASSO
 			if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 				CCPoint pt = touch->getLocation();
@@ -579,8 +374,10 @@ class $modify(EditorUI) {
 				ErGui::editorUIDrawNode->clear();
 
 				if (ErGui::editorUISwipePoints.size() > 1) {
-					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
+					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), selectionFillColor, 0.3f, lassoColor);
 				}
+				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects")) 
+					ErGui::forEachObject(this->m_editorLayer, ErGui::hoverObjectLasso);
 				return;
 			}
 
@@ -595,9 +392,15 @@ class $modify(EditorUI) {
 				ErGui::editorUISwipePoints.push_back(ptEnd);
 				ErGui::editorUISwipePoints.push_back({ ptEnd.x, ptStart.y });
 
+				ErGui::selectRect = CCRect(ptStart, { ptEnd.x - ptStart.x, ptEnd.y - ptStart.y });
+				//CCRect drawingRect = CCRect((ptEnd.x + ptStart.x) / 2, (ptEnd.y + ptStart.y) / 2, ptEnd.x - ptStart.x, ptEnd.y + ptStart.y);
+
 				if (ErGui::editorUISwipePoints.size() > 1) {
-					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, lassoColor);
+					//ErGui::editorUIDrawNode->drawRect(ErGui::selectRect, { 1.f - 1.f / 1.33f, 0, 0, 0.1f }, 0.3f, {1.f, 0, 0, 1.f});
+					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), selectionFillColor, 0.3f, lassoColor);
 				}
+				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects"))
+					ErGui::forEachObject(this->m_editorLayer, ErGui::hoverObjectSquare); // Replace with hoverObjectSquare when done properly
 			}
 		}
 
@@ -617,13 +420,13 @@ class $modify(EditorUI) {
 				//obj->setChildColor({ 190, 40, 140 });
 			}
 
-			ErGui::shouldOpenContextMenu = true;
+			ErGui::shouldOpenContextMenu = !ErGui::shouldOpenContextMenu;
 			return CCLayer::ccTouchEnded(touch, event);
 		}
 
 		ErGui::touchedDN->clear();
 		ErGui::editorUIDrawNode->clear();
-
+		ErGui::forEachObject(this->m_editorLayer, ErGui::resetHover);
 		//SWIPE
 		//if (!ErGui::isLassoEnabled && this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 
@@ -756,6 +559,7 @@ class $modify(EditorUI) {
 
 };
 
+
 //class $modify(DrawGridLayer) {
 //	void draw() {
 //		int colOffset = 0;
@@ -823,18 +627,6 @@ class $modify(EditorUI) {
 //};
 
 class $modify(CCEGLView) {
-	void swapBuffers() {
-		ErGui::gameFrame = captureScreenToGLTexture();
-		CCEGLView::swapBuffers();
-	}
-	
-	//void onGLFWMouseCallback(GLFWwindow* window, int button, int action, int mods) {
-	//	CCEGLView::onGLFWMouseCallBack(window, button, action, mods);
-	//	std::cout
-	//		<< "Button: " << button << "\n"
-	//		<< "Action: " << action << "\n"
-	//		<< "Mods: " << mods << "\n";
-	//}
 
 	void pollEvents() {
 		auto& io = ImGui::GetIO();
@@ -855,7 +647,17 @@ class $modify(CCEGLView) {
 				switch (msg.message) {
 					case WM_RBUTTONDOWN: {
 
+						if (ErGui::rightTouch) {
+							auto setCancel = CCSet::create();
+							setCancel->addObject(ErGui::rightTouch);
+							CCDirector::sharedDirector()->getTouchDispatcher()->touchesCancelled(setCancel, nullptr);
+
+							ErGui::rightTouch->release();
+							ErGui::rightTouch = nullptr;
+						}
+
 						ErGui::rightTouch = new CCTouch;
+						ErGui::rightTouch->retain();
 						ErGui::rightTouch->setTouchInfo(1, LOWORD(msg.lParam), HIWORD(msg.lParam));
 
 						auto setBegan = CCSet::create();
@@ -884,10 +686,6 @@ class $modify(CCEGLView) {
 						setEnded->addObject(ErGui::rightTouch);
 						CCDirector::sharedDirector()->getTouchDispatcher()->touchesEnded(setEnded, nullptr);
 
-						auto setCancelled = CCSet::create();
-						setCancelled->addObject(ErGui::rightTouch);
-						CCDirector::sharedDirector()->getTouchDispatcher()->touchesCancelled(setCancelled, nullptr);
-
 						ErGui::rightTouch->release();
 						ErGui::rightTouch = nullptr;
 						break;
@@ -896,9 +694,6 @@ class $modify(CCEGLView) {
 			}
 
 			if (io.WantCaptureMouse) {
-				if (!ErGui::editorUIHoldingKeys.empty()) {
-					ErGui::releaseEditorUIKeys();
-				}
 				switch (msg.message) {
 				case WM_RBUTTONDOWN:
 					io.AddMouseButtonEvent(1, true);
@@ -917,6 +712,16 @@ class $modify(CCEGLView) {
 			if (!blockInput)
 				DispatchMessage(&msg);
 
+		}
+
+		// Гарантированно почистить, если Windows не прислала UP
+		if (ErGui::rightTouch && !GetAsyncKeyState(VK_RBUTTON)) {
+			auto setCancelled = CCSet::create();
+			setCancelled->addObject(ErGui::rightTouch);
+			CCDirector::sharedDirector()->getTouchDispatcher()->touchesCancelled(setCancelled, nullptr);
+
+			ErGui::rightTouch->release();
+			ErGui::rightTouch = nullptr;
 		}
 
 		CCEGLView::pollEvents();
@@ -952,14 +757,14 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	//AllocConsole();
-	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
 	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);
 	if (!Mod::get()->hasSavedValue("select-mode"))					Mod::get()->setSavedValue("select-mode", 1);
 	if (!Mod::get()->hasSavedValue("hide-object-list-popup"))		Mod::get()->setSavedValue("hide-object-list-popup", true);
-	if (!Mod::get()->hasSavedValue("autoswitch-to-build-mode"))		Mod::get()->setSavedValue("autoswitch-to-build-mode", false);
+	if (!Mod::get()->hasSavedValue("autoswitch-to-build-mode"))		Mod::get()->setSavedValue("autoswitch-to-build-mode", true);
 	if (!Mod::get()->hasSavedValue("show-zoom-controls"))			Mod::get()->setSavedValue("show-zoom-controls", true);
 
 	if (!Mod::get()->hasSavedValue("soi-position"))					Mod::get()->setSavedValue("soi-position", true);
@@ -979,55 +784,14 @@ $on_mod(Loaded) {
 	if (!Mod::get()->hasSavedValue("soi-no-touch"))					Mod::get()->setSavedValue("soi-no-touch", true);
 	if (!Mod::get()->hasSavedValue("soi-high-detail"))				Mod::get()->setSavedValue("soi-high-detail", false);
 	if (!Mod::get()->hasSavedValue("soi-object-count"))				Mod::get()->setSavedValue("soi-object-count", true);
+	
+	if (!Mod::get()->hasSavedValue("fill-selection-zone"))			Mod::get()->setSavedValue("fill-selection-zone", false);
+	if (!Mod::get()->hasSavedValue("hovering-selects"))				Mod::get()->setSavedValue("hovering-selects", true);
 	//if (Mod::get()->getSavedValue<int>("build-color-1") == 0) Mod::get()->setSavedValue("build-color-1", 1);
 	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-2") == 0) Mod::get()->setSavedValue("enable-build-color-2", 1);
-
-	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
-
-	std::ifstream cfgFile = std::ifstream(cfgDir);
-	geode::Result parsed = matjson::parse(cfgFile);
 	
-	if (!parsed) {
-		matjson::Value j;
-		for (auto key : ErGui::keyOrder) {
-			j[key] = ErGui::getDefaultObjectCfg()[key];
-		}
-
-		auto someError = parsed.unwrapErr();
-		if (parsed.unwrapErr().message == "eof") {
-			std::ofstream oCfgFile = std::ofstream(cfgDir);
-			oCfgFile.write(j.dump().c_str(), j.dump().size());
-			oCfgFile.close();
-		}
-		std::cout << "Failed to parse json: " << someError.message << " " << typeid(someError).name() << "\n";
-		
-		ErGui::objectCfg = ErGui::getDefaultObjectCfg();
-
-	}
-	else {
-		ErGui::objectCfg.clear();
-		// ErGui::keyOrder.clear();
-		matjson::Value parsedObject = parsed.unwrap();
-		std::map<std::string, std::vector<ErGui::ObjectConfig>> newData;
-
-		for (const auto& [key, mapValue] : parsedObject) {
-			// ErGui::keyOrder.push_back(key);
-			auto myVectorOfObjCfg = mapValue.asArray().unwrap();
-			std::vector<ErGui::ObjectConfig> objCfgVector;
-			for (const auto& objCfgValue : myVectorOfObjCfg) {
-				auto unwrappedObjCfg = objCfgValue.as<ErGui::ObjectConfig>().unwrap();
-				objCfgVector.push_back(unwrappedObjCfg);
-			}
-			
-			ErGui::objectCfg[key] = objCfgVector;
-		}
-	}
-	
-	cfgFile.close();
-	
-
 	ErGui::editorUIbottomConstrainPatch->enable();
 	//ErGui::vanillaGridOpaquePatch->enable();
 	

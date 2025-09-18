@@ -1,4 +1,7 @@
+#pragma once
 #include "myUtils.hpp"
+#include "../modules/ToolsModule.hpp"
+#include <Geode/modify/GameObject.hpp>
 
 namespace ErGui {
 	bool isPointInPolygon(const cocos2d::CCPoint& pt, const std::vector<cocos2d::CCPoint>& polygon) {
@@ -26,48 +29,6 @@ namespace ErGui {
 
 	void setMin(int& value, int min) {
 		if (value < min) value = min;
-	}
-
-	float deltaInputFloat(const char* label, float step) {
-		ImGui::PushID(label);
-
-		float result = 0;
-		
-		ImGui::Text(label);
-		ImGui::SameLine(70.f);
-		if (ImGui::Button("-")) {
-			result = step * -1;
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("+")) {
-			result = step;
-		}
-
-		ImGui::PopID();
-		return result;
-	}
-
-	int deltaInputIntImproved(const char* label, int max, int min, int step) {
-		ImGui::PushID(label);
-
-		int result = 0;
-		if (ImGui::Button("-##el1Minus")) {
-			result = step * -1;
-		}
-		std::string textStr = label;
-		if (max != min)
-			textStr += " (" + std::to_string(min) + ".." + std::to_string(max) + ")";
-		else 
-			textStr += " (" + std::to_string(min) + ")";
-		ImGui::SameLine();
-		ImGui::Text(textStr.c_str());
-		ImGui::SameLine();
-		if (ImGui::Button("+##el1Plus")) {
-			result = step;
-		}
-
-		ImGui::PopID();
-		return result;
 	}
 
 	// To Do: Отказаться от этой функции.
@@ -307,10 +268,43 @@ namespace ErGui {
 		LevelEditorLayer::get()->m_currentLayer = result;
 	}
 
-	void releaseEditorUIKeys() {
-		for (auto key : editorUIHoldingKeys) {
-			CCDirector::sharedDirector()->getKeyboardDispatcher()->dispatchKeyboardMSG(key, false, false);
+	CCRect normalizeRect(CCRect rect) {
+		CCRect ret(rect.origin, rect.size);
+
+		if (ret.size.height < 0) {
+			ret.origin.y += ret.size.height;
+			ret.size.height = -ret.size.height;
 		}
-		editorUIHoldingKeys.clear();
+
+		if (ret.size.width < 0) {
+			ret.origin.x += ret.size.width;
+			ret.size.width = -ret.size.width;
+		}
+
+		return ret;
+	}
+
+
+	// Alphalaneous func, written by prevter. Thank you guys!
+	void forEachObject(GJBaseGameLayer const* game, std::function<void(GameObject*)> const& callback) {
+		int count = game->m_sections.empty() ? -1 : game->m_sections.size();
+		for (int i = game->m_leftSectionIndex; i <= game->m_rightSectionIndex && i < count; ++i) {
+			auto leftSection = game->m_sections[i];
+			if (!leftSection) continue;
+
+			auto leftSectionSize = leftSection->size();
+			for (int j = game->m_bottomSectionIndex; j <= game->m_topSectionIndex && j < leftSectionSize; ++j) {
+				auto section = leftSection->at(j);
+				if (!section) continue;
+
+				auto sectionSize = game->m_sectionSizes[i]->at(j);
+				for (int k = 0; k < sectionSize; ++k) {
+					auto obj = section->at(k);
+					if (!obj) continue;
+
+					callback(obj);
+				}
+			}
+		}
 	}
 }

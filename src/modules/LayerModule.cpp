@@ -6,6 +6,7 @@
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include "IconsMaterialDesignIcons.h"
+#include "myUtils.hpp"
 
 using namespace geode::prelude;
 
@@ -114,9 +115,26 @@ class $modify(LevelEditorLayer) {
         return true;
     }
 
+    void updateObjectColors(CCArray* objs) {
+        if (objs && objs->count() > 0) {
+            auto obj = static_cast<GameObject*>(objs->objectAtIndex(0));
+            std::cout << obj->getColor().r << " " << obj->getColor().g << " " << obj->getColor().b << "\n";
+            LevelEditorLayer::updateObjectColors(objs);
+            std::cout << obj->getColor().r << " " << obj->getColor().g << " " << obj->getColor().b << "\n\n";
+        }
+        else {
+            std::cout << "no\n";
+            LevelEditorLayer::updateObjectColors(objs);
+        }
+    }
+
+    // Could potentionally wake some visual bugs
     void updateVisibility(float p0) {
         LevelEditorLayer::updateVisibility(p0);
         // log::debug("{}--{}", m_activeObjectsCount, m_activeObjects.size()); different
+        auto mode = *reinterpret_cast<int*>(reinterpret_cast<long long>(this) + 0x878);
+        if (mode == 1) return;
+
         for (int i = 0; i < m_activeObjectsCount; i++) {
             GameObject* obj = m_activeObjects[i];
             if (LAYER_STATE.layers[obj->m_editorLayer].isHidden || (obj->m_isHide && GameManager::sharedState()->getGameVariable("0121"))) {
@@ -132,7 +150,25 @@ class $modify(LevelEditorLayer) {
                     obj->setOpacity(LAYER_STATE.layers[obj->m_editorLayer].opacity);
                 }
             }
+
+            // Hovering
+            if (geode::Mod::get()->getSavedValue<bool>("hovering-selects")) {
+                if (static_cast<ErGui::GearGameObject*>(obj)->m_fields->m_isHovered) {
+
+
+                    //if (obj->m_colorSprite)
+                    //    obj->m_colorSprite->setColor({ 255, 255, 0 });
+                    obj->setColor({ 255, 255, 0 });
+                    obj->setObjectColor({ 255, 255, 0 });
+                    obj->setChildColor({ 255, 255, 0 });
+                    for (auto childSpr : CCArrayExt<CCSprite*>(obj->getChildren())) {
+                        childSpr->setColor({ 255, 255, 0 });
+                    }
+                }
+            }
         }
+
+        //std::cout << "\n";
     }
 };
 

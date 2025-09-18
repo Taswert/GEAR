@@ -142,7 +142,7 @@ CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
 				bool foundGroup = false;
 				for (int i = 0; i < obj->m_groups->size(); i++) {
 					if (ErGui::groupsFilterSet.contains(obj->m_groups->at(i))) {
-						std::cout << "ye\n";
+						//std::cout << "ye\n";
 						shouldSelect = true;
 						foundGroup = true;
 					}

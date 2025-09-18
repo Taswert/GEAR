@@ -1,5 +1,5 @@
+#include "Geode/modify/CCEGLView.hpp"
 #include "GameWindowModule.hpp"
-#include "../helpers/ScreenRenderer.h"
 #include "razoomUtils.hpp"
 
 
@@ -9,7 +9,14 @@ namespace ErGui {
 	CCPoint gameWindowTouchCoordinatesConvertedToWorldForZoom;
 	static bool constrainByLastObjectX = false;
 	static bool constrainByLastObjectY = false;
+	static GLuint gameFrame;
 }
+
+struct RenderedTexture {
+	ImTextureID tex;
+	CCSize size;
+};
+
 
 void updateMousePos(ImVec2 drawSize) {
 	auto mouse = ImGui::GetMousePos();
@@ -20,9 +27,77 @@ void updateMousePos(ImVec2 drawSize) {
 	ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom = CCPoint(ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, winSize.height - ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
 }
 
+// Написано нейронкой, т.к. я просто устану разбираться в этом сейчас. Основа от DevTools'ов.
+static GLuint captureScreenToGLTexture() {
+	static GLuint captureTexId = 0;    // хранит ID текстуры, куда мы копируем кадр
+	static int lastW = 0, lastH = 0;   // чтобы пересоздавать текстуру, если размер изменился
+
+	// 1) Узнаём, сколько пикселей реально сейчас на экране (viewport):
+	GLint vp[4];
+	glGetIntegerv(GL_VIEWPORT, vp);
+	int screenW = vp[2];
+	int screenH = vp[3];
+
+	// 2) Если размер изменился (например, игрок поменял окно), пересоздаём текстуру:
+	if (!captureTexId || lastW != screenW || lastH != screenH) {
+		if (captureTexId) {
+			glDeleteTextures(1, &captureTexId);
+			captureTexId = 0;
+		}
+		glGenTextures(1, &captureTexId);
+		glBindTexture(GL_TEXTURE_2D, captureTexId);
+
+		// Настраиваем фильтрацию — обычно LINEAR, чтобы превью при масштабировании было быстрее «размыто»
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// Резервируем память под будущую копию экрана
+		glTexImage2D(
+			GL_TEXTURE_2D,		// таргет
+			0,					// LOD
+			GL_RGBA,			// внутренний формат (RGBA8)
+			screenW, screenH,	// ширина, высота
+			0,					 // border
+			GL_RGBA,			// формат поступающих данных
+			GL_UNSIGNED_BYTE,	// тип данных
+			nullptr				// пока нет данных (будет заполнено glCopyTexSubImage2D)
+		);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		lastW = screenW;
+		lastH = screenH;
+	}
+
+	// 3) Привязываем нашу текстуру и копируем текущий back-buffer (FBO = 0) в неё:
+	glBindTexture(GL_TEXTURE_2D, captureTexId);
+
+	// Копируем целиком экран (вниз/влево от 0,0) в текстуру, начиная с 0,0
+	glCopyTexSubImage2D(
+		GL_TEXTURE_2D, 0,    // который уровень mipmap (0) и таргет
+		0, 0,                // смещение (xOffset, yOffset) в текстуре
+		0, 0,                // какая точка back-buffer берётся (x, y)
+		screenW, screenH     // сколько пикселей копировать
+	);
+
+	// 4) Бинд снова очищаем (не обязательно, но принято)
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// 5) Возвращаем ID текстуры, куда мы скопировали экран
+	return captureTexId;
+}
+
+// Capturing the game frame from CCEGLView
+class $modify(CCEGLView) {
+	void swapBuffers() {
+		ErGui::gameFrame = captureScreenToGLTexture();
+		CCEGLView::swapBuffers();
+	}
+};
+
+
 void ErGui::renderGameWindow() {
 
-	auto renderedScreen = ScreenRenderer::RenderedTexture((ImTextureID)(intptr_t)ErGui::gameFrame, CCDirector::sharedDirector()->getWinSize());
+	auto renderedScreen = RenderedTexture((ImTextureID)(intptr_t)ErGui::gameFrame, CCDirector::sharedDirector()->getWinSize());
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
 
 	ImGui::Begin("Game");
@@ -126,10 +201,6 @@ void ErGui::renderGameWindow() {
 			updateMousePos(drawSize);
 		}
 	}
-
-	
-	
-
 
 	ImGui::End();
 }

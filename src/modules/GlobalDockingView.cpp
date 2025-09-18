@@ -112,7 +112,8 @@ static void renderMenuBar() {
         if (ImGui::BeginMenu("Settings")) {
 
             auto gm = GameManager::sharedState();
-
+            
+            // Initialize
             bool ptMusic =                  gm->getGameVariable("0002");    // Plays music during playtesting
             bool ptNoGrid =                 gm->getGameVariable("0079");    // Hides grid during playtesting
             bool ptSmoothFix =              gm->getGameVariable("0102");    // Enables smooth fix during playtesting
@@ -130,7 +131,11 @@ static void renderMenuBar() {
             bool showLinkControls =         gm->getGameVariable("0097");                                        // 
             bool showZoomControls =         geode::Mod::get()->getSavedValue<bool>("show-zoom-controls");       // Shows zoom controls buttons on toolbox
             bool showObjectInfo =           gm->getGameVariable("0041");
+			bool fillSelectionZone =        geode::Mod::get()->getSavedValue<bool>("fill-selection-zone");      // Fills selection zone with solid color
+			bool hoveringSelects =          geode::Mod::get()->getSavedValue<bool>("hovering-selects");         // Hovers objects in the selection zone
             //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
+
+
             
             if (ImGui::BeginMenu("Selected Object Info")) {
                 bool soiPosition =      geode::Mod::get()->getSavedValue<bool>("soi-position");
@@ -241,6 +246,14 @@ static void renderMenuBar() {
             ImGui::MenuItem("Show Link Controls", NULL, &showLinkControls);
             ImGui::MenuItem("Show Zoom Controls", NULL, &showZoomControls);
             
+            ImGui::Dummy({ 5.f, 5.f });
+
+            ImGui::MenuItem("Fill Selection Zone", NULL, &fillSelectionZone);
+			ImGui::MenuItem("Hovering Selects", NULL, &hoveringSelects);
+
+
+
+            // Saving Values
 
             gm->setGameVariable("0002", ptMusic);
             gm->setGameVariable("0079", ptNoGrid);
@@ -259,6 +272,8 @@ static void renderMenuBar() {
             gm->setGameVariable("0097", showLinkControls);
             geode::Mod::get()->setSavedValue<bool>("show-zoom-controls",        showZoomControls);
             gm->setGameVariable("0041", showObjectInfo);
+			geode::Mod::get()->setSavedValue<bool>("fill-selection-zone",       fillSelectionZone);
+			geode::Mod::get()->setSavedValue<bool>("hovering-selects",          hoveringSelects);
             //geode::Mod::get()->setSavedValue<bool>("select-direction-from-cursor", selectDirectionFromCursor);
 
             ImGui::EndMenu();
