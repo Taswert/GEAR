@@ -3,15 +3,16 @@
 using namespace ErGui;
 
 const char* layerTypeItems[] = {
-	"Bottom 5", "Bottom 4", "Bottom 3", "Bottom 2", "Bottom 1",
-	"Top 1", "Top 2", "Top 3", "Top 4",
-	"Default"
+	"B5", "B4", "B3", "B2", "B1",
+	"D",
+	"T1", "T2", "T3", "T4"
+	
 };
 
 const int layerIntItems[] = {
 	-5, -3, -1, 1, 3,
+	0,
 	5, 7, 9, 11,
-	0
 };
 
 
@@ -171,7 +172,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 			if (addGroupCheck) {
 				if (!lel->m_groups[chosenGroupEGM]) {
 					CCArray* arr = CCArray::create();
-					arr->retain();								//I hope this didn't make some memory leaks...
+					arr->retain();
 					lel->m_groups[chosenGroupEGM] = arr;
 				}
 				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
@@ -212,35 +213,81 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SeparatorText("Groups");
 		ImGui::PopStyleColor();
 
-		//ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
 		for (int i = 0; i < obj->m_groupCount; i++) {
 			int groupInt = obj->m_groups->at(i);
 			std::string btnStr = std::to_string(groupInt);
 			btnStr += "##RMVGROUP";
 
 			if (lel->m_parentGroupsDict->objectForKey(groupInt) == obj) {
+				// Styling Push
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.48f, 0.12f, 0.46f, 1.f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.73f, 0.25f, 0.71f, 1.f));
-				if (ImGui::Button(btnStr.c_str())) {
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
+
+				// The Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 					lel->m_parentGroupsDict->removeObjectForKey(groupInt);
 				}
+
+				// Styling Pop
 				ImGui::PopStyleColor();
 				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
 			}
 			else {
-				if (ImGui::Button(btnStr.c_str())) {
+				// Parent Group Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 					obj->removeFromGroup(groupInt);
 					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
 				}
 			}
-			if (i + 1 < obj->m_groupCount)
-				ImGui::SameLine();
 
+			// Funny button aligning
+			float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			float lastButtonX2 = ImGui::GetItemRectMax().x;
+			float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + ImGui::GetItemRectSize().x;
+
+			if (i+1< obj->m_groupCount && nextButtonX2 < windowVisibleX2) {
+				ImGui::SameLine();
+			}
 		}
-		//ImGui::PopStyleVar();
 	}
 
 	if (ImGui::CollapsingHeader("-----| Layer & Z-Order |-----")) {
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.f, 3.f });
+		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
+			int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+			bool shouldPopStyle = false;
+
+			//Color for selected object
+			if (*objLayer == layerIntItems[i]) {
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+				ImGui::PushStyleColor(ImGuiCol_Border, { 1.f, 1.f, 0.5f, 1.f });
+				ImGui::PushStyleColor(ImGuiCol_Button, {
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).x + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).y + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).z + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).w + 0.3f });
+				shouldPopStyle = true;
+			}
+
+			if (ImGui::Button(layerTypeItems[i], { 26, 20 })) {
+				*objLayer = layerIntItems[i];
+			}
+
+			//Pop color for selected object
+			if (shouldPopStyle) {
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+			}
+
+			if (i < IM_ARRAYSIZE(layerIntItems) - 1)
+				ImGui::SameLine();
+		}
+		ImGui::PopStyleVar();
+
+
 		int el1 = obj->m_editorLayer;
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("##EditorL1", &el1);
@@ -274,46 +321,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::InputInt(zOrderStr.c_str(), &zord);
 		obj->m_zOrder = zord;
 		obj->m_shouldUpdateColorSprite = 1;
-
-
-		int* zLayer = reinterpret_cast<int*>(&obj->m_zLayer);
-		ImGui::PushItemWidth(150.0f);
-
-		int layerIndex = 0;
-		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
-			if (static_cast<int>(obj->m_zLayer) == layerIntItems[i]) {
-				layerIndex = i;
-				break;
-			}
-		}
-
-		if (ImGui::Combo("Z-Layer", &layerIndex, layerTypeItems, IM_ARRAYSIZE(layerTypeItems))) {
-			int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer); 
-			*objLayer = layerIntItems[layerIndex];
-		}
-
-		//ImGui::InputInt("Z-Layer", zLayer);
-		////setMaxMin(*zLayer, 11, -5);
-		//ImGui::SameLine();
-		//std::string zLayerString = "(UNKNOWN)";
-		//float zLayerStringFloat = (std::abs(*zLayer - 4) + 1) / 2.f;
-		//int zLayerStringInt = std::floor(zLayerStringFloat);
-		//std::string postfix = zLayerStringFloat > std::floor(zLayerStringFloat) ? "/2)" : ")";
-		//if (*zLayer == 0) zLayerString = "(Default)";
-		//else if (*zLayer < 4) zLayerString = "(B" + std::to_string(zLayerStringInt) + postfix;
-		//else if (*zLayer > 4) zLayerString = "(T" + std::to_string(zLayerStringInt) + postfix;
-		//else if (*zLayer == 4) zLayerString = "(M)";
-		//ImGui::Text(zLayerString.c_str());
-
-		
-		//if (ImGui::Button("Copy##EGM-COPY")) {
-			//lel->
-		//}
-
-		//if (ImGui::Button("Paste##EGM-Paste")) {
-
-		//}
 	}
+
 	if (ImGui::CollapsingHeader("-----| Extra |-----")) {
 		int enterChnl = obj->m_enterChannel;
 		ImGui::InputInt("Enter Channel", &enterChnl);
@@ -590,17 +599,23 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::PopStyleColor();
 
 		int groupsSize = groupsFromObjArr.size();
+
+		int sameLineCounter = 0;
 		for (int i = 0; i < groupsSize; i++) {
+			// Init
 			int groupInt = groupsFromObjArr[i].first;
 			std::string btnStr = std::to_string(groupInt);
 			btnStr += "##RMVGROUP";
 
+			// Styling Push
 			if (groupsFromObjArr[i].second != objArr->count()) {
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.27f, 0.f, 0.52f, 1.f));
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.40f, 0.f, 0.67f, 1.f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
 			}
 
-			if (ImGui::Button(btnStr.c_str())) {
+			// THE Button
+			if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 					obj->removeFromGroup(groupInt);
 					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
@@ -609,13 +624,30 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				groupsSize--;
 			}
 
+			// Styling Pop
 			if (groupsFromObjArr[i].second != objArr->count()) {
 				ImGui::PopStyleColor();
 				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
 			}
 
-			if ((i + 1) % 10 != 0 && i != groupsSize - 1)
+
+			// Stupid logic for max 10 buttons in a line. Also, prevents from going out of the window.
+			float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			float lastButtonX2 = ImGui::GetItemRectMax().x;
+			float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + ImGui::GetItemRectSize().x;
+
+			if (sameLineCounter == 9) {
+				sameLineCounter = 0;
+				continue;
+			}
+			if (i + 1 < groupsSize && nextButtonX2 < windowVisibleX2) {
+				sameLineCounter++;
 				ImGui::SameLine();
+			}
+			else {
+				sameLineCounter = 0;
+			}
 		}
 
 		//ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
@@ -648,6 +680,43 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 	
 
 	if (ImGui::CollapsingHeader("-----| Layer & Z-Order |-----")) {
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.f, 3.f });
+		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
+			bool shouldPopStyle = false;
+			//Color for selected object
+			if (minZLayer == layerIntItems[i] && minZLayer == maxZLayer) {
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+				ImGui::PushStyleColor(ImGuiCol_Border, { 1.f, 1.f, 0.5f, 1.f });
+				ImGui::PushStyleColor(ImGuiCol_Button, {
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).x + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).y + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).z + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).w + 0.3f });
+				shouldPopStyle = true;
+			}
+
+			if (ImGui::Button(layerTypeItems[i], { 26, 20 })) {
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+					*objLayer = layerIntItems[i];
+					obj->m_shouldUpdateColorSprite = 1;
+				}
+				groupInfoUpdate();
+			}
+
+			//Pop color for selected object
+			if (shouldPopStyle) {
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+			}
+
+			if (i < IM_ARRAYSIZE(layerIntItems) - 1)
+				ImGui::SameLine();
+		}
+		ImGui::PopStyleVar();
+
 
 		if (int delta = deltaInputIntImproved("EditorL1", maxEl1, minEl1, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -696,22 +765,6 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				if (oldOrder == 1 && delta == -1) obj->m_zOrder = -1;
 				if (oldOrder == -1 && delta == 1) obj->m_zOrder = 1;
 
-				obj->m_shouldUpdateColorSprite = 1;
-			}
-			groupInfoUpdate();
-		}
-
-		int layerIndex = 0;
-		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
-			if (minZLayer == layerIntItems[i]) {
-				layerIndex = i;
-				break;
-			}
-		}
-		if (ImGui::Combo("Z-Layer", &layerIndex, layerTypeItems, IM_ARRAYSIZE(layerTypeItems))) {
-			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
-				*objLayer = layerIntItems[layerIndex];
 				obj->m_shouldUpdateColorSprite = 1;
 			}
 			groupInfoUpdate();

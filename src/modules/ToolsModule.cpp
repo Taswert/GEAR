@@ -43,22 +43,22 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_MDI_BRUSH, editorUI->m_selectedMode == 2, 0, BTN_SIZE))
 		editorUI->m_selectedMode = 2;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Build Mode");
+		ImGui::SetTooltip("Build Mode (1)");
 	ImGui::Dummy(DUMMY_PAD);
 	if (ImGui::Selectable(ICON_MDI_SELECTION, editorUI->m_selectedMode == 3, 0, BTN_SIZE))
 		editorUI->m_selectedMode = 3;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Edit Mode");
+		ImGui::SetTooltip("Edit Mode (2)");
 	ImGui::Dummy(DUMMY_PAD);
 	if (ImGui::Selectable(ICON_MDI_DELETE, editorUI->m_selectedMode == 1, 0, BTN_SIZE))
 		editorUI->m_selectedMode = 1;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Delete Mode");
+		ImGui::SetTooltip("Delete Mode (3)");
 	ImGui::Dummy(DUMMY_PAD);
 	if (ImGui::Selectable(ICON_MDI_EYE, editorUI->m_selectedMode == 4, 0, BTN_SIZE))
 		editorUI->m_selectedMode = 4;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Observer Mode");
+		ImGui::SetTooltip("Observer Mode (4)");
 	ImGui::Separator();
 	
 	//reinterpret_cast<const char*>(u8"\uf1127")
@@ -75,7 +75,7 @@ void ErGui::renderToolsModule1() {
 		}
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Swipe");
+		ImGui::SetTooltip("Swipe (T)");
 	ImGui::Dummy(DUMMY_PAD);
 
 	bool rotationBool = gameManager->getGameVariable("0007");
@@ -90,7 +90,7 @@ void ErGui::renderToolsModule1() {
 		}
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Rotation");
+		ImGui::SetTooltip("Rotation (R)");
 	ImGui::Dummy(DUMMY_PAD);
 
 	bool freeMoveBool = editorUI->m_freeMoveEnabled;
@@ -99,7 +99,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->m_freeMoveEnabled = freeMoveBool;
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Free Move");
+		ImGui::SetTooltip("Free Move (F)");
 	ImGui::Dummy(DUMMY_PAD);
 
 	bool snapBool = gameManager->getGameVariable("0008");
@@ -108,7 +108,7 @@ void ErGui::renderToolsModule1() {
 		gameManager->setGameVariable("0008", snapBool);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Snap");
+		ImGui::SetTooltip("Snap (G)");
 		
 	ImGui::Separator();
 	if (ImGui::Selectable(ICON_MDI_CONTENT_DUPLICATE, false, 0, BTN_SIZE)) {
@@ -116,7 +116,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->onDuplicate(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Duplicate");
+		ImGui::SetTooltip("Duplicate (Ctrl+D)");
 	ImGui::Dummy(DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_DELETE_FOREVER, false, 0, BTN_SIZE)) {
@@ -128,7 +128,7 @@ void ErGui::renderToolsModule1() {
 		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Delete Selected");
+		ImGui::SetTooltip("Delete Selected (Del)");
 	ImGui::Dummy(DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_VECTOR_SQUARE, false, 0, BTN_SIZE)) {
@@ -159,7 +159,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->deselectAll();
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Deselect Objects");
+		ImGui::SetTooltip("Deselect Objects (Alt+D)");
 
 	ImGui::Separator();
 
