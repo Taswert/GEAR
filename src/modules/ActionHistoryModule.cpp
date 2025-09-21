@@ -4,7 +4,7 @@
 #include <cocos2d.h>
 
 void ErGui::renderActionHistoryModule() {
-	if (!ImGui::Begin("ActionHistory-Module")) {
+	if (!ImGui::Begin("Action History")) {
 		ImGui::End();
 		return;
 	}

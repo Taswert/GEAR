@@ -148,7 +148,9 @@ void exitEditor() { // EditorUI is already destroyed here
 	ErGui::clearObjectListCache();
 }
 
-class $modify(EditorUI) {
+
+
+class $modify(GearEditorUI, EditorUI) {
 
 	struct Fields {
 		int nothing = 0; // trigger lazy m_fields initialization
@@ -248,6 +250,10 @@ class $modify(EditorUI) {
 	}
 
 	
+	void onHideUI(CCObject* sender) {
+		static_cast<CCMenuItemSpriteExtra*>(sender)->setVisible(false);
+		ErGui::hideUI = false;
+	}
 
 	bool init(LevelEditorLayer* lel) {
 		ErGui::editorUIDrawNode = CCDrawNode::create();
@@ -263,6 +269,23 @@ class $modify(EditorUI) {
 		m_fields->nothing = 42; // trigger m_fields lazy initialization
 
 		this->setVisible(false);
+
+		auto hideBtnSpr = CCSprite::createWithSpriteFrameName("hideBtn_001.png");
+		hideBtnSpr->setScale(0.65f);
+		hideBtnSpr->setOpacity(100);
+		CCMenuItemSpriteExtra* hideUIBtn = CCMenuItemSpriteExtra::create(
+			hideBtnSpr, this, 
+			menu_selector(GearEditorUI::onHideUI)
+		);
+		hideUIBtn->setID("hideUIBtn"_spr);
+		hideUIBtn->setVisible(false);
+
+		auto hideUIMenu = CCMenu::create();
+		hideUIMenu->addChild(hideUIBtn);
+		hideUIMenu->setID("hideUIMenu"_spr);
+		hideUIMenu->setPosition({ 13.f, CCDirector::sharedDirector()->getWinSize().height - 10.f });
+
+		lel->addChild(hideUIMenu);
 
 		return ret;
 	}
@@ -399,8 +422,9 @@ class $modify(EditorUI) {
 					//ErGui::editorUIDrawNode->drawRect(ErGui::selectRect, { 1.f - 1.f / 1.33f, 0, 0, 0.1f }, 0.3f, {1.f, 0, 0, 1.f});
 					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), selectionFillColor, 0.3f, lassoColor);
 				}
-				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects"))
+				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects")) {
 					ErGui::forEachObject(this->m_editorLayer, ErGui::hoverObjectSquare); // Replace with hoverObjectSquare when done properly
+				}
 			}
 		}
 
@@ -833,7 +857,7 @@ $on_mod(Loaded) {
 
 		ErGui::setupTriggersSettings();
 		}).draw([] {
-			if (auto lel = GameManager::sharedState()->getEditorLayer()) {
+			if (auto lel = GameManager::sharedState()->getEditorLayer() && !ErGui::hideUI) {
 				ErGui::renderGlobalDockingView();
 				ErGui::renderEditGroupModule();
 				ErGui::renderSelectFilter();

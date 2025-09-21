@@ -60,7 +60,7 @@ namespace ErGui {
 	void forEachObject(GJBaseGameLayer const* game, std::function<void(GameObject*)> const& callback);
 
 	const float INPUT_ITEM_WIDTH = 160.f;
-	const float FIRST_ELEMENT_SAMELINE_SPACING = 70.f;
+	const float FIRST_ELEMENT_SAMELINE_SPACING = 72.f;
 	inline CCDrawNode* touchedDN = nullptr;
 	inline CCPoint touchedDNFirstPoint = { 0.f, 0.f };
 	inline bool dbgTDN = false;
@@ -73,6 +73,8 @@ namespace ErGui {
 	inline int gridColor[4] = { 0, 0, 0, 150 };
 
 	inline bool isVisibleSelection = true;
+
+	inline bool hideUI = false;
 
 	inline std::vector<cocos2d::CCPoint> editorUISwipePoints;
 	inline CCRect selectRect;

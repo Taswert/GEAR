@@ -288,7 +288,7 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 					float lastButtonX2 = ImGui::GetItemRectMax().x;
 					float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + buttonSize.x;
 
-					if (j + 1 < objects.size() && nextButtonX2 < windowVisibleX2)
+					if ((j + 1 < objects.size() || i + 1 < visibleButtons.size()) && nextButtonX2 < windowVisibleX2)
 						ImGui::SameLine();
 				}
 			}
@@ -315,7 +315,7 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 
 void ErGui::renderObjectList() {
 	//ErGui::setupMenuColors(ImVec4(0.05f, 0.10f, 0.02f, 0.95f), ImVec4(0.38f, 0.77f, 0.12f, 1.f), ImVec4(0.63f, 0.80f, 0.49f, 1.f));
-	if (!ImGui::Begin("ObjectList-Module")) {
+	if (!ImGui::Begin("Object List")) {
 		ImGui::End();
 		return;
 	}

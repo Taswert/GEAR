@@ -106,7 +106,15 @@ void ErGui::renderGameWindow() {
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObjectX ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 3.5f);
+	float maxWidth = INPUT_ITEM_WIDTH * 3.5f; // предел ширины слайдера
+	float minWidth = INPUT_ITEM_WIDTH * 0.5f; // предел ширины слайдера
+	// Берём доступную ширину и ограничиваем её maxWidth
+	float avail = ImGui::GetContentRegionAvail().x - maxWidth * 0.55f;
+	float sliderWidth = (avail > maxWidth) ? maxWidth : avail;
+	if (sliderWidth < minWidth)
+		sliderWidth = minWidth;
+
+	ImGui::SetNextItemWidth(sliderWidth);
 	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX))
 		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
 
@@ -119,7 +127,7 @@ void ErGui::renderGameWindow() {
 	ImGui::SameLine();
 	short step = 1;
 	short fastStep = 5;
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 0.66f);
 	if (ImGui::InputScalar("##Layer", ImGuiDataType_S16, &lel->m_currentLayer, &step, &fastStep)) {
 		if (lel->m_currentLayer < -1) 
 			lel->m_currentLayer = -1;
@@ -143,7 +151,7 @@ void ErGui::renderGameWindow() {
 	float objectLayerY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
 	float maxPosY = ErGui::constrainByLastObjectY ? getLastObjectYFast() : std::max(getLastObjectYFast(), 29800.f);
 
-	ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH * 3.5f);
+	ImGui::SetNextItemWidth(sliderWidth);
 	if (ImGui::SliderFloat("##LevelPositionSliderY", &objectLayerY, 0.f, maxPosY))
 		lel->m_objectLayer->setPositionY(objectLayerY * -1 * lel->m_objectLayer->getScale());
 
@@ -151,16 +159,6 @@ void ErGui::renderGameWindow() {
 	ImGui::Checkbox("##Constrain-By-Last-ObjectY", &ErGui::constrainByLastObjectY);
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Constrain By Last Object Y");
-
-	ImGui::SameLine();
-	if (ImGui::Button("Level Settings")) {
-		bool foundSettings = false;
-		for (auto child : CCArrayExt<CCNode*>(CCDirector::sharedDirector()->getRunningScene()->getChildren())) {
-			if (dynamic_cast<LevelSettingsLayer*>(child)) foundSettings = true;
-		}
-		if (!foundSettings)
-			lel->m_editorUI->onSettings(nullptr);
-	}
 
 	// DEBUG - Сохранение вьюпорта в пнг, в корне игры.
 	//ImGui::SameLine();

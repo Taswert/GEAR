@@ -158,12 +158,13 @@ class $modify(LevelEditorLayer) {
 
                     //if (obj->m_colorSprite)
                     //    obj->m_colorSprite->setColor({ 255, 255, 0 });
-                    obj->setColor({ 255, 255, 0 });
+                    //obj->setColor({ 255, 255, 0 });
                     obj->setObjectColor({ 255, 255, 0 });
-                    obj->setChildColor({ 255, 255, 0 });
-                    for (auto childSpr : CCArrayExt<CCSprite*>(obj->getChildren())) {
-                        childSpr->setColor({ 255, 255, 0 });
-                    }
+                    if (obj->m_colorSprite)
+                        obj->m_colorSprite->setColor({ 255, 255, 0 });
+                    //for (auto childSpr : CCArrayExt<CCSprite*>(obj->getChildren())) {
+                    //    childSpr->setColor({ 255, 255, 0 });
+                    //}
                 }
             }
         }

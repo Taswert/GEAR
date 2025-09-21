@@ -9,7 +9,6 @@ static void renderMenuBar() {
             undoEnabled = true;
         if (LevelEditorLayer::get()->m_redoObjects && LevelEditorLayer::get()->m_redoObjects->count() > 0)
             redoEnabled = true;
-
         
         if (ImGui::MenuItem("Undo", nullptr, false, undoEnabled)) {
 			EditorUI::get()->undoLastAction(nullptr);
@@ -18,6 +17,11 @@ static void renderMenuBar() {
 		if (ImGui::MenuItem("Redo", nullptr, false, redoEnabled)) {
 			EditorUI::get()->redoLastAction(nullptr);
 		}
+
+        if (ImGui::MenuItem("Hide UI")) {
+            LevelEditorLayer::get()->getChildByID("hideUIMenu"_spr)->getChildByID("hideUIBtn"_spr)->setVisible(true);
+            ErGui::hideUI = !ErGui::hideUI;
+        }
 
 		if (ImGui::BeginMenu("Utilites")) {
             // Selections
@@ -33,7 +37,6 @@ static void renderMenuBar() {
             if (ImGui::MenuItem("Select All Left")) {
                 ErGui::getFakePauseLayer()->onSelectAllLeft(nullptr);
             }
-
             
             ImGui::Dummy({ 5.f, 5.f }); // Create / Edit
             
@@ -109,7 +112,7 @@ static void renderMenuBar() {
             ImGui::EndMenu();
 		}
 
-        if (ImGui::BeginMenu("Settings")) {
+        if (ImGui::BeginMenu("Properties")) {
 
             auto gm = GameManager::sharedState();
             
@@ -277,6 +280,15 @@ static void renderMenuBar() {
             //geode::Mod::get()->setSavedValue<bool>("select-direction-from-cursor", selectDirectionFromCursor);
 
             ImGui::EndMenu();
+        }
+
+        if (ImGui::MenuItem("Level Settings")) {
+            bool foundSettings = false;
+            for (auto child : CCArrayExt<CCNode*>(CCDirector::sharedDirector()->getRunningScene()->getChildren())) {
+                if (dynamic_cast<LevelSettingsLayer*>(child)) foundSettings = true;
+            }
+            if (!foundSettings)
+                LevelEditorLayer::get()->m_editorUI->onSettings(nullptr);
         }
 
 		ImGui::EndMenuBar();

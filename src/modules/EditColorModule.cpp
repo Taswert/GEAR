@@ -156,93 +156,110 @@ std::string colorPickerPopup(std::string btnStr, ColorAction* ccMyColor) {
 	return colEditPopupStr;
 }
 
+void customColorButton(int* objColorId, int btnColorId, const char* colorName, bool isEditable, bool* result, bool colorEditRestriction, int* btnCounter, int buttonsInRow = 6, ImVec4* btnColor = nullptr) {
+	auto effectManager = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager;
+	auto ccMyColor = effectManager->getColorAction(btnColorId);
+
+	// Button name
+	std::string btnStr;
+	if (colorName)
+		btnStr = std::string("color") + std::to_string(btnColorId) + "-" + colorName + std::string("##COLOR-BUTTON-POPUP");
+	else
+		btnStr = std::string("color") + std::to_string(btnColorId) + std::string("##COLOR-BUTTON-POPUP");
+
+	// Custom button color
+	ImVec4 newBtnColor;
+	if (btnColor == nullptr) {
+		newBtnColor = ImVec4(ccMyColor->m_fromColor.r / 255.f, ccMyColor->m_fromColor.g / 255.f, ccMyColor->m_fromColor.b / 255.f, 1.f);
+		btnColor = &newBtnColor;
+	}
+
+	// The Button
+	if (ImGui::ColorButton(btnStr.c_str(), *btnColor)) {
+		*objColorId = btnColorId;
+		ImGui::CloseCurrentPopup();
+		*result = true;
+	}
+
+	// Selected color stroke
+	if (*objColorId == btnColorId) {
+		ImVec2 min = ImGui::GetItemRectMin();
+		ImVec2 max = ImGui::GetItemRectMax();
+		auto* draw_list = ImGui::GetWindowDrawList();
+
+		float offset = 2.0f; 
+		draw_list->AddRect(
+			ImVec2(min.x - offset, min.y - offset),
+			ImVec2(max.x + offset, max.y + offset), 
+			IM_COL32(255, 255, 255, 255), 
+			ImGui::GetStyle().FrameRounding, 0, 2.0f);
+	}
+
+	auto colEditPopupStr = colorPickerPopup(btnStr, ccMyColor);
+
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) && isEditable && !colorEditRestriction) {
+		//saving hsv beacuse this stupid game adjusting hue otherwise for whatever reason
+		float r = ccMyColor->m_fromColor.r / 255.f;
+		float g = ccMyColor->m_fromColor.g / 255.f;
+		float b = ccMyColor->m_fromColor.b / 255.f;
+		ImGui::ColorConvertRGBtoHSV(r, g, b, savedHueEC, savedSaturationEC, savedValueEC);
+		ImGui::OpenPopup(colEditPopupStr.c_str());
+	}
+
+	ImGui::SameLine();
+	if (colorName) 
+		ImGui::Text(colorName);
+	else
+		ImGui::Text(std::to_string(btnColorId).c_str());
+
+	// Funny buttons in a row check
+	if (*btnCounter % buttonsInRow != 0) 
+		ImGui::SameLine((350.f / (buttonsInRow - 1)) * ((*btnCounter) % buttonsInRow));
+
+	(*btnCounter)++;
+}
+
 bool ErGui::colorSelectImGuiPopup(int* colorId, std::string popupStr, bool colorEditRestriction) {
 	bool result = false;
 	ImGui::SetNextWindowSizeConstraints(ImVec2(100, 0), ImVec2(FLT_MAX, 350));
 	if (ImGui::BeginPopup(popupStr.c_str())) {
-		for (int i = colorEditRestriction ? 0 : 1; i < 1102; i++) {
-			auto effectManager = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager;
-			auto ccMyColor = effectManager->getColorAction(i);
+		int btnCounter = 1;
 
-			std::string suffix = "";
+		auto blackColor = ImVec4(0.f, 0.f, 0.f, 1.f);
 
-			switch (i) {
-			default:
-				break;
-			case 1000:
-				suffix = "-BG";
-				break;
-			case 1001:
-				suffix = "-G1";
-				break;
-			case 1002:
-				suffix = "-LINE";
-				break;
-			case 1003:
-				suffix = "-3DL";
-				break;
-			case 1004:
-				suffix = "-OBJECT";
-				break;
-			case 1005:
-				suffix = "-P1";
-				break;
-			case 1006:
-				suffix = "-P2";
-				break;
-			case 1007:
-				suffix = "-LBG";
-				break;
-			case 1009:
-				suffix = "-G2";
-				break;
-			case 1010:
-				suffix = "-BLACK";
-				break;
-			case 1011:
-				suffix = "-WHITE";
-				break;
-			case 1012:
-				suffix = "-LIGHTER";
-				break;
-			case 1013:
-				suffix = "-MG";
-				break;
-			case 1014:
-				suffix = "-MG2";
-				break;
-			}
+		ImGui::SeparatorText("Special Colors");
+		customColorButton(colorId, 1000, "BG",		true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1001, "G1",		true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1009, "G2",		true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1013, "MG",		true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1014, "MG2",		true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1005, "P1",		false,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1006, "P2",		false,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1007, "LBG",		false,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1010, "BLACK",	false,	&result, colorEditRestriction, &btnCounter, 5, &blackColor); // Fuck
+		customColorButton(colorId, 1011, "WHITE",	false,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1002, "LINE",	true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1003, "3DL",		true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1004, "OBJ",		true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1012, "LIGHT",	true,	&result, colorEditRestriction, &btnCounter, 5);
 
-			std::string btnStr = std::string("color") + std::to_string(i) + suffix + std::string("##COLOR-BUTTON-POPUP");
 
-			if (ImGui::ColorButton(btnStr.c_str(), ImVec4(ccMyColor->m_fromColor.r / 255.f, ccMyColor->m_fromColor.g / 255.f, ccMyColor->m_fromColor.b / 255.f, 1.f))) {
-				*colorId = i;
-				ImGui::CloseCurrentPopup();
-				result = true;
-			}
-
-			auto colEditPopupStr = colorPickerPopup(btnStr, ccMyColor);
-
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right) && i != 1005 && i != 1006 && i != 1010 && i != 1011 && !colorEditRestriction) {
-				//saving hsv beacuse this stupid game adjusting hue otherwise for whatever reason
-				float r = ccMyColor->m_fromColor.r / 255.f;
-				float g = ccMyColor->m_fromColor.g / 255.f;
-				float b = ccMyColor->m_fromColor.b / 255.f;
-				ImGui::ColorConvertRGBtoHSV(r, g, b, savedHueEC, savedSaturationEC, savedValueEC);
-				ImGui::OpenPopup(colEditPopupStr.c_str());
-			}
-
-			ImGui::SameLine();
-			if (!suffix.empty()) {
-				suffix.erase(suffix.begin());
-				ImGui::Text(suffix.c_str());
-			}
-			else {
-				ImGui::Text(std::to_string(i).c_str());
-			}
-
-			if (i % 6 != 0) ImGui::SameLine(70 * (i % 6));
+		ImGui::Dummy({ 0.f, 0.f });
+		ImGui::SeparatorText("Default Colors");
+		btnCounter = 1;
+		for (int i = colorEditRestriction ? 0 : 1; i < 1000; i++) {
+			customColorButton(colorId, i, nullptr, true, &result, colorEditRestriction, &btnCounter);
 		}
+
+		ImGui::Dummy({ 0.f, 0.f });
+		ImGui::SeparatorText("Reserved Colors");
+		btnCounter = 1;
+
+		customColorButton(colorId, 1008, nullptr, true, &result, colorEditRestriction, &btnCounter);
+		for (int i = 1015; i < 1102; i++) {
+			customColorButton(colorId, i, nullptr, true, &result, colorEditRestriction, &btnCounter);
+		}
+
 		ImGui::EndPopup();
 	}
 	return result;
@@ -303,7 +320,7 @@ void colorButtonSelect(GJSpriteColor* spriteColor, bool isDetail, CCArray* objAr
 			colorTypeFilter(spriteColor, isDetail, objArr);
 		}
 		ImGui::SameLine();
-		ImGui::SetNextItemWidth(80.f);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH - ImGui::GetItemRectSize().x - ImGui::GetStyle().ItemSpacing.x);
 		if (ImGui::InputInt(inputIntStr.c_str(), &spriteColor->m_colorID)) {
 			if (spriteColor->m_colorID > 1101) spriteColor->m_colorID = 1101;
 			if (spriteColor->m_colorID < 1) spriteColor->m_colorID = 1;
@@ -354,24 +371,20 @@ void renderForObjectEC(GameObject* obj) {
 		obj->m_customColorType = copyStateObj->m_customColorType;
 	}
 
-	colorButtonSelect(gjBaseColor, false, nullptr);
-	colorButtonSelect(gjDetailColor, true, nullptr);
-
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Offset", &nextFreeOffset)) {
+	if (ImGui::InputInt("##NextFreeOffset", &nextFreeOffset)) {
 		if (nextFreeOffset > 1101)	nextFreeOffset = 1101;
 		if (nextFreeOffset < 1)		nextFreeOffset = 1;
 	}
+	ImGui::SameLine();
+	ImGui::Text("Next Free Offset");
 
-	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
-		if (ErGui::isVisibleSelection) {
-			obj->m_isSelected = 1;
-			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
-		}
-		else {
-			obj->m_isSelected = 0;
-		}
-	}
+	colorButtonSelect(gjBaseColor, false, nullptr);
+	colorButtonSelect(gjDetailColor, true, nullptr);
+
+	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+	ImGui::SeparatorText("HSV");
+	ImGui::PopStyleColor();
 
 	if (obj->m_detailColor) {
 		ImGui::Text("Hue");
@@ -415,7 +428,8 @@ void renderForObjectEC(GameObject* obj) {
 		ErGui::clampHSV(&gjBaseColor->m_hsv);
 		ErGui::clampHSV(&gjDetailColor->m_hsv);
 
-		ImGui::Text("HSV Reset");
+		ImGui::Text("Reset");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		if (ImGui::Button("Base##HSV-RESET")) {
 			gjBaseColor->m_hsv.absoluteBrightness = false;
 			gjBaseColor->m_hsv.absoluteSaturation = false;
@@ -431,6 +445,10 @@ void renderForObjectEC(GameObject* obj) {
 			gjDetailColor->m_hsv.s = 1.f;
 			gjDetailColor->m_hsv.v = 1.f;
 		}
+
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+		ImGui::SeparatorText("Other");
+		ImGui::PopStyleColor();
 	}
 	else {
 		ImGui::Text("Hue");
@@ -457,7 +475,7 @@ void renderForObjectEC(GameObject* obj) {
 
 		ErGui::clampHSV(&gjBaseColor->m_hsv);
 
-		if (ImGui::Button("HSV Reset##HSV-RESET")) {
+		if (ImGui::Button("Reset##HSV-RESET")) {
 			gjBaseColor->m_hsv.absoluteBrightness = false;
 			gjBaseColor->m_hsv.absoluteSaturation = false;
 			gjBaseColor->m_hsv.h = 0.f;
@@ -465,7 +483,21 @@ void renderForObjectEC(GameObject* obj) {
 			gjBaseColor->m_hsv.v = 1.f;
 		}
 
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+		ImGui::SeparatorText("Other");
+		ImGui::PopStyleColor();
+
 		ImGui::Combo("Color Type", reinterpret_cast<int*>(&obj->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes));
+	}
+
+	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
+		if (ErGui::isVisibleSelection) {
+			obj->m_isSelected = 1;
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
+		}
+		else {
+			obj->m_isSelected = 0;
+		}
 	}
 
 	objArrOldCount = 1;
@@ -517,29 +549,21 @@ void renderForArrayEC(CCArray* objArr) {
 	auto gjDetailColor = refObject->m_detailColor;
 
 
-	colorButtonSelect(gjBaseColor, false, objArr);
-	colorButtonSelect(gjDetailColor, true, objArr);
-
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Offset", &nextFreeOffset)) {
+	if (ImGui::InputInt("##NextFreeOffset", &nextFreeOffset)) {
 		if (nextFreeOffset > 1101)	nextFreeOffset = 1101;
 		if (nextFreeOffset < 1)		nextFreeOffset = 1;
 	}
+	ImGui::SameLine();
+	ImGui::Text("Next Free Offset");
+
+	colorButtonSelect(gjBaseColor, false, objArr);
+	colorButtonSelect(gjDetailColor, true, objArr);
 
 
-	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
-		if (ErGui::isVisibleSelection) {
-			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_isSelected = 1;
-			}
-			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
-		}
-		else {
-			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_isSelected = 0;
-			}
-		}
-	}
+	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+	ImGui::SeparatorText("HSV");
+	ImGui::PopStyleColor();
 
 	//OKAY THIS SHOULD BE REFINED LATER
 	if (gjDetailColor) {
@@ -641,7 +665,8 @@ void renderForArrayEC(CCArray* objArr) {
 		}
 
 
-		ImGui::Text("HSV Reset");
+		ImGui::Text("Reset");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		if (ImGui::Button("Base##HSV-RESET")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_baseColor->m_hsv.absoluteBrightness = false;
@@ -661,12 +686,6 @@ void renderForArrayEC(CCArray* objArr) {
 					obj->m_detailColor->m_hsv.s = 1.f;
 					obj->m_detailColor->m_hsv.v = 1.f;
 				}
-			}
-		}
-
-		if (ImGui::Combo("Color Type", reinterpret_cast<int*>(&refObject->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes))) {
-			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_customColorType = refObject->m_customColorType;
 			}
 		}
 	}
@@ -731,9 +750,29 @@ void renderForArrayEC(CCArray* objArr) {
 			}
 		}
 
-		if (ImGui::Combo("Color Type", reinterpret_cast<int*>(&refObject->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes))) {
+	}
+
+	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+	ImGui::SeparatorText("Other");
+	ImGui::PopStyleColor();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::Combo("Color Type", reinterpret_cast<int*>(&refObject->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes))) {
+		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+			obj->m_customColorType = refObject->m_customColorType;
+		}
+	}
+
+	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
+		if (ErGui::isVisibleSelection) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_customColorType = refObject->m_customColorType;
+				obj->m_isSelected = 1;
+			}
+			GameManager::sharedState()->m_levelEditorLayer->m_editorUI->resetSelectedObjectsColor();
+		}
+		else {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isSelected = 0;
 			}
 		}
 	}
