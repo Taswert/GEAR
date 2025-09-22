@@ -52,8 +52,8 @@ void ErGui::renderFooter() {
 	//MAIN FOOTER TEXT
 	ImGui::Text("Objs: %d | %s | %s | SFX: %d |", 
 		lel->m_objectCount.value(), 
-		timeStr,
-		GJGameLevel::lengthKeyToString(getLengthKey(std::floor(tfp), lel->m_isPlatformer)),
+		timeStr.c_str(),
+		GJGameLevel::lengthKeyToString(getLengthKey(std::floor(tfp), lel->m_isPlatformer)).c_str(),
 		countSFXIDs
 	);
 	ImGui::SameLine();
