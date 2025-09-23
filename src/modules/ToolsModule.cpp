@@ -1,7 +1,9 @@
 #include "ToolsModule.hpp"
 #include "EditColorModule.hpp"
 #include "IconsMaterialDesignIcons.h"
+#include "GearCopyPasteIcons.hpp"
 #include "ObjectListModule.hpp"
+#include "EditGroupModule.hpp"
 
 void parseObjects(const char* tabName, EditorUI* editorUI) {
 	auto bsl = static_cast<BoomScrollLayer*>(editorUI->getChildByID(tabName)->getChildren()->objectAtIndex(0));
@@ -111,7 +113,46 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Snap (G)");
-		
+	ImGui::Separator();
+
+
+	auto selectedObject = EditorUI::get()->m_selectedObject;
+	auto selectedObjects = EditorUI::get()->m_selectedObjects;
+	auto copyStateObj = LevelEditorLayer::get()->m_copyStateObject;
+
+	ImGui::BeginDisabled(selectedObject == nullptr);
+	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { 0.70f, 0.75f });
+	
+	if (ImGui::Selectable(ICON_GEARCPI_COPY_VALUES, false, 0, BTN_SIZE)) {
+		editorUI->onCopyState(nullptr);
+		//LevelEditorLayer::get()->copyObjectState(selectedObject);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Copy Values");
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+
+	ImGui::EndDisabled();
+
+
+	ImGui::BeginDisabled((selectedObject == nullptr && selectedObjects->count() == 0) || copyStateObj == nullptr);
+
+	if (ImGui::Selectable(ICON_GEARCPI_PASTE_VALUES, false, 0, BTN_SIZE)) {
+		editorUI->onPasteState(nullptr);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Paste State");
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+
+	if (ImGui::Selectable(ICON_GEARCPI_PASTE_COLOR, false, 0, BTN_SIZE)) {
+		editorUI->onPasteColor(nullptr);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Paste Color");
+
+	ImGui::PopStyleVar();
+	ImGui::EndDisabled();
+
+
 	ImGui::Separator();
 	if (ImGui::Selectable(ICON_MDI_CONTENT_DUPLICATE, false, 0, BTN_SIZE)) {
 		editorUI->onDuplicate(nullptr);
@@ -157,7 +198,7 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Deselect Objects (Alt+D)");
 
-	ImGui::SetNextItemWidth(BTN_SIZE.x);
+
 	ImGui::Separator();
 
 	auto mode = *reinterpret_cast<int*>(reinterpret_cast<long long>(editorUI->m_editorLayer) + 0x878);
@@ -219,6 +260,8 @@ void ErGui::renderToolsModule1() {
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 			ImGui::SetTooltip("Zoom Out");
 	}
+
+
 	
 
 	ImGui::PopStyleColor();

@@ -12,6 +12,7 @@
 		"files": [
 			"resources/imgui-fonts/Inter_18pt-Regular.ttf",
 			"resources/imgui-fonts/materialdesignicons-webfont.ttf",
+			"resources/imgui-fonts/gear-copy-paste-icons.ttf",
 			"resources/default_imgui.ini"
 		]
 	},

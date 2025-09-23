@@ -136,6 +136,7 @@ static void renderMenuBar() {
             bool showObjectInfo =           gm->getGameVariable("0041");
 			bool fillSelectionZone =        geode::Mod::get()->getSavedValue<bool>("fill-selection-zone");      // Fills selection zone with solid color
 			bool hoveringSelects =          geode::Mod::get()->getSavedValue<bool>("hovering-selects");         // Hovers objects in the selection zone
+            bool deselectControls =         geode::Mod::get()->getSavedValue<bool>("deselect-controls");        // Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
             //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
 
 
@@ -254,6 +255,10 @@ static void renderMenuBar() {
             ImGui::MenuItem("Fill Selection Zone", NULL, &fillSelectionZone);
 			ImGui::MenuItem("Hovering Selects", NULL, &hoveringSelects);
 
+            ImGui::Dummy({ 5.f, 5.f });
+
+            ImGui::MenuItem("Deselect Controls", NULL, &deselectControls);
+
 
 
             // Saving Values
@@ -277,6 +282,7 @@ static void renderMenuBar() {
             gm->setGameVariable("0041", showObjectInfo);
 			geode::Mod::get()->setSavedValue<bool>("fill-selection-zone",       fillSelectionZone);
 			geode::Mod::get()->setSavedValue<bool>("hovering-selects",          hoveringSelects);
+            geode::Mod::get()->setSavedValue("deselect-controls",               deselectControls);
             //geode::Mod::get()->setSavedValue<bool>("select-direction-from-cursor", selectDirectionFromCursor);
 
             ImGui::EndMenu();

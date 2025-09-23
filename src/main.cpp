@@ -12,7 +12,12 @@
 #include <Geode/modify/EditorPauseLayer.hpp>
 #include <Geode/modify/DrawGridLayer.hpp>
 
+#include <Geode/modify/GJRotationControl.hpp>
+#include <Geode/modify/GJScaleControl.hpp>
+#include <Geode/modify/GJTransformControl.hpp>
+
 #include <IconsMaterialDesignIcons.h>
+#include <GearCopyPasteIcons.hpp>
 #include "modules/EditGroupModule.hpp"
 #include "modules/SelectFilterModule.hpp"
 #include "modules/TransformObjectModule.hpp"
@@ -148,6 +153,28 @@ void exitEditor() { // EditorUI is already destroyed here
 	ErGui::clearObjectListCache();
 }
 
+#define MAKE_TOUCH_FLAG_MODIFY(GearClass, BaseClass)            \
+class $modify(GearClass, BaseClass) {                           \
+    struct Fields {                                             \
+        bool m_touchedControl = false;                          \
+    };                                                          \
+                                                                \
+    virtual bool ccTouchBegan(CCTouch* p0, CCEvent* p1) {       \
+        if (!BaseClass::ccTouchBegan(p0, p1))                   \
+            return false;                                       \
+        this->m_fields->m_touchedControl = true;                \
+        return true;                                            \
+    }                                                           \
+                                                                \
+    virtual void ccTouchEnded(CCTouch* p0, CCEvent* p1) {       \
+        this->m_fields->m_touchedControl = false;               \
+        BaseClass::ccTouchEnded(p0, p1);                        \
+    }                                                           \
+};
+
+MAKE_TOUCH_FLAG_MODIFY(GearRotationControl, GJRotationControl)
+MAKE_TOUCH_FLAG_MODIFY(GearScaleControl, GJScaleControl)
+MAKE_TOUCH_FLAG_MODIFY(GearTransformControl, GJTransformControl)
 
 
 class $modify(GearEditorUI, EditorUI) {
@@ -300,6 +327,9 @@ class $modify(GearEditorUI, EditorUI) {
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) {
 		if (ErGui::rightTouch) return CCLayer::ccTouchBegan (touch, event);
 
+		// Saving Batch Layer Position
+		ErGui::beginBatchLayerPosition = this->m_editorLayer->m_objectLayer->getPosition();
+
 		// Fix for touch
 		if (m_touchID == 0) m_touchID = -1;
 
@@ -372,6 +402,12 @@ class $modify(GearEditorUI, EditorUI) {
 		//	return;
 		//}
 
+		bool rotationControlTouched = static_cast<GearRotationControl*>(this->m_rotationControl)->m_fields->m_touchedControl;
+		bool scaleControlTouched = static_cast<GearScaleControl*>(this->m_scaleControl)->m_fields->m_touchedControl;
+		bool transformControlTouched = static_cast<GearTransformControl*>(this->m_transformControl)->m_fields->m_touchedControl;
+		bool someControlTouched = rotationControlTouched || scaleControlTouched || transformControlTouched;
+
+
 		cocos2d::ccColor4F lassoColor = { 0.f, 1.f, 0.f, 1.f };
 		switch (Mod::get()->getSavedValue<int>("select-mode")) {
 		case 2:	// Subtractive
@@ -385,7 +421,7 @@ class $modify(GearEditorUI, EditorUI) {
 			break;
 		}
 
-		if (!ErGui::isFreeMoveAndObjectTouching) {
+		if (!ErGui::isFreeMoveAndObjectTouching && !someControlTouched) {
 			ccColor4F selectionFillColor = Mod::get()->getSavedValue<bool>("fill-selection-zone") ?
 				ccColor4F{ lassoColor.r - lassoColor.r / 1.3f, lassoColor.g - lassoColor.g / 1.3f, lassoColor.b - lassoColor.b / 1.3f, 0.1f } :
 				ccColor4F{ 0, 0, 0, 0 };
@@ -405,7 +441,7 @@ class $modify(GearEditorUI, EditorUI) {
 			}
 
 			//SWIPE
-			if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+			if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed()) && ErGui::editorUISwipePoints.size() > 0) {
 				CCPoint ptStart = ErGui::editorUISwipePoints.at(0);
 				CCPoint ptEnd = touch->getLocation();
 				ErGui::editorUIDrawNode->clear();
@@ -451,37 +487,26 @@ class $modify(GearEditorUI, EditorUI) {
 		ErGui::touchedDN->clear();
 		ErGui::editorUIDrawNode->clear();
 		ErGui::forEachObject(this->m_editorLayer, ErGui::resetHover);
-		//SWIPE
-		//if (!ErGui::isLassoEnabled && this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 
-		//	// тот самый способ получше, но я просто задолбался уже, а objectsInRect надо искать.
-		//	//this->createUndoSelectObject(false);
-		//	//
-		//	//CCArray* selectedObjsDelta = CCArray::create();
-		//	//selectedObjsDelta->addObjectsFromArray(this->m_editorLayer->objectsInRect(CCRect(ErGui::editorUISwipePoints.at(0), ErGui::editorUISwipePoints.at(3)), false));
-		//	//if (this->m_selectedObject) selectedObjsDelta->addObject(this->m_selectedObject);
-		//	//manualObjectsSelect(selectedObjsDelta);
-		//	//
-		//	//// saving undo list
-		//	//CCArray* undoObjects = CCArray::create();
-		//	//undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
-		//	//
-		//	//EditorUI::ccTouchEnded(touch, event);
-		//	//
-		//	//// loading undo list
-		//	//LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
-		//	//LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
-		//	//
-		//	//return;
+		// Getting controls and ending touching if one of these are touched
+		auto rotationControl = this->m_rotationControl;
+		bool rotationControlTouched = static_cast<GearRotationControl*>(rotationControl)->m_fields->m_touchedControl;
 
-		//	return;
-		//}
+		auto scaleControl = this->m_scaleControl;
+		bool scaleControlTouched = static_cast<GearScaleControl*>(scaleControl)->m_fields->m_touchedControl;
+
+		auto transformControl = this->m_transformControl;
+		bool transformControlTouched = static_cast<GearTransformControl*>(transformControl)->m_fields->m_touchedControl;
+
+		if (rotationControlTouched || scaleControlTouched || transformControlTouched) {
+			return EditorUI::ccTouchEnded(touch, event);
+		}
+		
 
 		if (!ErGui::isFreeMoveAndObjectTouching) {
 			//LASSO
 			if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
 				this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-				ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), { 0, 0, 0, 0 }, 0.3f, { 0, 1.f, 0, 1.f });
 
 				CCArray* objArr = CCArray::create();
 				for (auto obj : CCArrayExt<GameObject*>(GameManager::sharedState()->getEditorLayer()->m_objects)) {
@@ -568,12 +593,23 @@ class $modify(GearEditorUI, EditorUI) {
 			}
 			// Single Touches without swiping
 			else if (this->m_selectedMode == 3) {
+				auto singleSelectedObject = this->m_selectedObject;
 				EditorUI::ccTouchEnded(touch, event);
-				if (auto singleSelectedObject = this->m_selectedObject) {
+				if (singleSelectedObject != this->m_selectedObject && this->m_selectedObject != nullptr) {
+					singleSelectedObject = this->m_selectedObject;
 					if (ErGui::selectFilterRealization(singleSelectedObject)) {
 						EditorUI::get()->selectObject(singleSelectedObject, false);
 					}
 				}
+			}
+
+
+			// Disable Rotation/Scale/Transform controls when clicked on empty space
+			if (this->m_editorLayer->m_objectLayer->getPosition() == ErGui::beginBatchLayerPosition && Mod::get()->getSavedValue<bool>("deselect-controls")) {
+				GameManager::sharedState()->setGameVariable("0007", false);
+				rotationControl->setVisible(false);
+				scaleControl->setVisible(false);
+				transformControl->setVisible(false);
 			}
 		}
 		
@@ -781,8 +817,8 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	AllocConsole();
-	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	//AllocConsole();
+	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
 	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);
@@ -811,6 +847,8 @@ $on_mod(Loaded) {
 	
 	if (!Mod::get()->hasSavedValue("fill-selection-zone"))			Mod::get()->setSavedValue("fill-selection-zone", false);
 	if (!Mod::get()->hasSavedValue("hovering-selects"))				Mod::get()->setSavedValue("hovering-selects", true);
+
+	if (!Mod::get()->hasSavedValue("deselect-controls"))			Mod::get()->setSavedValue("deselect-controls", false);
 	//if (Mod::get()->getSavedValue<int>("build-color-1") == 0) Mod::get()->setSavedValue("build-color-1", 1);
 	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
@@ -843,14 +881,19 @@ $on_mod(Loaded) {
 
 		auto interDir = Mod::get()->getResourcesDir() / "Inter_18pt-Regular.ttf";
 		auto mdiDir = Mod::get()->getResourcesDir() / "materialdesignicons-webfont.ttf";
+		auto cpiDir = Mod::get()->getResourcesDir() / "gear-copy-paste-icons.ttf";
 
 		io.Fonts->AddFontFromFileTTF(interDir.string().c_str(), 15.f);
 
-		static const ImWchar icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
+		static const ImWchar mdi_icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
 		ImFontConfig iconConfig;
 		iconConfig.MergeMode = true;
-		
-		io.Fonts->AddFontFromFileTTF(mdiDir.string().c_str(), 24.f, &iconConfig, icons_ranges);
+		io.Fonts->AddFontFromFileTTF(mdiDir.string().c_str(), 24.f, &iconConfig, mdi_icons_ranges);
+
+		static const ImWchar cpi_icons_ranges[] = { ICON_MIN_GEARCPI, ICON_MAX_GEARCPI, 0 };
+		if (!io.Fonts->AddFontFromFileTTF(cpiDir.string().c_str(), 24.f, &iconConfig, cpi_icons_ranges)) {
+			std::cout << "Failed to load font: " << cpiDir.string();
+		}
 
 		ErGui::initImGuiStyling();
 	

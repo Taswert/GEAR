@@ -78,4 +78,6 @@ namespace ErGui {
 
 	inline std::vector<cocos2d::CCPoint> editorUISwipePoints;
 	inline CCRect selectRect;
+
+	inline CCPoint beginBatchLayerPosition;
 };
