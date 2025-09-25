@@ -185,10 +185,10 @@ void customColorButton(int* objColorId, int btnColorId, const char* colorName, b
 	if (*objColorId == btnColorId) {
 		ImVec2 min = ImGui::GetItemRectMin();
 		ImVec2 max = ImGui::GetItemRectMax();
-		auto* draw_list = ImGui::GetWindowDrawList();
+		auto* drawList = ImGui::GetWindowDrawList();
 
 		float offset = 2.0f; 
-		draw_list->AddRect(
+		drawList->AddRect(
 			ImVec2(min.x - offset, min.y - offset),
 			ImVec2(max.x + offset, max.y + offset), 
 			IM_COL32(255, 255, 255, 255), 

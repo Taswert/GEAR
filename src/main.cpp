@@ -817,8 +817,8 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	//AllocConsole();
-	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
 	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);

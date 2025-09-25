@@ -140,6 +140,7 @@ static void renderMenuBar() {
             //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
 
 
+            bool isAnyItemClicked = false;
             
             if (ImGui::BeginMenu("Selected Object Info")) {
                 bool soiPosition =      geode::Mod::get()->getSavedValue<bool>("soi-position");
@@ -199,26 +200,40 @@ static void renderMenuBar() {
                 ImGui::EndMenu();
             }
 
-            if (ImGui::MenuItem("Show Object Info", NULL, &showObjectInfo) && 
-                LevelEditorLayer::get()) {
-                if (auto label = dynamic_cast<CCLabelBMFont*>(LevelEditorLayer::get()->getChildByID("object-info-label"_spr)))
-                    if (showObjectInfo)
-                        label->setVisible(true);
-                    else
-                        label->setVisible(false);
+            if (ImGui::MenuItem("Show Object Info", NULL, &showObjectInfo)) {
+				isAnyItemClicked = true;
+                
+                // uh 
+                if (LevelEditorLayer::get()) {
+                    if (auto label = dynamic_cast<CCLabelBMFont*>(LevelEditorLayer::get()->getChildByID("object-info-label"_spr)))
+                        if (showObjectInfo)
+                            label->setVisible(true);
+                        else
+                            label->setVisible(false);
+                }
             }
 
             ImGui::Dummy({ 5.f, 5.f });
 
-            ImGui::MenuItem("Playtest Music", NULL,         &ptMusic);
+            if (ImGui::MenuItem("Playtest Music", NULL, &ptMusic)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Plays music during playtesting.");
-            ImGui::MenuItem("Playtest No Grid", NULL,       &ptNoGrid);
+            if (ImGui::MenuItem("Playtest No Grid", NULL, &ptNoGrid)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Hides grid during playtesting.");
-            ImGui::MenuItem("Playtest Smooth Fix", NULL,    &ptSmoothFix);
+            if (ImGui::MenuItem("Playtest Smooth Fix", NULL, &ptSmoothFix)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Enables smooth fix during playtesting.");
-            ImGui::MenuItem("Auto-Pause", NULL,             &autoPause);
+            if (ImGui::MenuItem("Auto-Pause", NULL, &autoPause)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Pauses gameplay when starting from StartPos.");
-            ImGui::MenuItem("Ignore Damage", NULL,          &ignoreDamage);
+            if (ImGui::MenuItem("Ignore Damage", NULL, &ignoreDamage)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Disables damage during playtesting.");
 
             //ImGui::Dummy({ 5.f, 5.f });
@@ -228,61 +243,88 @@ static void renderMenuBar() {
 
             ImGui::Dummy({ 5.f, 5.f });
             
-            ImGui::MenuItem("Start Optimisation", NULL,     &startOptimisation);
+            if (ImGui::MenuItem("Start Optimisation", NULL, &startOptimisation)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Tries to speed up StartPos loading. RobTop's Experimental option.");
-            ImGui::MenuItem("Increase Undo/Redo", NULL,     &increaseUndoRedo);
+            if (ImGui::MenuItem("Increase Undo/Redo", NULL, &increaseUndoRedo)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Increases maximum Undo/Redo limit from 200 to 1000.");
-            ImGui::MenuItem("Small Warp Buttons", NULL,     &smallWarpBtns);
+            if (ImGui::MenuItem("Small Warp Buttons", NULL, &smallWarpBtns)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Warp control buttons are 50% smaller (Restart editor to work).");
 
             ImGui::Dummy({ 5.f, 5.f });
 
-            ImGui::MenuItem("Triangle Color Wheel", NULL,   &triangleColorWheel);
+            if (ImGui::MenuItem("Triangle Color Wheel", NULL, &triangleColorWheel)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Sets GEAR color wheel to triangle.");
-            ImGui::MenuItem("Rotate Color Wheel", NULL,     &rotateColorWheel);
+            if (ImGui::MenuItem("Rotate Color Wheel", NULL, &rotateColorWheel)) {
+                isAnyItemClicked = true;
+            }
             //ImGui::SetTooltip("Enables color wheel rotation in GEAR. Only works with triangle color wheel.");
             //ImGui::MenuItem("Select Direction From Cursor", NULL, &selectDirectionFromCursor);
-            ImGui::MenuItem("Hide Objects Popup", NULL,     &hideObjectListPopup);
-            ImGui::MenuItem("Autoswitch to Build Mode", NULL, &autoswitchToBuildMode);
+            if (ImGui::MenuItem("Hide Objects Popup", NULL, &hideObjectListPopup)) {
+                isAnyItemClicked = true;
+            }
+            if (ImGui::MenuItem("Autoswitch to Build Mode", NULL, &autoswitchToBuildMode)) {
+                isAnyItemClicked = true;
+            }
 
             ImGui::Dummy({ 5.f, 5.f });
 
-            ImGui::MenuItem("Show Link Controls", NULL, &showLinkControls);
-            ImGui::MenuItem("Show Zoom Controls", NULL, &showZoomControls);
+            if (ImGui::MenuItem("Show Link Controls", NULL, &showLinkControls)) {
+                isAnyItemClicked = true;
+            }
+            if (ImGui::MenuItem("Show Zoom Controls", NULL, &showZoomControls)) {
+                isAnyItemClicked = true;
+            }
             
             ImGui::Dummy({ 5.f, 5.f });
 
-            ImGui::MenuItem("Fill Selection Zone", NULL, &fillSelectionZone);
-			ImGui::MenuItem("Hovering Selects", NULL, &hoveringSelects);
+            if (ImGui::MenuItem("Fill Selection Zone", NULL, &fillSelectionZone)) {
+                isAnyItemClicked = true;
+            }
+            if (ImGui::MenuItem("Hovering Selects", NULL, &hoveringSelects)) {
+                isAnyItemClicked = true;
+            }
 
             ImGui::Dummy({ 5.f, 5.f });
 
-            ImGui::MenuItem("Deselect Controls", NULL, &deselectControls);
+            if (ImGui::MenuItem("Deselect Controls", NULL, &deselectControls)) {
+                isAnyItemClicked = true;
+            }
 
 
 
             // Saving Values
+            if (isAnyItemClicked) {
+                gm->setGameVariable("0002", ptMusic);
+                gm->setGameVariable("0079", ptNoGrid);
+                gm->setGameVariable("0102", ptSmoothFix);
+                gm->setGameVariable("0150", autoPause);
+                //gm->setGameVariable("0057", swipeHold);
+                //gm->setGameVariable("0059", swipeCycle);
+                gm->setGameVariable("0151", startOptimisation);
+                gm->setGameVariable("0013", increaseUndoRedo);
+                gm->setGameVariable("0169", smallWarpBtns);
+                gm->setGameVariable("0009", ignoreDamage);
+                geode::Mod::get()->setSavedValue<bool>("triangle-color-wheel", triangleColorWheel);
+                geode::Mod::get()->setSavedValue<bool>("rotate-color-wheel", rotateColorWheel);
+                geode::Mod::get()->setSavedValue<bool>("hide-object-list-popup", hideObjectListPopup);
+                geode::Mod::get()->setSavedValue<bool>("autoswitch-to-build-mode", autoswitchToBuildMode);
+                gm->setGameVariable("0097", showLinkControls);
+                geode::Mod::get()->setSavedValue<bool>("show-zoom-controls", showZoomControls);
+                gm->setGameVariable("0041", showObjectInfo);
+                geode::Mod::get()->setSavedValue<bool>("fill-selection-zone", fillSelectionZone);
+                geode::Mod::get()->setSavedValue<bool>("hovering-selects", hoveringSelects);
+                geode::Mod::get()->setSavedValue("deselect-controls", deselectControls);
 
-            gm->setGameVariable("0002", ptMusic);
-            gm->setGameVariable("0079", ptNoGrid);
-            gm->setGameVariable("0102", ptSmoothFix);
-            gm->setGameVariable("0150", autoPause);
-            //gm->setGameVariable("0057", swipeHold);
-            //gm->setGameVariable("0059", swipeCycle);
-            gm->setGameVariable("0151", startOptimisation);
-            gm->setGameVariable("0013", increaseUndoRedo);
-            gm->setGameVariable("0169", smallWarpBtns);
-            gm->setGameVariable("0009", ignoreDamage);
-            geode::Mod::get()->setSavedValue<bool>("triangle-color-wheel",      triangleColorWheel);
-            geode::Mod::get()->setSavedValue<bool>("rotate-color-wheel",        rotateColorWheel);
-            geode::Mod::get()->setSavedValue<bool>("hide-object-list-popup",    hideObjectListPopup);
-            geode::Mod::get()->setSavedValue<bool>("autoswitch-to-build-mode",  autoswitchToBuildMode);
-            gm->setGameVariable("0097", showLinkControls);
-            geode::Mod::get()->setSavedValue<bool>("show-zoom-controls",        showZoomControls);
-            gm->setGameVariable("0041", showObjectInfo);
-			geode::Mod::get()->setSavedValue<bool>("fill-selection-zone",       fillSelectionZone);
-			geode::Mod::get()->setSavedValue<bool>("hovering-selects",          hoveringSelects);
-            geode::Mod::get()->setSavedValue("deselect-controls",               deselectControls);
+                LevelEditorLayer::get()->updateOptions();
+            }
             //geode::Mod::get()->setSavedValue<bool>("select-direction-from-cursor", selectDirectionFromCursor);
 
             ImGui::EndMenu();

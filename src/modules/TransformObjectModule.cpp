@@ -191,10 +191,10 @@ void renderForObject(GameObject* obj) {
 	ImGui::Text("Position");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##PosX", &posX, moveStep, moveStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##PosX", &posX, moveStep, moveStep * 5, "%.2f");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##PosY", &posY, moveStep, moveStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##PosY", &posY, moveStep, moveStep * 5, "%.2f");
 	ImGui::SameLine();
 	if (ImGui::Button("S##Position-Presets")) {
 		ImGui::OpenPopup("MoveStepPopup");
@@ -253,14 +253,14 @@ void renderForObject(GameObject* obj) {
 	ImGui::Text("X / Y");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat("##RotX", &rotX, rotationStep, rotationStep * 5, "%.2f")) {
+	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##RotX", &rotX, rotationStep, rotationStep * 5, "%.2f")) {
 		rotX = std::fmod(rotX, 360);
 		addObjectToUndoList(obj, UndoCommand::Transform);
 		obj->setRotationX(rotX);
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat("##RotY", &rotY, rotationStep, rotationStep * 5, "%.2f")) {
+	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##RotY", &rotY, rotationStep, rotationStep * 5, "%.2f")) {
 		rotY = std::fmod(rotY, 360);
 		addObjectToUndoList(obj, UndoCommand::Transform);
 		obj->setRotationY(rotY);
@@ -321,7 +321,7 @@ void renderForObject(GameObject* obj) {
 	ImGui::Text("X / Y");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat("##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f )) {
+	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f )) {
 		short flipX = obj->isFlipX() ? -1 : 1;
 		addObjectToUndoList(obj, UndoCommand::Transform);
 		obj->setScaleX(scaleX * flipX);
@@ -329,7 +329,7 @@ void renderForObject(GameObject* obj) {
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat("##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f )) {
+	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f )) {
 		short flipY = obj->isFlipY() ? -1 : 1;
 		addObjectToUndoList(obj, UndoCommand::Transform);
 		obj->setScaleY(scaleY * flipY);
@@ -364,10 +364,10 @@ void renderForObject(GameObject* obj) {
 	ImGui::Text("Skew");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
 
 	ImGui::SameLine();
 	if (ImGui::Button("S##Skew-Step"))
@@ -448,10 +448,10 @@ void renderForArray(CCArray* objArr) {
 	ImGui::Text("Position");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##PosX", &groupCenter.x, moveStep, moveStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##PosX", &groupCenter.x, moveStep, moveStep * 5, "%.2f");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##PosY", &groupCenter.y, moveStep, moveStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##PosY", &groupCenter.y, moveStep, moveStep * 5, "%.2f");
 	ImGui::SameLine();
 	if (ImGui::Button("S##Position-Presets")) {
 		ImGui::OpenPopup("MoveStepPopup");
@@ -498,10 +498,10 @@ void renderForArray(CCArray* objArr) {
 	ImGui::Text("X / Y");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##RotationX", &rotationX, rotationStep, rotationStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##RotationX", &rotationX, rotationStep, rotationStep * 5, "%.2f");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##RotationY", &rotationY, rotationStep, rotationStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##RotationY", &rotationY, rotationStep, rotationStep * 5, "%.2f");
 	ImGui::SameLine();
 	ImGui::SetItemTooltip("Position Snap");
 	ImGui::Checkbox("##RotPosSnap", &rotateObjectsPositionSnap);
@@ -560,10 +560,10 @@ void renderForArray(CCArray* objArr) {
 	ImGui::Text("X / Y");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f);
+	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f);
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f);
+	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f);
 	ImGui::SameLine();
 	ImGui::SetItemTooltip("Position Snap");
 	ImGui::Checkbox("##ScalePosSnap", &scaleObjectsPositionSnap);
@@ -646,10 +646,10 @@ void renderForArray(CCArray* objArr) {
 	ImGui::Text("Skew");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
+	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
 
 	ImGui::SameLine();
 	if (ImGui::Button("S##Skew-Step"))

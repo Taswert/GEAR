@@ -15,7 +15,9 @@ namespace ErGui {
 			(objPos.y * cameraScale) + cameraPos.y
 		);
 
-		if (ErGui::isPointInPolygon(newPos, ErGui::editorUISwipePoints)) {
+		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
+		if (ErGui::isPointInPolygon(newPos, ErGui::editorUISwipePoints) &&
+			(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)) {
 			static_cast<GearGameObject*>(obj)->m_fields->m_isHovered = true;
 		}
 		else {
@@ -38,7 +40,9 @@ namespace ErGui {
 
 		objRect.size *= cameraScale;
 
-		if (objRect.intersectsRect(normalizeRect(ErGui::selectRect))) {
+		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
+		if (objRect.intersectsRect(normalizeRect(ErGui::selectRect)) && 
+			(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)) {
 			static_cast<GearGameObject*>(obj)->m_fields->m_isHovered = true;
 		}
 		else {
