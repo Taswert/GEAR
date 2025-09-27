@@ -307,28 +307,73 @@ void ErGui::renderToolsModule2() {
 			GameManager::sharedState()->setIntGameVariable("0005", deleteFilterMode);
 
 
-			if (ImGui::Button("DeleteAllSP")) {
-				editorUI->onDeleteStartPos(nullptr);
+			//if (ImGui::Button("DeleteAllSP")) {				// 31
+			//	editorUI->onDeleteStartPos(nullptr);
+			//}
+
+			int objId = 0;
+			if (auto obj = editorUI->m_selectedObject) {
+				objId = obj->m_objectID;
+				//std::string buttonStr = "DeleteAll-" + std::to_string(obj->m_objectID);
+				//ImGui::SameLine();
+				//if (ImGui::Button(buttonStr.c_str())) {
+				//	editorUI->onDeleteSelectedType(nullptr);
+				//}
 			}
 
-			if (auto obj = editorUI->m_selectedObject) {
-				std::string buttonStr = "DeleteAll-" + std::to_string(obj->m_objectID);
-				ImGui::SameLine();
-				if (ImGui::Button(buttonStr.c_str())) {
-					editorUI->onDeleteSelectedType(nullptr);
+			std::string newFrameName;
+			auto lel = LevelEditorLayer::get();
+			bool isClicked = false;
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+
+
+			ImTextureID startposObjectTexture = (ImTextureID)(intptr_t)getObjectSprite(31)->getTexture()->getName();
+			if (ImGui::ImageButton("##STARTPOS-OBJECT", startposObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) {
+				addObjectsToUndoList(lel->m_objects, UndoCommand::DeleteMulti);
+				for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+					if (obj->m_objectID == 31) editorUI->deleteObject(obj, true);
 				}
 			}
-
 			ImGui::SameLine();
-			ImGui::Button("##OBJECT", { 30.f, 30.f });
 
-			std::string newFrameName = ObjectToolbox::sharedState()->intKeyToFrame(editorUI->m_selectedObjectIndex);
-			if (!newFrameName.empty()) {
-				CCSpriteFrame* frame = CCSpriteFrameCache::get()->spriteFrameByName(newFrameName.c_str());
-				if (frame)
-					ErGui::drawFrameInImGui(frame);
+
+			// Texture
+			if (objId == 0) {
+				if (ImGui::Button("##SELECTED-OBJECT", { 30.f, 30.f })) isClicked = true;
+			}
+			else {
+				ImTextureID selectedObjectTexture = (ImTextureID)(intptr_t)getObjectSprite(objId)->getTexture()->getName();
+				if (ImGui::ImageButton("##SELECTED-OBJECT", selectedObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) isClicked = true;
+			}
+			
+			// Callback
+			if (isClicked) {
+				editorUI->onDeleteSelectedType(nullptr);
+				isClicked = false;
+			}
+			ImGui::SameLine();
+
+
+			// Texture
+			if (editorUI->m_selectedObjectIndex == 0) {
+				if (ImGui::Button("##LIST-OBJECT", { 30.f, 30.f })) isClicked = true;
+			}
+			else {
+				ImTextureID listObjectTexture = (ImTextureID)(intptr_t)getObjectSprite(editorUI->m_selectedObjectIndex)->getTexture()->getName();
+				if (ImGui::ImageButton("##LIST-OBJECT", listObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) isClicked = true;
+			} 
+
+			// Callback
+			if (isClicked) {
+				addObjectsToUndoList(lel->m_objects, UndoCommand::DeleteMulti);
+				editorUI->deselectAll();
+				lel->removeAllObjectsOfType(editorUI->m_selectedObjectIndex);
+				editorUI->updateButtons();
 			}
 
+
+			ImGui::PopStyleVar();
 			
 			break;
 		}

@@ -3,6 +3,7 @@
 #include <Geode/modify/CCEGLView.hpp>
 #include <imgui.h>
 #include "myUtils.hpp"
+#include "razoomUtils.hpp"
 using namespace geode::prelude;
 
 static std::set<cocos2d::enumKeyCodes> editorUIHoldingKeys;
@@ -39,9 +40,14 @@ class $modify(EditorUI) {
 		//	GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 5;
 		//}
 
-		// Shift + A - Select All
+		// Ctrl + A - Select All
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_A) {
 			ErGui::selectAllObjects();
+		}
+
+		// Ctrl + B - Build Helper
+		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_B) {
+			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
 		}
 
 		// todo: select all right / select all left

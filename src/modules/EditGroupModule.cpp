@@ -142,7 +142,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		LevelEditorLayer::get()->m_currentLayer = obj->m_editorLayer;
 	}
 
-	if (ImGui::CollapsingHeader("-----| Object Info |-----")) {
+	if (ImGui::CollapsingHeader("Object Info")) {
 		ImGui::Text("Object Address: %p", obj);
 		ImGui::SameLine();
 		if (ImGui::Button("Copy")) {
@@ -153,7 +153,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		//ImGui::Text(typeid(obj).name());	
 	}
-	if (ImGui::CollapsingHeader("-----| Groups Settings |-----")) {
+	if (ImGui::CollapsingHeader("Groups Settings")) {
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("ID Offset", &groupOffset);
 		setMaxMin(groupOffset, 9999, 1);
@@ -253,7 +253,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		}
 	}
 
-	if (ImGui::CollapsingHeader("-----| Layer & Z-Order |-----")) {
+	if (ImGui::CollapsingHeader("Layer & Z-Order")) {
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.f, 3.f });
 		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
 			int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
@@ -323,7 +323,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		obj->m_shouldUpdateColorSprite = 1;
 	}
 
-	if (ImGui::CollapsingHeader("-----| Extra |-----")) {
+	if (ImGui::CollapsingHeader("Extra")) {
 		int enterChnl = obj->m_enterChannel;
 		ImGui::InputInt("Enter Channel", &enterChnl);
 		obj->m_enterChannel = enterChnl;
@@ -357,7 +357,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 			lel->m_editorUI->createNewKeyframeAnim();
 		}
 	}
-	if (ImGui::CollapsingHeader("-----| Cosmetic |-----")) {
+	if (ImGui::CollapsingHeader("Checkboxes")) {
+		ImGui::SeparatorText("Cosmetic");
 
 		ImGui::Checkbox("No Effects", &obj->m_hasNoEffects);
 		ImGui::SameLine(160);
@@ -377,8 +378,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SameLine(160);
 		ImGui::Checkbox("Hide", &obj->m_isHide);
 
-	}
-	if (ImGui::CollapsingHeader("-----| Parent & Physics |-----")) {
+
+		ImGui::SeparatorText("Parent & Physics");
 		ImGui::Checkbox("Group Parent", &obj->m_hasGroupParent);
 		ImGui::SameLine(160);
 		ImGui::Checkbox("No Touch", &obj->m_isNoTouch);
@@ -393,9 +394,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		ImGui::Checkbox("Dont Boost Y", &obj->m_isDontBoostY);
 
-	}
 
-	if (ImGui::CollapsingHeader("-----| Platformer Only |-----")) {
+		ImGui::SeparatorText("Platformer Only");
 		ImGui::Checkbox("Ice Block", &obj->m_isIceBlock);
 		ImGui::SameLine(160);
 		ImGui::Checkbox("Grip Slope", &obj->m_isGripSlope);
@@ -407,10 +407,9 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::Checkbox("Non Stick Y", &obj->m_isNonStickY);
 		ImGui::SameLine(160);
 		ImGui::Checkbox("Scale Stick", &obj->m_isScaleStick);
-	}
 
-	if (dynamic_cast<EffectGameObject*>(obj)) {
-		if (ImGui::CollapsingHeader("-----| EffectGameObject |-----")) {
+		if (dynamic_cast<EffectGameObject*>(obj)) {
+			ImGui::SeparatorText("EffectGameObject");
 			auto egObj = static_cast<EffectGameObject*>(obj);
 			ImGui::Checkbox("Single PTouch", &egObj->m_isSinglePTouch);
 			ImGui::SameLine(160);
@@ -455,7 +454,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		copyStateObject.pasteState(objArr);
 	}
 
-	if (ImGui::CollapsingHeader("-----| Advanced ReGroup |-----")) {
+	if (ImGui::CollapsingHeader("Advanced ReGroup")) {
 		static int regroupStart = 1;	// Initial group (where it starts before regroup)
 		static int regroupEnd = 9999;	// Initial group (where it ends before regroup)
 		static int regroupFrom = 1;		// Regrouped Offset (where it would start after regroup)
@@ -552,7 +551,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		}
 	}
 
-	if (ImGui::CollapsingHeader("-----| Groups Settings |-----")) {
+	if (ImGui::CollapsingHeader("Groups Settings")) {
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("ID Offset", &groupOffset);
 		setMaxMin(groupOffset, 9999, 1);
@@ -679,7 +678,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 	}
 	
 
-	if (ImGui::CollapsingHeader("-----| Layer & Z-Order |-----")) {
+	if (ImGui::CollapsingHeader("Layer & Z-Order")) {
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.f, 3.f });
 		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
@@ -781,7 +780,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		//}
 	}
 
-	if (ImGui::CollapsingHeader("-----| Extra |-----")) {
+	if (ImGui::CollapsingHeader("Extra")) {
 
 		if (int delta = deltaInputIntImproved("Enter Channel", maxEnterChannel, minEnterChannel, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -838,8 +837,8 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 	}
 	
 
-	if (ImGui::CollapsingHeader("-----| Cosmetic |-----")) {
-
+	if (ImGui::CollapsingHeader("Checkboxes")) {
+		ImGui::SeparatorText("Cosmetic");
 		if (ImGui::Checkbox("No Effects", &cb_NoEffects)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_hasNoEffects = cb_NoEffects;
@@ -889,10 +888,8 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			}
 		}
 
-	}
 
-
-	if (ImGui::CollapsingHeader("-----| Parent & Physics |-----")) {
+		ImGui::SeparatorText("Parent & Physics");
 		if (ImGui::Checkbox("Group Parent", &cb_GroupParent)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_hasGroupParent = cb_GroupParent;
@@ -939,9 +936,8 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			}
 		}
 
-	}
 
-	if (ImGui::CollapsingHeader("-----| Platformer Only |-----")) {
+		ImGui::SeparatorText("Platformer Only");
 		if (ImGui::Checkbox("Ice Block", &cb_IceBlock)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_isIceBlock = cb_IceBlock;
@@ -977,10 +973,10 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				obj->m_isScaleStick = cb_ScaleStick;
 			}
 		}
-	}
 
-	if (firstEgObj) {
-		if (ImGui::CollapsingHeader("-----| EffectGameObject |-----")) {
+
+		if (firstEgObj) {
+			ImGui::SeparatorText("EffectGameObject");
 			if (ImGui::Checkbox("Single PTouch", &cb_SinglePTouch)) {
 				for (auto obj : CCArrayExt<EffectGameObject*>(objArr)) {
 					if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {

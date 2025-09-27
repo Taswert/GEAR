@@ -113,6 +113,9 @@ void renderContextForMultipleObjects() {
 		if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
 		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
+	if (ImGui::Selectable("Build Helper")) {
+		ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+	}
 
 	ImGui::Dummy({ 5.f, 5.f });
 

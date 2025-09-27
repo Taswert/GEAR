@@ -210,6 +210,14 @@ class $modify(GearEditorUI, EditorUI) {
 	}
 
 
+	CCArray* pasteObjects(gd::string p0, bool p1, bool p2) {
+		auto objArr = EditorUI::pasteObjects(p0, p1, p2);
+		if (geode::Mod::get()->getSavedValue<bool>("auto-buildhelper") && !p1 && !p2) {
+			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+		}
+		return objArr;
+	}
+
 	// Colored object building
 	GameObject* createObject(int p0, CCPoint p1) {
 		bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
@@ -817,8 +825,8 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	AllocConsole();
-	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	//AllocConsole();
+	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
 	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);
@@ -849,6 +857,7 @@ $on_mod(Loaded) {
 	if (!Mod::get()->hasSavedValue("hovering-selects"))				Mod::get()->setSavedValue("hovering-selects", true);
 
 	if (!Mod::get()->hasSavedValue("deselect-controls"))			Mod::get()->setSavedValue("deselect-controls", false);
+	if (!Mod::get()->hasSavedValue("auto-buildhelper"))				Mod::get()->setSavedValue("auto-buildhelper", false);
 	//if (Mod::get()->getSavedValue<int>("build-color-1") == 0) Mod::get()->setSavedValue("build-color-1", 1);
 	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);

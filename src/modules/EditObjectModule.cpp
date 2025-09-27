@@ -324,7 +324,7 @@ void drawPulseSettings(GameObject* obj) {
 	ImGui::Checkbox("Exclusive", &eObj->m_pulseExclusive);
 	if (eObj->m_pulseTargetType == 0) {
 		auto targetColorAction = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager->getColorAction(eObj->m_targetGroupID);
-		if (ImGui::ColorButton("##", ImVec4(targetColorAction->m_fromColor.r / 255.f, targetColorAction->m_fromColor.g / 255.f, targetColorAction->m_fromColor.b / 255.f, 1.f))) {
+		if (ImGui::ColorButton("##TARGETCOLOR", ImVec4(targetColorAction->m_fromColor.r / 255.f, targetColorAction->m_fromColor.g / 255.f, targetColorAction->m_fromColor.b / 255.f, 1.f))) {
 			ImGui::OpenPopup("CSP##TARGET");
 		}
 		ErGui::colorSelectImGuiPopup(&eObj->m_targetGroupID, "CSP##TARGET", false);
@@ -393,7 +393,7 @@ void drawPulseSettings(GameObject* obj) {
 		}
 
 		auto hsvColorAction = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager->getColorAction(eObj->m_copyColorID);
-		if (ImGui::ColorButton("##", ImVec4(hsvColorAction->m_fromColor.r / 255.f, hsvColorAction->m_fromColor.g / 255.f, hsvColorAction->m_fromColor.b / 255.f, 1.f))) {
+		if (ImGui::ColorButton("##COPYCOLOR", ImVec4(hsvColorAction->m_fromColor.r / 255.f, hsvColorAction->m_fromColor.g / 255.f, hsvColorAction->m_fromColor.b / 255.f, 1.f))) {
 			ImGui::OpenPopup("CSP##COPY");
 		}
 		ErGui::colorSelectImGuiPopup(&eObj->m_copyColorID, "CSP##COPY", false);
@@ -836,7 +836,7 @@ void renderObjectSettings(GameObject* obj) {
 		ImGui::Text("This object is not supported yet...");
 	}
 
-	if (ImGui::CollapsingHeader("-----| LEGACY SETTINGS |-----")) {
+	if (ImGui::CollapsingHeader("Vanilla Settings")) {
 		if (ImGui::Button("Edit Object")) {
 			EditorUI::get()->editObject(nullptr);
 		}
@@ -848,7 +848,7 @@ void renderObjectSettings(GameObject* obj) {
 
 void renderMultiObjectSettings(CCArray* objArr) {
 	ImGui::Text("MultiObject is not supported yet...");
-	if (ImGui::CollapsingHeader("-----| LEGACY SETTINGS |-----")) {
+	if (ImGui::CollapsingHeader("Vanilla Settings")) {
 		if (ImGui::Button("Edit Object")) {
 			EditorUI::get()->editObject(nullptr);
 		}

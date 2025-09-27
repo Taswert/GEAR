@@ -137,6 +137,7 @@ static void renderMenuBar() {
 			bool fillSelectionZone =        geode::Mod::get()->getSavedValue<bool>("fill-selection-zone");      // Fills selection zone with solid color
 			bool hoveringSelects =          geode::Mod::get()->getSavedValue<bool>("hovering-selects");         // Hovers objects in the selection zone
             bool deselectControls =         geode::Mod::get()->getSavedValue<bool>("deselect-controls");        // Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
+            bool autoBuildhelper =          geode::Mod::get()->getSavedValue<bool>("auto-buildhelper");         // Automatically applies Build helper on duplicated objects
             //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
 
 
@@ -255,6 +256,10 @@ static void renderMenuBar() {
                 isAnyItemClicked = true;
             }
             //ImGui::SetTooltip("Warp control buttons are 50% smaller (Restart editor to work).");
+            if (ImGui::MenuItem("Auto Build Helper", NULL, &autoBuildhelper)) {
+                isAnyItemClicked = true;
+            }
+
 
             ImGui::Dummy({ 5.f, 5.f });
 
@@ -321,7 +326,8 @@ static void renderMenuBar() {
                 gm->setGameVariable("0041", showObjectInfo);
                 geode::Mod::get()->setSavedValue<bool>("fill-selection-zone", fillSelectionZone);
                 geode::Mod::get()->setSavedValue<bool>("hovering-selects", hoveringSelects);
-                geode::Mod::get()->setSavedValue("deselect-controls", deselectControls);
+                geode::Mod::get()->setSavedValue<bool>("deselect-controls", deselectControls);
+                geode::Mod::get()->setSavedValue<bool>("auto-buildhelper", autoBuildhelper);
 
                 LevelEditorLayer::get()->updateOptions();
             }

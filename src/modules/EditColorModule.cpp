@@ -269,21 +269,34 @@ void colorTypeFilter(GJSpriteColor* spriteColor, bool isDetail, CCArray* objArr)
 	if (objArr) {
 		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 			if (!isDetail) {
-				if (!obj->m_detailColor && obj->m_customColorType != 2 && ((obj->m_customColorType == 0 && !obj->m_isDecoration) || obj->m_customColorType == 1)) {
+				if (obj->m_baseColor) {
 					obj->m_baseColor->m_colorID = spriteColor->m_colorID;
 				}
-				else if (obj->m_detailColor) {
-					obj->m_baseColor->m_colorID = spriteColor->m_colorID;
-				}
+
+				// So, this was an implementation for customColorTypes (default, base, detail thingy), but it was pretty damn bad, so I guess it should be made later...
+				// 
+				//if (!obj->m_detailColor && obj->m_customColorType != 2 && ((obj->m_customColorType == 0 && !obj->m_isDecoration) || obj->m_customColorType == 1)) {
+				//	obj->m_baseColor->m_colorID = spriteColor->m_colorID;
+				//}
+				//else if (obj->m_detailColor) {
+				//	obj->m_baseColor->m_colorID = spriteColor->m_colorID;
+				//}
 			}
 
 			else if (isDetail) {
-				if (!obj->m_detailColor && obj->m_customColorType != 1 && ((obj->m_customColorType == 0 && obj->m_isDecoration) || obj->m_customColorType == 2)) {
-					obj->m_baseColor->m_colorID = spriteColor->m_colorID;
-				}
-				else if (obj->m_detailColor) {
+				if (obj->m_detailColor) {
 					obj->m_detailColor->m_colorID = spriteColor->m_colorID;
 				}
+
+
+				// Yes, it's for customColorType too.
+				//
+				//if (!obj->m_detailColor && obj->m_customColorType != 1 && ((obj->m_customColorType == 0 && obj->m_isDecoration) || obj->m_customColorType == 2)) {
+				//	obj->m_baseColor->m_colorID = spriteColor->m_colorID;
+				//}
+				//else if (obj->m_detailColor) {
+				//	obj->m_detailColor->m_colorID = spriteColor->m_colorID;
+				//}
 			}
 		}
 	}
@@ -487,7 +500,7 @@ void renderForObjectEC(GameObject* obj) {
 		ImGui::SeparatorText("Other");
 		ImGui::PopStyleColor();
 
-		ImGui::Combo("Color Type", reinterpret_cast<int*>(&obj->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes));
+		//ImGui::Combo("Color Type", reinterpret_cast<int*>(&obj->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes));
 	}
 
 	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
@@ -756,12 +769,12 @@ void renderForArrayEC(CCArray* objArr) {
 	ImGui::SeparatorText("Other");
 	ImGui::PopStyleColor();
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::Combo("Color Type", reinterpret_cast<int*>(&refObject->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes))) {
-		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-			obj->m_customColorType = refObject->m_customColorType;
-		}
-	}
+	//ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	//if (ImGui::Combo("Color Type", reinterpret_cast<int*>(&refObject->m_customColorType), colorTypes, IM_ARRAYSIZE(colorTypes))) {
+	//	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+	//		obj->m_customColorType = refObject->m_customColorType;
+	//	}
+	//}
 
 	if (ImGui::Checkbox("Visible Selection", &ErGui::isVisibleSelection)) {
 		if (ErGui::isVisibleSelection) {

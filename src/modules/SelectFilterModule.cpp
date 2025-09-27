@@ -185,7 +185,7 @@ CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
 
 void ErGui::renderSelectFilter() {
 	ImGui::Begin("Filter");
-
+	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
 
 	if (ImGui::CollapsingHeader("Main Settings")) {
 		ImGui::Checkbox("Object", &filterByObjects);
@@ -198,8 +198,8 @@ void ErGui::renderSelectFilter() {
 
 		ImGui::Checkbox("Channel", &filterByChannel);
 
-
-		ImGui::Text("---| Modifier |---");
+		ImGui::Dummy({0.f, 3.f});
+		ImGui::SeparatorText("Modifier");
 		ImGui::RadioButton("Or", &filterModifier, 0);
 		ImGui::SameLine(120.f);
 		ImGui::RadioButton("And", &filterModifier, 1);
@@ -238,7 +238,7 @@ void ErGui::renderSelectFilter() {
 		}
 
 
-		ImGui::Text("-----| Filter |-----");
+		ImGui::SeparatorText("Filter");
 		int i = 1;
 		for (auto objId : objectsFilterSet) {
 			std::string btnStr = std::to_string(objId);
@@ -279,7 +279,7 @@ void ErGui::renderSelectFilter() {
 			mainColorsFilterSet.insert(chosenMainColorSFM);
 		}
 	
-		ImGui::Text("-----| Filter |-----");
+		ImGui::SeparatorText("Filter");
 		int i = 1;
 		for (auto colId : mainColorsFilterSet) {
 			std::string btnStr = std::to_string(colId);
@@ -320,7 +320,7 @@ void ErGui::renderSelectFilter() {
 			detailColorsFilterSet.insert(chosenDetailColorSFM);
 		}
 	
-		ImGui::Text("-----| Filter |-----");
+		ImGui::SeparatorText("Filter");
 		int i = 1;
 		for (auto colId : detailColorsFilterSet) {
 			std::string btnStr = std::to_string(colId);
@@ -361,7 +361,7 @@ void ErGui::renderSelectFilter() {
 			groupsFilterSet.insert(chosenGroupSFM);
 		}
 
-		ImGui::Text("-----| Filter |-----");
+		ImGui::SeparatorText("Filter");
 		int i = 1;
 		for (auto grpId : groupsFilterSet) {
 			std::string btnStr = std::to_string(grpId);
@@ -402,7 +402,7 @@ void ErGui::renderSelectFilter() {
 			channelFilterSet.insert(chosenChannelSFM);
 		}
 
-		ImGui::Text("-----| Filter |-----");
+		ImGui::SeparatorText("Filter");
 		int i = 1;
 		for (auto chnlId : channelFilterSet) {
 			std::string btnStr = std::to_string(chnlId);
@@ -416,5 +416,6 @@ void ErGui::renderSelectFilter() {
 		if (i - 1 % 10 != 0) ImGui::NewLine();
 	}
 
+	ImGui::PopStyleColor();
 	ImGui::End();
 }

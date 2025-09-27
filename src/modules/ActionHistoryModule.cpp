@@ -33,6 +33,7 @@ void ErGui::renderActionHistoryModule() {
 		ImGui::PopStyleVar();
 	}
 
+
 	ImGui::SameLine();
 
 	if (!redoObjectsCount) {
@@ -46,13 +47,13 @@ void ErGui::renderActionHistoryModule() {
 	}
 
 
-	if (ImGui::CollapsingHeader("-----| UndoList |-----")) {
+	if (ImGui::CollapsingHeader("Undo List")) {
 		auto undoArray = GameManager::sharedState()->m_levelEditorLayer->m_undoObjects;
 		int i = 0;
 		for (auto undoObject : CCArrayExt<UndoObject*>(undoArray)) {
 			std::string myText = "[";
 			myText += std::to_string(i);
-			myText += "] COMMAND: ";
+			myText += "]:";
 			switch (undoObject->m_command)
 			{
 			case UndoCommand::Delete:
@@ -76,19 +77,19 @@ void ErGui::renderActionHistoryModule() {
 			default:
 				break;
 			}
-			myText += std::format("[{}]", static_cast<void*>(undoObject)) + "(" + std::to_string(undoObject->m_objects ? static_cast<int>(undoObject->m_objects->count()) : 1) + "): ";
+			myText += std::format("[{}]", static_cast<void*>(undoObject)) + "(" + std::to_string(undoObject->m_objects ? static_cast<int>(undoObject->m_objects->count()) : 1) + ")";
 			ImGui::Text(myText.c_str());
 			i++;
 		}
 	}
 
-	if (ImGui::CollapsingHeader("-----| RedoList |-----")) {
+	if (ImGui::CollapsingHeader("Redo List")) {
 		auto redoArray = GameManager::sharedState()->m_levelEditorLayer->m_redoObjects;
 		int i = 0;
 		for (auto redoObject : CCArrayExt<UndoObject*>(redoArray)) {
 			std::string myText = "[";
 			myText += std::to_string(i);
-			myText += "] COMMAND: ";
+			myText += "]: ";
 			switch (redoObject->m_command)
 			{
 			case UndoCommand::Delete:
@@ -112,7 +113,7 @@ void ErGui::renderActionHistoryModule() {
 			default:
 				break;
 			}
-			myText += std::format("[{}]", static_cast<void*>(redoObject)) + "(" + std::to_string(redoObject->m_objects ? static_cast<int>(redoObject->m_objects->count()) : 1) + ") : ";
+			myText += std::format("[{}]", static_cast<void*>(redoObject)) + "(" + std::to_string(redoObject->m_objects ? static_cast<int>(redoObject->m_objects->count()) : 1) + ")";
 			ImGui::Text(myText.c_str());
 			i++;
 		}

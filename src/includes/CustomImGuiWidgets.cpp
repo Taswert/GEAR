@@ -52,6 +52,7 @@ namespace ErGui {
 		auto p_step = step > 0.0f ? &step : NULL;
 		auto p_step_fast = step_fast > 0.0f ? &step_fast : NULL;
 
+		ImGui::BeginGroup();
 		ImGui::PushID(label);
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
 		if (ImGui::DragFloat(label, v, v_speed, v_min, v_max, format, flags)) {
@@ -73,6 +74,7 @@ namespace ErGui {
 		}
 		ImGui::PopItemFlag();
 		ImGui::PopID();
+		ImGui::EndGroup();
 
 		return value_changed;
 	}
@@ -86,6 +88,7 @@ namespace ErGui {
 		auto p_step = step > 0.0f ? &step : NULL;
 		auto p_step_fast = step_fast > 0.0f ? &step_fast : NULL;
 
+		ImGui::BeginGroup();
 		ImGui::PushID(label);
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
 		if (ImGui::DragFloat(label, v, v_speed, v_min, v_max, format, flags)) {
@@ -120,6 +123,7 @@ namespace ErGui {
 		}
 		ImGui::PopItemFlag();
 		ImGui::PopID();
+		ImGui::EndGroup();
 
 		return value_changed;
 	}

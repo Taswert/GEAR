@@ -100,7 +100,7 @@ float calc(float angle) {
 }
 
 void renderCircleTool() {
-	if (ImGui::CollapsingHeader("-----| Circle Tool |-----")) {
+	if (ImGui::CollapsingHeader("Circle Tool")) {
 		ImGui::Text("Arc/Step");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
@@ -172,7 +172,11 @@ void renderForObject(GameObject* obj) {
 	float oldPosX = posX;
 	float oldPosY = posY;
 
+	bool isActive = false;
+	bool isChanging = false;
+	bool isClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left, false);
 
+	// ----- Position -----
 	if (ImGui::BeginPopup("MoveStepPopup")) {
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
 
@@ -192,9 +196,15 @@ void renderForObject(GameObject* obj) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##PosX", &posX, moveStep, moveStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) {
+		isActive = true;
+	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##PosY", &posY, moveStep, moveStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) {
+		isActive = true;
+	}
 	ImGui::SameLine();
 	if (ImGui::Button("S##Position-Presets")) {
 		ImGui::OpenPopup("MoveStepPopup");
@@ -203,12 +213,17 @@ void renderForObject(GameObject* obj) {
 	float dPosX = posX - oldPosX;
 	float dPosY = posY - oldPosY;
 
-	if (dPosX || dPosY) {
+	if (isActive && isClicked) {
 		addObjectToUndoList(obj, UndoCommand::Transform);
+	}
+
+	if (dPosX || dPosY) {
 		editorUI->m_rotationControl->setPosition({ editorUI->m_rotationControl->getPositionX() + dPosX, editorUI->m_rotationControl->getPositionY() + dPosY });
 		editorUI->moveObject(obj, { dPosX, dPosY });
 	}
-
+	
+	// Reseting, so it would not cause any mistakes in undo list
+	isActive = false;
 	ImGui::Separator();
 
 
@@ -239,33 +254,50 @@ void renderForObject(GameObject* obj) {
 	ImGui::Text("Rotation");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
-	if (ErGui::BetterDragFloat("##Rot", &rot, rotationStep, rotationStep * 5, "%.2f")) {
-		rot = std::fmod(rot, 360);
-		addObjectToUndoList(obj, UndoCommand::Transform);
-		obj->setRotationX(std::fmod(rotX + rot - oldRot, 360));
-		obj->setRotationY(std::fmod(rotY + rot - oldRot, 360));
-	}
+	if (ErGui::BetterDragFloat("##Rot", &rot, rotationStep, rotationStep * 5, "%.2f")) isChanging = true;
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	if (ImGui::Button("S##Rotation-Presets")) {
 		ImGui::OpenPopup("RotationStepPopup");
 	}
 
+	if (isActive && isClicked) {
+		addObjectToUndoList(obj, UndoCommand::Transform);
+	}
+
+	if (isChanging) {
+		rot = std::fmod(rot, 360);
+		obj->setRotationX(std::fmod(rotX + rot - oldRot, 360));
+		obj->setRotationY(std::fmod(rotY + rot - oldRot, 360));
+	}
+
+	isActive = false;
+	isChanging = false;
+
+
 	ImGui::Text("X / Y");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##RotX", &rotX, rotationStep, rotationStep * 5, "%.2f")) {
-		rotX = std::fmod(rotX, 360);
-		addObjectToUndoList(obj, UndoCommand::Transform);
-		obj->setRotationX(rotX);
-	}
+	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##RotX", &rotX, rotationStep, rotationStep * 5, "%.2f")) isChanging = true;
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##RotY", &rotY, rotationStep, rotationStep * 5, "%.2f")) {
-		rotY = std::fmod(rotY, 360);
+	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##RotY", &rotY, rotationStep, rotationStep * 5, "%.2f")) isChanging = true;
+	if (ImGui::IsItemActive()) isActive = true;
+
+	if (isActive && isClicked) {
 		addObjectToUndoList(obj, UndoCommand::Transform);
-		obj->setRotationY(rotY);
 	}
-	
+
+	if (isChanging) {
+		rotX = std::fmod(rotX, 360);
+		rotY = std::fmod(rotY, 360);
+		obj->setRotationY(rotY);
+		obj->setRotationX(rotX);
+	}
+
+	isActive = false;
+	isChanging = false;
 	ImGui::Separator();
 
 
@@ -296,9 +328,18 @@ void renderForObject(GameObject* obj) {
 	ImGui::Text("Scale");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
-	if (ErGui::BetterDragFloat("##Scale", &scale, scaleStep, scaleStep * 5, "%.2f", 0.01f)) {
-		addObjectToUndoList(obj, UndoCommand::Transform);
+	if (ErGui::BetterDragFloat("##Scale", &scale, scaleStep, scaleStep * 5, "%.2f", 0.01f)) isChanging = true;
+	if (ImGui::IsItemActive()) isActive = true;
+	ImGui::SameLine();
+	if (ImGui::Button("S##Scale-Presets")) {
+		ImGui::OpenPopup("ScaleStepPopup");
+	}
 
+	if (isActive && isClicked) {
+		addObjectToUndoList(obj, UndoCommand::Transform);
+	}
+
+	if (isChanging) {
 		float scaleMod = obj->m_scaleY / obj->m_scaleX;
 		if (obj->m_scaleX == 0) {
 			scaleMod = 1;
@@ -313,29 +354,38 @@ void renderForObject(GameObject* obj) {
 		obj->m_scaleY += (scale - oldScale) * scaleMod;
 		obj->setScaleY(obj->m_scaleY * flipY);
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("S##Scale-Presets")) {
-		ImGui::OpenPopup("ScaleStepPopup");
-	}
+
+	isActive = false;
+	isChanging = false;
 
 	ImGui::Text("X / Y");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f )) {
-		short flipX = obj->isFlipX() ? -1 : 1;
-		addObjectToUndoList(obj, UndoCommand::Transform);
-		obj->setScaleX(scaleX * flipX);
-		obj->m_scaleX = scaleX;
-	}
+	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f )) isChanging = true;
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f )) {
-		short flipY = obj->isFlipY() ? -1 : 1;
+	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f )) isChanging = true;
+	if (ImGui::IsItemActive()) isActive = true;
+
+	if (isActive && isClicked) {
 		addObjectToUndoList(obj, UndoCommand::Transform);
+	}
+
+	if (isChanging) {
+		short flipX = obj->isFlipX() ? -1 : 1;
+		short flipY = obj->isFlipY() ? -1 : 1;
+		obj->setScaleX(scaleX * flipX);
+		obj->m_scaleX = scaleX;
 		obj->setScaleY(scaleY * flipY);
 		obj->m_scaleY = scaleY;
 	}
+	
+
+	isActive = false;
+	isChanging = false;
 	ImGui::Separator();
+
 
 
 	// ----- Skew -----
@@ -365,9 +415,11 @@ void renderForObject(GameObject* obj) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 
 	ImGui::SameLine();
 	if (ImGui::Button("S##Skew-Step"))
@@ -376,13 +428,14 @@ void renderForObject(GameObject* obj) {
 	float skewXDelta = skewX - oldSkewX;
 	float skewYDelta = skewY - oldSkewY;
 
+	if (isActive && isClicked) {
+		addObjectToUndoList(obj, UndoCommand::Transform);
+	}
 
 	if (skewXDelta) {
-		addObjectToUndoList(obj, UndoCommand::Transform);
 		skewFuncX(obj, skewXDelta, &skewX, &oldSkewX);
 	}
 	if (skewYDelta) {
-		addObjectToUndoList(obj, UndoCommand::Transform);
 		skewFuncY(obj, skewYDelta, &skewY, &oldSkewY);
 	}
 
@@ -431,6 +484,11 @@ void renderForArray(CCArray* objArr) {
 	float oldSkewY = skewY;
 
 
+	bool isActive = false;
+	bool isChanging = false;
+	bool isClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left, false);
+
+
 	// ----- Position -----
 	if (ImGui::BeginPopup("MoveStepPopup")) {
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
@@ -449,24 +507,31 @@ void renderForArray(CCArray* objArr) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##PosX", &groupCenter.x, moveStep, moveStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##PosY", &groupCenter.y, moveStep, moveStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	if (ImGui::Button("S##Position-Presets")) {
 		ImGui::OpenPopup("MoveStepPopup");
 	}
 	ImGui::Separator();
 
+	if (isActive && isClicked) {
+		addObjectsToUndoList(objArr, UndoCommand::Transform);
+	}
+
 	float posXDelta = groupCenter.x - oldGroupCenter.x;
 	float posYDelta = groupCenter.y - oldGroupCenter.y;
 	if (posXDelta || posYDelta) {
 		editorUI->m_rotationControl->setPosition({ editorUI->m_rotationControl->getPositionX() + posXDelta, editorUI->m_rotationControl->getPositionY() + posYDelta });
-		addObjectsToUndoList(objArr, UndoCommand::Transform);
 		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 			editorUI->moveObject(obj, { posXDelta, posYDelta });
 		}
 	}
+
+	isActive = false;
 
 
 
@@ -489,6 +554,7 @@ void renderForArray(CCArray* objArr) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
 	ErGui::BetterDragFloat("##Rotation", &rotation, rotationStep, rotationStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	if (ImGui::Button("S##Rotation-Presets")) {
 		ImGui::OpenPopup("RotStepPopup");
@@ -499,21 +565,26 @@ void renderForArray(CCArray* objArr) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##RotationX", &rotationX, rotationStep, rotationStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##RotationY", &rotationY, rotationStep, rotationStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
-	ImGui::SetItemTooltip("Position Snap");
 	ImGui::Checkbox("##RotPosSnap", &rotateObjectsPositionSnap);
+	ImGui::SetItemTooltip("Position Snap");
 
 	ImGui::Separator();
+
+	if (isActive && isClicked) {
+		addObjectsToUndoList(objArr, UndoCommand::Transform);
+	}
 
 	// -- Apply Rotation
 	float rotDelta = rotation - oldRotation;
 	float rotDeltaX = rotationX - oldRotationX;
 	float rotDeltaY = rotationY - oldRotationY;
 	if (rotDelta || rotDeltaX || rotDeltaY) {
-		addObjectsToUndoList(objArr, UndoCommand::Transform);
 		if (!rotateObjectsPositionSnap && rotDelta)
 			lel->m_editorUI->rotateObjects(objArr, rotDelta, { 0, 0 });
 		else {
@@ -529,6 +600,8 @@ void renderForArray(CCArray* objArr) {
 			}
 		}
 	}
+
+	isActive = false;
 
 
 
@@ -551,6 +624,7 @@ void renderForArray(CCArray* objArr) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
 	ErGui::BetterDragFloat("##Scale", &scale, scaleStep, scaleStep * 5, "%.2f", 0.01f);
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	if (ImGui::Button("S##Scale-Presets")) {
 		ImGui::OpenPopup("ScaleStepPopup");
@@ -561,14 +635,20 @@ void renderForArray(CCArray* objArr) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f);
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f);
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
-	ImGui::SetItemTooltip("Position Snap");
 	ImGui::Checkbox("##ScalePosSnap", &scaleObjectsPositionSnap);
+	ImGui::SetItemTooltip("Position Snap");
 
 	ImGui::Separator();
+
+	if (isActive && isClicked) {
+		addObjectsToUndoList(objArr, UndoCommand::Transform);
+	}
 
 	float scaleDelta = scale - oldScale;
 	float scaleDeltaX = scaleX - oldScaleX;
@@ -577,7 +657,6 @@ void renderForArray(CCArray* objArr) {
 	
 	if (scaleDeltaX || scaleDeltaY || scaleDelta) {
 		groupCenter = editorUI->getGroupCenter(objArr, false);
-		addObjectsToUndoList(objArr, UndoCommand::Transform);
 		if (!scaleObjectsPositionSnap) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				CCPoint offset = { 
@@ -629,6 +708,9 @@ void renderForArray(CCArray* objArr) {
 		}
 	}
 
+	isActive = false;
+
+
 
 	// ----- Skew -----
 	if (ImGui::BeginPopup("SkewStepPopup")) {
@@ -647,19 +729,24 @@ void renderForArray(CCArray* objArr) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
+	if (ImGui::IsItemActive()) isActive = true;
 
 	ImGui::SameLine();
 	if (ImGui::Button("S##Skew-Step"))
 		ImGui::OpenPopup("SkewStepPopup");
 
+	if (isActive && isClicked) {
+		addObjectsToUndoList(objArr, UndoCommand::Transform);
+	}
+
 	float skewXDelta = skewX - oldSkewX;
 	float skewYDelta = skewY - oldSkewY;
 
 	if (skewXDelta || skewYDelta) {
-		addObjectsToUndoList(objArr, UndoCommand::Transform);
 		if (!skewObjectsPositionSnap) {
 			skewFuncXGroup(objArr, skewXDelta, &skewX, &oldSkewX);
 			skewFuncYGroup(objArr, skewYDelta, &skewY, &oldSkewY);
