@@ -99,9 +99,8 @@ void ErGui::renderGameWindow() {
 
 	auto renderedScreen = RenderedTexture((ImTextureID)(intptr_t)ErGui::gameFrame, CCDirector::sharedDirector()->getWinSize());
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
-
-	ImGui::Begin("Game");
-
+	
+	ImGui::Begin("Game", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObjectX ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
@@ -166,28 +165,91 @@ void ErGui::renderGameWindow() {
 	//	ScreenRenderer::getCCRenderTexture()->saveToFile("viewport.png");
 	//}
 
-	ImVec2 gameWinSize = ImGui::GetContentRegionAvail();
-	ImVec2 cursorStart = ImGui::GetCursorPos();
-
 	ImVec2 drawSize;
-	ImVec2 drawOffset;
-	if (gameWinSize.x > gameWinSize.y * textureRatio) {
-		drawSize.y = gameWinSize.y;
-		drawSize.x = gameWinSize.y * textureRatio;
+	if (Mod::get()->getSavedValue<bool>("gamewindow-static-ratio")) {
+		ImVec2 gameWinSize = ImGui::GetContentRegionAvail();
+		ImVec2 cursorStart = ImGui::GetCursorPos();
 
-		drawOffset.y = 0;
-		drawOffset.x = (gameWinSize.x - drawSize.x) / 2;
+		
+		ImVec2 drawOffset;
+		if (gameWinSize.x > gameWinSize.y * textureRatio) {
+			drawSize.y = gameWinSize.y;
+			drawSize.x = gameWinSize.y * textureRatio;
+
+			drawOffset.y = 0;
+			drawOffset.x = (gameWinSize.x - drawSize.x) / 2;
+		}
+		else {
+			drawSize.x = gameWinSize.x;
+			drawSize.y = gameWinSize.x / textureRatio;
+
+			drawOffset.x = 0;
+			drawOffset.y = (gameWinSize.y - drawSize.y) / 2;
+		}
+
+		ImGui::SetCursorPos(ImVec2(cursorStart.x + drawOffset.x, cursorStart.y + drawOffset.y));
+		ImGui::Image(renderedScreen.tex, drawSize, ImVec2(0, 1), ImVec2(1, 0));
 	}
+	// --- AI cause lazy
 	else {
-		drawSize.x = gameWinSize.x;
-		drawSize.y = gameWinSize.x / textureRatio;
+		ImVec2 winPos = ImGui::GetWindowPos();
+		ImVec2 stylePad = ImGui::GetStyle().WindowPadding;
 
-		drawOffset.x = 0;
-		drawOffset.y = (gameWinSize.y - drawSize.y) / 2;
+		// local content region in window-local coords
+		ImVec2 contentMinLocal = ImGui::GetWindowContentRegionMin(); // typically equals {WindowPadding.x, WindowPadding.y}
+		ImVec2 contentMaxLocal = ImGui::GetWindowContentRegionMax();
+
+		// convert to screen coords (absolute)
+		ImVec2 absContentMin = ImVec2(winPos.x + contentMinLocal.x, winPos.y + contentMinLocal.y);
+		ImVec2 absContentMax = ImVec2(winPos.x + contentMaxLocal.x, winPos.y + contentMaxLocal.y);
+
+		// top boundary: cursor is located just *after* the toolbar/widgets you've already drawn
+		ImVec2 cursorScreen = ImGui::GetCursorScreenPos(); // screen coords (x,y) where next item would be placed
+
+		// build available rect for the image:
+		// - left/right are based on content region (we will subtract side padding manually)
+		// - top is current cursor Y (so image won't overlap toolbar above)
+		// - bottom is content bottom (absContentMax.y)
+		ImVec2 availMin = absContentMin;
+		availMin.y = cursorScreen.y;              // start below toolbar
+		// remove left padding (push image to window left edge of content region minus padding)
+		availMin.x -= stylePad.x;
+
+		ImVec2 availMax = absContentMax;
+		// expand to remove right/bottom padding (so image reaches edges)
+		availMax.x += stylePad.x;
+		availMax.y += stylePad.y;
+
+		ImVec2 availSize = ImVec2(availMax.x - availMin.x, availMax.y - availMin.y);
+		if (availSize.x <= 0.0f || availSize.y <= 0.0f) {
+			// nothing to draw or invalid region
+			ImGui::Dummy(ImVec2(0, 0));
+			return;
+		}
+
+		// --- cover scaling: minimal draw size that still covers avail area, preserving aspect ratio
+		float texRatio = textureRatio; // should equal (texWidth / texHeight)
+		float drawW = std::max(availSize.x, availSize.y * texRatio);
+		float drawH = drawW / texRatio;
+
+		// center the image inside available rect
+		ImVec2 drawPos = ImVec2(availMin.x + (availSize.x - drawW) * 0.5f,
+			availMin.y + (availSize.y - drawH) * 0.5f);
+		drawSize = ImVec2(drawW, drawH);
+
+		// reserve layout space (so following widgets are placed below the image)
+		ImGui::Dummy(availSize);
+
+		// clip to available rect (so image is not visible outside desired area)
+		ImGui::PushClipRect(availMin, availMax, true);
+		// draw image using absolute screen coords
+		ImGui::SetCursorScreenPos(drawPos);
+		ImGui::Image(renderedScreen.tex, drawSize, ImVec2(0, 1), ImVec2(1, 0));
+
+		ImGui::PopClipRect();
 	}
+	// --- AI end
 
-	ImGui::SetCursorPos(ImVec2(cursorStart.x + drawOffset.x, cursorStart.y + drawOffset.y));
-	ImGui::Image(renderedScreen.tex, drawSize, ImVec2(0, 1), ImVec2(1, 0));
 
 	if (ImGui::IsItemHovered()) {
 		ErGui::isGameWindowHovered = true;

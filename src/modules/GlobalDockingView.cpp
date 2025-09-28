@@ -138,6 +138,7 @@ static void renderMenuBar() {
 			bool hoveringSelects =          geode::Mod::get()->getSavedValue<bool>("hovering-selects");         // Hovers objects in the selection zone
             bool deselectControls =         geode::Mod::get()->getSavedValue<bool>("deselect-controls");        // Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
             bool autoBuildhelper =          geode::Mod::get()->getSavedValue<bool>("auto-buildhelper");         // Automatically applies Build helper on duplicated objects
+			bool gamewindowStaticRatio =    geode::Mod::get()->getSavedValue<bool>("gamewindow-static-ratio");  // Game window keeps executable window ratio
             //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
 
 
@@ -303,6 +304,9 @@ static void renderMenuBar() {
                 isAnyItemClicked = true;
             }
 
+            if (ImGui::MenuItem("Game Window Static Ratio", NULL, &gamewindowStaticRatio)) {
+                isAnyItemClicked = true;
+            }
 
 
             // Saving Values
@@ -328,6 +332,8 @@ static void renderMenuBar() {
                 geode::Mod::get()->setSavedValue<bool>("hovering-selects", hoveringSelects);
                 geode::Mod::get()->setSavedValue<bool>("deselect-controls", deselectControls);
                 geode::Mod::get()->setSavedValue<bool>("auto-buildhelper", autoBuildhelper);
+                geode::Mod::get()->setSavedValue<bool>("gamewindow-static-ratio", gamewindowStaticRatio);
+                
 
                 LevelEditorLayer::get()->updateOptions();
             }

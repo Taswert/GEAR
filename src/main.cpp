@@ -825,8 +825,8 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	//AllocConsole();
-	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	AllocConsole();
+	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
 	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);
@@ -858,6 +858,7 @@ $on_mod(Loaded) {
 
 	if (!Mod::get()->hasSavedValue("deselect-controls"))			Mod::get()->setSavedValue("deselect-controls", false);
 	if (!Mod::get()->hasSavedValue("auto-buildhelper"))				Mod::get()->setSavedValue("auto-buildhelper", false);
+	if (!Mod::get()->hasSavedValue("gamewindow-static-ratio"))		Mod::get()->setSavedValue("gamewindow-static-ratio", false);
 	//if (Mod::get()->getSavedValue<int>("build-color-1") == 0) Mod::get()->setSavedValue("build-color-1", 1);
 	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
 	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
@@ -926,7 +927,7 @@ $on_mod(Loaded) {
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
 
-				//ImGui::ShowStyleEditor();
+				ImGui::ShowStyleEditor();
 
 			}
 			else {
