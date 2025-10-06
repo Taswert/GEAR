@@ -89,7 +89,7 @@ static GLuint captureScreenToGLTexture() {
 // Capturing the game frame from CCEGLView
 class $modify(CCEGLView) {
 	static void onModify(auto & self) {
-		if (!self.setHookPriorityBeforePre("cocos2d::CCEGLView::swapBuffers", Priority::Early)) {
+		if (!self.setHookPriorityPre("cocos2d::CCEGLView::swapBuffers", Priority::Early)) {
 			geode::log::warn("Failed to set hook priority for swapBuffers");
 		}
 	}
