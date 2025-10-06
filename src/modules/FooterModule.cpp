@@ -50,13 +50,26 @@ void ErGui::renderFooter() {
 
 
 	//MAIN FOOTER TEXT
-	ImGui::Text("Objs: %d | %s | %s | SFX: %d |", 
-		lel->m_objectCount.value(), 
-		timeStr.c_str(),
-		GJGameLevel::lengthKeyToString(getLengthKey(std::floor(tfp), lel->m_isPlatformer)).c_str(),
-		countSFXIDs
-	);
+	ImGui::Text("Objs: %d", lel->m_objectCount.value());
 	ImGui::SameLine();
+	ImGui::Text("|");
+	ImGui::SameLine();
+
+	ImGui::Text("%s", timeStr.c_str());
+	ImGui::SameLine();
+	ImGui::Text("|");
+	ImGui::SameLine();
+
+	ImGui::Text("%s", GJGameLevel::lengthKeyToString(getLengthKey(std::floor(tfp), lel->m_isPlatformer)).c_str());
+	ImGui::SameLine();
+	ImGui::Text("|");
+	ImGui::SameLine();
+
+	ImGui::Text("SFX: %d", countSFXIDs);
+	ImGui::SameLine();
+	ImGui::Text("|");
+	ImGui::SameLine();
+
 	if (countSongIDs > 21) {
 		ImGui::PushStyleColor(ImGuiCol_Text, { 1.00f, 0.76f, 0.31f, 1.00f });
 		ImGui::Text("Songs: %d/21", countSongIDs);

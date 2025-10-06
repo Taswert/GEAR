@@ -41,8 +41,9 @@ static void renderMenuBar() {
             ImGui::Dummy({ 5.f, 5.f }); // Create / Edit
             
             bool objectsSelected = false;
-            if (EditorUI::get()->m_selectedObjects && EditorUI::get()->m_selectedObjects->count() > 0)
+            if (EditorUI::get()->m_selectedObjects || EditorUI::get()->m_selectedObjects->count() > 0)
                 objectsSelected = true;
+            
 
             if (ImGui::MenuItem("Align-X", nullptr, false, objectsSelected)) {
                 ErGui::getFakePauseLayer()->onAlignX(nullptr);
@@ -84,7 +85,7 @@ static void renderMenuBar() {
                 ErGui::getFakePauseLayer()->onCopyWColor(nullptr);
             }
 
-            if (ImGui::MenuItem("Paste + Color", nullptr, false, objectsSelected)) {
+            if (ImGui::MenuItem("Paste + Color")) {
                 ErGui::getFakePauseLayer()->onPasteWColor(nullptr);
             }
 
@@ -214,29 +215,46 @@ static void renderMenuBar() {
                             label->setVisible(false);
                 }
             }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Shows some information about selected object.");
+            }
 
             ImGui::Dummy({ 5.f, 5.f });
 
             if (ImGui::MenuItem("Playtest Music", NULL, &ptMusic)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Plays music during playtesting.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Plays music during playtesting.");
+            }
+            
             if (ImGui::MenuItem("Playtest No Grid", NULL, &ptNoGrid)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Hides grid during playtesting.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Hides grid during playtesting.");
+            }
+            
             if (ImGui::MenuItem("Playtest Smooth Fix", NULL, &ptSmoothFix)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Enables smooth fix during playtesting.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Enables smooth fix during playtesting");
+            }
+
             if (ImGui::MenuItem("Auto-Pause", NULL, &autoPause)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Pauses gameplay when starting from StartPos.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Pauses gameplay when starting from StartPos.");
+            }
+
             if (ImGui::MenuItem("Ignore Damage", NULL, &ignoreDamage)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Disables damage during playtesting.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Disables damage during playtesting.");
+            }
 
             //ImGui::Dummy({ 5.f, 5.f });
 
@@ -248,17 +266,29 @@ static void renderMenuBar() {
             if (ImGui::MenuItem("Start Optimisation", NULL, &startOptimisation)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Tries to speed up StartPos loading. RobTop's Experimental option.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Tries to speed up StartPos loading. RobTop's experimental option.");
+            }
+
             if (ImGui::MenuItem("Increase Undo/Redo", NULL, &increaseUndoRedo)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Increases maximum Undo/Redo limit from 200 to 1000.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Increases maximum Undo/Redo limit from 200 to 1000");
+            }
+
             if (ImGui::MenuItem("Small Warp Buttons", NULL, &smallWarpBtns)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Warp control buttons are 50% smaller (Restart editor to work).");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Warp control buttons are 50% smaller (Restart editor to work).");
+            }
+
             if (ImGui::MenuItem("Auto Build Helper", NULL, &autoBuildhelper)) {
                 isAnyItemClicked = true;
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Automatically applies build helper on pasted objects.");
             }
 
 
@@ -267,17 +297,29 @@ static void renderMenuBar() {
             if (ImGui::MenuItem("Triangle Color Wheel", NULL, &triangleColorWheel)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Sets GEAR color wheel to triangle.");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Sets GEAR color wheel to triangle.");
+            }
+
             if (ImGui::MenuItem("Rotate Color Wheel", NULL, &rotateColorWheel)) {
                 isAnyItemClicked = true;
             }
-            //ImGui::SetTooltip("Enables color wheel rotation in GEAR. Only works with triangle color wheel.");
-            //ImGui::MenuItem("Select Direction From Cursor", NULL, &selectDirectionFromCursor);
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Enables color wheel rotation in GEAR. Only works with triangle color wheel.");
+            }
+
             if (ImGui::MenuItem("Hide Objects Popup", NULL, &hideObjectListPopup)) {
                 isAnyItemClicked = true;
             }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Hides object folder popup, when selecting an object.");
+            }
+
             if (ImGui::MenuItem("Autoswitch to Build Mode", NULL, &autoswitchToBuildMode)) {
                 isAnyItemClicked = true;
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+				ImGui::SetTooltip("Automatically switches to Build Mode when selecting an object in object list.");
             }
 
             ImGui::Dummy({ 5.f, 5.f });
@@ -285,8 +327,14 @@ static void renderMenuBar() {
             if (ImGui::MenuItem("Show Link Controls", NULL, &showLinkControls)) {
                 isAnyItemClicked = true;
             }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Shows and enables link controls in the toolbar.");
+            }
             if (ImGui::MenuItem("Show Zoom Controls", NULL, &showZoomControls)) {
                 isAnyItemClicked = true;
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Shows zoom controls in the toolbar.");
             }
             
             ImGui::Dummy({ 5.f, 5.f });
@@ -294,8 +342,14 @@ static void renderMenuBar() {
             if (ImGui::MenuItem("Fill Selection Zone", NULL, &fillSelectionZone)) {
                 isAnyItemClicked = true;
             }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Fills selection zone with slightly opaque color of selection type.");
+            }
             if (ImGui::MenuItem("Hovering Selects", NULL, &hoveringSelects)) {
                 isAnyItemClicked = true;
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Objects that are in the selection zone, change their color to yellow.");
             }
 
             ImGui::Dummy({ 5.f, 5.f });
@@ -303,9 +357,15 @@ static void renderMenuBar() {
             if (ImGui::MenuItem("Deselect Controls", NULL, &deselectControls)) {
                 isAnyItemClicked = true;
             }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Scale/Rotation/Warp controls are deselected, when touched an empty space in editor.");
+            }
 
             if (ImGui::MenuItem("Game Window Static Ratio", NULL, &gamewindowStaticRatio)) {
                 isAnyItemClicked = true;
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Enables static ratio for game window.");
             }
 
 

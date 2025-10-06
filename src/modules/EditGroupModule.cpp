@@ -1,5 +1,6 @@
 #include "EditGroupModule.hpp"
 #include "CustomImGuiWidgets.hpp"
+#include "AdvancedUndoRedo.hpp"
 using namespace ErGui;
 
 const char* layerTypeItems[] = {
@@ -14,120 +15,6 @@ const int layerIntItems[] = {
 	0,
 	5, 7, 9, 11,
 };
-
-
-void ErGui::CopyEGMState::copyState(GameObject* obj) {
-	if (obj->m_groups) {
-		for (int i = 0; i < 10; i++) {
-			groups[i] = obj->m_groups->at(i);
-		}
-	}
-
-	editorL1 = obj->m_editorLayer;
-	editorL2 = obj->m_editorLayer2;
-	zOrder = obj->m_zOrder;
-	zLayer = obj->m_zLayer;
-
-	enterChannel = obj->m_enterChannel;
-	material = obj->m_objectMaterial;
-
-	NoEffects = obj->m_hasNoEffects;
-	DontFade = obj->m_isDontFade;
-	NoGlow = obj->m_hasNoGlow;
-	DontEnter = obj->m_isDontEnter;
-	NoParticle = obj->m_hasNoParticles;
-	HighDetail = obj->m_isHighDetail;
-	NoAudioScale = obj->m_hasNoAudioScale;
-	Hide = obj->m_isHide;
-
-	GroupParent = obj->m_hasGroupParent;
-	NoTouch = obj->m_isNoTouch;
-	AreaParent = obj->m_hasAreaParent;
-	Passable = obj->m_isPassable;
-	DontBoostX = obj->m_isDontBoostX;
-	ExtendedCollision = obj->m_hasExtendedCollision;
-	DontBoostY = obj->m_isDontBoostY;
-
-	IceBlock = obj->m_isIceBlock;
-	GripSlope = obj->m_isGripSlope;
-	NonStickX = obj->m_isNonStickX;
-	ExtraSticky = obj->m_isExtraSticky;
-	NonStickY = obj->m_isNonStickY;
-	ScaleStick = obj->m_isScaleStick;
-
-	if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
-		ego_orderVal = egObj->m_ordValue;
-		ego_channelVal = egObj->m_channelValue;
-		ego_controlID = egObj->m_controlID;
-
-		ego_SinglePTouch = egObj->m_isSinglePTouch;
-		ego_Preview = egObj->m_shouldPreview;
-		ego_CenterEffect = egObj->m_hasCenterEffect;
-		ego_Reverse = egObj->m_isReverse;
-	}
-}
-
-void ErGui::CopyEGMState::pasteState(GameObject* obj) {
-	if (obj->m_groups) {
-		for (int i = 0; obj->m_groups->at(0) != 0; i++) {
-			std::cout << obj->m_groups->at(0) << " ";
-			obj->removeFromGroup(obj->m_groups->at(0));
-		}
-	}
-	
-	for (int i = 0; i < 10; i++) {
-		obj->addToGroup(groups[i]);
-	}
-
-	obj->m_editorLayer = editorL1;
-	obj->m_editorLayer2 = editorL2;
-	obj->m_zOrder = zOrder;
-	obj->m_zLayer = zLayer;
-
-	obj->m_enterChannel = enterChannel;
-	obj->m_objectMaterial = material;
-
-	obj->m_hasNoEffects = NoEffects;
-	obj->m_isDontFade = DontFade;
-	obj->m_hasNoGlow = NoGlow;
-	obj->m_isDontEnter = DontEnter;
-	obj->m_hasNoParticles = NoParticle;
-	obj->m_isHighDetail = HighDetail;
-	obj->m_hasNoAudioScale = NoAudioScale;
-	obj->m_isHide = Hide;
-
-	obj->m_hasGroupParent = GroupParent;
-	obj->m_isNoTouch = NoTouch;
-	obj->m_hasAreaParent = AreaParent;
-	obj->m_isPassable = Passable;
-	obj->m_isDontBoostX = DontBoostX;
-	obj->m_hasExtendedCollision = ExtendedCollision;
-	obj->m_isDontBoostY = DontBoostY;
-
-	obj->m_isIceBlock = IceBlock;
-	obj->m_isGripSlope = GripSlope;
-	obj->m_isNonStickX = NonStickX;
-	obj->m_isExtraSticky = ExtraSticky;
-	obj->m_isNonStickY = NonStickY;
-	obj->m_isScaleStick = ScaleStick;
-
-	if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
-		egObj->m_ordValue = ego_orderVal;
-		egObj->m_channelValue = ego_channelVal;
-		egObj->m_controlID = ego_controlID;
-
-		egObj->m_isSinglePTouch = ego_SinglePTouch;
-		egObj->m_shouldPreview = ego_Preview;
-		egObj->m_hasCenterEffect = ego_CenterEffect;
-		egObj->m_isReverse = ego_Reverse;
-	}
-}
-
-void ErGui::CopyEGMState::pasteState(CCArray* objArr) {
-	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-		this->pasteState(obj);
-	}
-}
 
 void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 	if (ImGui::Button("Copy##COPYSTATE")) {
@@ -175,6 +62,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 					arr->retain();
 					lel->m_groups[chosenGroupEGM] = arr;
 				}
+				//addObjectToUndoList(obj, EnhancedUndoCommand::GroupAdd);
+
 				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
 				obj->addToGroup(chosenGroupEGM);
 			}
@@ -479,7 +368,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			int regroupedID = regroupFrom;
 			bool offlimit = false;
 
-			std::cout << "Map:\n";
+			//std::cout << "Map:\n";
 			for (int i = 0; i < groupsFromObjArr.size(); i++) {
 				if (groupsFromObjArr[i].first >= regroupStart && groupsFromObjArr[i].first <= regroupEnd) {
 					
@@ -493,17 +382,17 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 					
 					if (regroupedID > 9999) {
 						offlimit = true;
-						std::cout << "OFFLIMIT! BREAKING REGROUP!\n";
+						//std::cout << "OFFLIMIT! BREAKING REGROUP!\n";
 						break;
 					}
 
-					std::cout << groupsFromObjArr[i].first << " " << regroupedID << "\n";
+					//std::cout << groupsFromObjArr[i].first << " " << regroupedID << "\n";
 					regroupedMap.emplace(groupsFromObjArr[i].first, regroupedID);
 					regroupedID++;
 
 				}
 			}
-			std::cout << "\n";
+			//std::cout << "\n";
 			
 			if (!offlimit) {
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -532,7 +421,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 						}
 					}
 
-					// Actuall Group Adding
+					// Actual Group Adding
 					for (int i : idsToAdd) {
 						if (!lel->m_groups[i]) {
 							CCArray* arr = CCArray::create();

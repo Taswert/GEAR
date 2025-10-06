@@ -41,8 +41,9 @@
 #include <matjson/stl_serialize.hpp>
 
 #include <Geode/Result.hpp>
-
+#include "CopyEGMState.hpp"
 #include "features/Hovering.hpp"
+//#include "AdvancedUndoRedo.hpp"
 
 using namespace geode::prelude;
 
@@ -203,12 +204,10 @@ class $modify(GearEditorUI, EditorUI) {
 		m_toolbarHeight = tmp;
 	}
 
-
 	void reloadCustomItems() {
 		EditorUI::reloadCustomItems();
 		ErGui::reloadCustomObjects();
 	}
-
 
 	CCArray* pasteObjects(gd::string p0, bool p1, bool p2) {
 		auto objArr = EditorUI::pasteObjects(p0, p1, p2);
@@ -825,8 +824,8 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	AllocConsole();
-	freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	//AllocConsole();
+	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
 	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
 	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);
@@ -898,13 +897,18 @@ $on_mod(Loaded) {
 		static const ImWchar mdi_icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
 		ImFontConfig iconConfig;
 		iconConfig.MergeMode = true;
+		iconConfig.GlyphOffset.y = 1.f;
+		iconConfig.OversampleH = 3;
+		iconConfig.OversampleV = 3;
+		iconConfig.PixelSnapH = true;
+
 		io.Fonts->AddFontFromFileTTF(mdiDir.string().c_str(), 24.f, &iconConfig, mdi_icons_ranges);
 
 		static const ImWchar cpi_icons_ranges[] = { ICON_MIN_GEARCPI, ICON_MAX_GEARCPI, 0 };
 		if (!io.Fonts->AddFontFromFileTTF(cpiDir.string().c_str(), 24.f, &iconConfig, cpi_icons_ranges)) {
 			std::cout << "Failed to load font: " << cpiDir.string();
 		}
-
+		
 		ErGui::initImGuiStyling();
 	
 
@@ -927,7 +931,7 @@ $on_mod(Loaded) {
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
 
-				ImGui::ShowStyleEditor();
+				//ImGui::ShowStyleEditor();
 
 			}
 			else {
@@ -935,53 +939,3 @@ $on_mod(Loaded) {
 			}
 			});
 }
-// Mod Developers:
-// 
-// Taswert
-// Rainix
-// RaZooM
-//
-// ----------------------------------
-// Thanks to:
-//
-// Coders:
-// Emiya		/ Code Help
-// HJFod		/ Main Idea, DevTools
-// RaZooM		/ Object Categories
-// Mat			/ ImGui integration + Circle Tool
-// MgostiH		/ First Supported! 
-// Partur		/ UI
-// 
-// Creators:
-// CHRAPIVA		/ Ideas + Feedback
-// Kisss		/ Ideas + Feedback
-// Vernam		/ Creator Contacts + MOTIVATION
-// Shlyapa		/ Ideas + Feedback
-// Pes11		/ Ideas
-// 
-// Others:
-// Herowhither	/ Moral Support
-// Dbrxvich		/ Moral Support
-// Pololak		/ Moral Support
-// 
-//
-
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!
-//TURN OFF SELECT FILTER!!!

@@ -62,5 +62,3 @@ build-*/
 # CLion
 .idea/
 /cmake-build-*/
-/src/includes/AdvancedUndoRedo.cpp
-/src/includes/AdvancedUndoRedo.hpp

@@ -1,13 +1,16 @@
 {
-	"geode": "4.5.0",
+	"geode": "4.8.0",
 	"gd": {
 		"win": "2.2074"
 	},
 	"id": "taswert.gear",
 	"name": "GEAR",
-	"version": "v0.2.1-beta",
+	"version": "v1.0.0-beta.1",
 	"developers": [ "Taswert", "RainixGD", "RaZooM" ],
-	"description": "",
+	"description": "Reimagine your Editor UI with ImGui",
+	"links": {
+		"community": "https://discord.gg/6WGqURwYy4"
+	},
 	"resources": {
 		"files": [
 			"resources/imgui-fonts/Inter_18pt-Regular.ttf",

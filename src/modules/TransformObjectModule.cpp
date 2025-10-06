@@ -176,6 +176,15 @@ void renderForObject(GameObject* obj) {
 	bool isChanging = false;
 	bool isClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left, false);
 
+	// Styling things
+	//static ImVec2 minRect = ImGui::GetCursorPos();
+	//static ImVec2 maxRect = ImGui::GetCursorPos();
+	//auto dl = ImGui::GetWindowDrawList();
+
+	//dl->AddRectFilled(minRect, maxRect, IM_COL32(50, 50, 50, 255), 6.f);
+
+	//ImGui::BeginGroup();
+
 	// ----- Position -----
 	if (ImGui::BeginPopup("MoveStepPopup")) {
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
@@ -221,7 +230,7 @@ void renderForObject(GameObject* obj) {
 		editorUI->m_rotationControl->setPosition({ editorUI->m_rotationControl->getPositionX() + dPosX, editorUI->m_rotationControl->getPositionY() + dPosY });
 		editorUI->moveObject(obj, { dPosX, dPosY });
 	}
-	
+
 	// Reseting, so it would not cause any mistakes in undo list
 	isActive = false;
 	ImGui::Separator();
@@ -242,7 +251,7 @@ void renderForObject(GameObject* obj) {
 
 		ImGui::EndPopup();
 	}
-	
+
 	float rot = obj->getRotation();
 	float rotX = obj->getRotationX();
 	float rotY = obj->getRotationY();
@@ -316,7 +325,7 @@ void renderForObject(GameObject* obj) {
 
 		ImGui::EndPopup();
 	}
-	
+
 	float scale = obj->m_scaleX;
 	float scaleX = obj->m_scaleX;
 	float scaleY = obj->m_scaleY;
@@ -361,11 +370,11 @@ void renderForObject(GameObject* obj) {
 	ImGui::Text("X / Y");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f )) isChanging = true;
+	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f)) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f )) isChanging = true;
+	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f)) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 
 	if (isActive && isClicked) {
@@ -380,7 +389,7 @@ void renderForObject(GameObject* obj) {
 		obj->setScaleY(scaleY * flipY);
 		obj->m_scaleY = scaleY;
 	}
-	
+
 
 	isActive = false;
 	isChanging = false;
@@ -439,6 +448,11 @@ void renderForObject(GameObject* obj) {
 		skewFuncY(obj, skewYDelta, &skewY, &oldSkewY);
 	}
 
+	ImGui::EndGroup();
+	
+	// Also styling things. Gonna make post release.
+	//minRect = ImGui::GetItemRectMin();
+	//maxRect = {ImGui::GetWindowContentRegionMax().x + minRect.x, ImGui::GetItemRectMax().y};
 
 	renderCircleTool();
 }

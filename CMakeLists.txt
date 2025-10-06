@@ -36,15 +36,10 @@ add_library(${PROJECT_NAME} SHARED
     src/features/CustomGridResize.cpp 
     src/features/ObjectListConfig.cpp 
     src/features/Hovering.cpp
-    src/includes/CustomImGuiWidgets.cpp)
+    src/includes/CustomImGuiWidgets.cpp
+    #"src/includes/AdvancedUndoRedo.cpp" 
+    "src/includes/CopyEGMState.cpp")
 
-
-#include(FetchContent)
-#FetchContent_Declare(
-#    json
-#    GIT_REPOSITORY https://github.com/nlohmann/json.git
-#)
-#FetchContent_MakeAvailable(json)
 
 
 if (NOT DEFINED ENV{GEODE_SDK})
@@ -60,7 +55,7 @@ setup_geode_mod(${PROJECT_NAME})
 set(HAS_IMGUI ON)
 CPMAddPackage("gh:matcool/gd-imgui-cocos#0207a36bbe504d8dbc34c984218114af6af36afc")
 
-target_link_libraries(${PROJECT_NAME} imgui-cocos) #nlohmann_json::nlohmann_json
+target_link_libraries(${PROJECT_NAME} imgui-cocos)
 
 target_include_directories(imgui-cocos INTERFACE ./library/imgui-docking)
 

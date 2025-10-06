@@ -181,6 +181,7 @@ namespace ErGui {
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	}
 
+	// Change to advanced undo/redo later.
 	void addObjectToUndoList(GameObject* obj, UndoCommand command) {
 		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, command));
 		GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();

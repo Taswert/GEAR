@@ -75,6 +75,7 @@ void ErGui::renderActionHistoryModule() {
 				myText += "Selected object(s) ";
 				break;
 			default:
+				myText += "Something done to object(s) ";
 				break;
 			}
 			myText += std::format("[{}]", static_cast<void*>(undoObject)) + "(" + std::to_string(undoObject->m_objects ? static_cast<int>(undoObject->m_objects->count()) : 1) + ")";
@@ -111,6 +112,7 @@ void ErGui::renderActionHistoryModule() {
 				myText += "Selected object(s) ";
 				break;
 			default:
+				myText += "Something done to object(s) ";
 				break;
 			}
 			myText += std::format("[{}]", static_cast<void*>(redoObject)) + "(" + std::to_string(redoObject->m_objects ? static_cast<int>(redoObject->m_objects->count()) : 1) + ")";

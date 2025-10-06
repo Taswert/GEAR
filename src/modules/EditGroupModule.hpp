@@ -3,67 +3,12 @@
 #include <Geode/Geode.hpp>
 #include <imgui-cocos.hpp>
 #include "myUtils.hpp"
+#include "CopyEGMState.hpp"
 
 #include "SettingsModule.hpp"
 using namespace geode::prelude;
 
 namespace ErGui {
-	class CopyEGMState {
-	private:
-		std::array<short, 10> groups;
-		int editorL1;
-		int editorL2;
-		int zOrder;
-		ZLayer zLayer;
-
-		//---Extra
-		int enterChannel;
-		int material;
-
-		//---EGO
-		int ego_orderVal;
-		int ego_channelVal;
-		int ego_controlID;
-
-		//---Cosmetic
-		bool NoEffects;
-		bool DontFade;
-		bool NoGlow;
-		bool DontEnter;
-		bool NoParticle;
-		bool HighDetail;
-		bool NoAudioScale;
-		bool Hide;
-
-		//---Parent & Physics
-		bool GroupParent;
-		bool NoTouch;
-		bool AreaParent;
-		bool Passable;
-		bool DontBoostX;
-		bool ExtendedCollision;
-		bool DontBoostY;
-
-		//---Platformer Only
-		bool IceBlock;
-		bool GripSlope;
-		bool NonStickX;
-		bool ExtraSticky;
-		bool NonStickY;
-		bool ScaleStick;
-
-		//---Effect Game Object
-		bool ego_SinglePTouch;
-		bool ego_Preview;
-		bool ego_CenterEffect;
-		bool ego_Reverse;
-
-	public:
-		void copyState(GameObject* obj);
-		void pasteState(GameObject* obj);
-		void pasteState(CCArray* objArr);
-	};
-
 	static int chosenGroupEGM = 0;
 	static int groupOffset = 1;
 
