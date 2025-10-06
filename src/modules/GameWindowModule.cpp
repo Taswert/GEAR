@@ -27,18 +27,18 @@ void updateMousePos(ImVec2 drawSize) {
 	ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom = CCPoint(ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, winSize.height - ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
 }
 
-// Написано нейронкой, т.к. я просто устану разбираться в этом сейчас. Основа от DevTools'ов.
+// ГЌГ ГЇГЁГ±Г Г­Г® Г­ГҐГ©Г°Г®Г­ГЄГ®Г©, ГІ.ГЄ. Гї ГЇГ°Г®Г±ГІГ® ГіГ±ГІГ Г­Гі Г°Г Г§ГЎГЁГ°Г ГІГјГ±Гї Гў ГЅГІГ®Г¬ Г±ГҐГ©Г·Г Г±. ГЋГ±Г­Г®ГўГ  Г®ГІ DevTools'Г®Гў.
 static GLuint captureScreenToGLTexture() {
-	static GLuint captureTexId = 0;    // хранит ID текстуры, куда мы копируем кадр
-	static int lastW = 0, lastH = 0;   // чтобы пересоздавать текстуру, если размер изменился
+	static GLuint captureTexId = 0;    // ГµГ°Г Г­ГЁГІ ID ГІГҐГЄГ±ГІГіГ°Г», ГЄГіГ¤Г  Г¬Г» ГЄГ®ГЇГЁГ°ГіГҐГ¬ ГЄГ Г¤Г°
+	static int lastW = 0, lastH = 0;   // Г·ГІГ®ГЎГ» ГЇГҐГ°ГҐГ±Г®Г§Г¤Г ГўГ ГІГј ГІГҐГЄГ±ГІГіГ°Гі, ГҐГ±Г«ГЁ Г°Г Г§Г¬ГҐГ° ГЁГ§Г¬ГҐГ­ГЁГ«Г±Гї
 
-	// 1) Узнаём, сколько пикселей реально сейчас на экране (viewport):
+	// 1) Г“Г§Г­Г ВёГ¬, Г±ГЄГ®Г«ГјГЄГ® ГЇГЁГЄГ±ГҐГ«ГҐГ© Г°ГҐГ Г«ГјГ­Г® Г±ГҐГ©Г·Г Г± Г­Г  ГЅГЄГ°Г Г­ГҐ (viewport):
 	GLint vp[4];
 	glGetIntegerv(GL_VIEWPORT, vp);
 	int screenW = vp[2];
 	int screenH = vp[3];
 
-	// 2) Если размер изменился (например, игрок поменял окно), пересоздаём текстуру:
+	// 2) Г…Г±Г«ГЁ Г°Г Г§Г¬ГҐГ° ГЁГ§Г¬ГҐГ­ГЁГ«Г±Гї (Г­Г ГЇГ°ГЁГ¬ГҐГ°, ГЁГЈГ°Г®ГЄ ГЇГ®Г¬ГҐГ­ГїГ« Г®ГЄГ­Г®), ГЇГҐГ°ГҐГ±Г®Г§Г¤Г ВёГ¬ ГІГҐГЄГ±ГІГіГ°Гі:
 	if (!captureTexId || lastW != screenW || lastH != screenH) {
 		if (captureTexId) {
 			glDeleteTextures(1, &captureTexId);
@@ -47,20 +47,20 @@ static GLuint captureScreenToGLTexture() {
 		glGenTextures(1, &captureTexId);
 		glBindTexture(GL_TEXTURE_2D, captureTexId);
 
-		// Настраиваем фильтрацию — обычно LINEAR, чтобы превью при масштабировании было быстрее «размыто»
+		// ГЌГ Г±ГІГ°Г ГЁГўГ ГҐГ¬ ГґГЁГ«ГјГІГ°Г Г¶ГЁГѕ вЂ” Г®ГЎГ»Г·Г­Г® LINEAR, Г·ГІГ®ГЎГ» ГЇГ°ГҐГўГјГѕ ГЇГ°ГЁ Г¬Г Г±ГёГІГ ГЎГЁГ°Г®ГўГ Г­ГЁГЁ ГЎГ»Г«Г® ГЎГ»Г±ГІГ°ГҐГҐ В«Г°Г Г§Г¬Г»ГІГ®В»
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		// Резервируем память под будущую копию экрана
+		// ГђГҐГ§ГҐГ°ГўГЁГ°ГіГҐГ¬ ГЇГ Г¬ГїГІГј ГЇГ®Г¤ ГЎГіГ¤ГіГ№ГіГѕ ГЄГ®ГЇГЁГѕ ГЅГЄГ°Г Г­Г 
 		glTexImage2D(
-			GL_TEXTURE_2D,		// таргет
+			GL_TEXTURE_2D,		// ГІГ Г°ГЈГҐГІ
 			0,					// LOD
-			GL_RGBA,			// внутренний формат (RGBA8)
-			screenW, screenH,	// ширина, высота
+			GL_RGBA,			// ГўГ­ГіГІГ°ГҐГ­Г­ГЁГ© ГґГ®Г°Г¬Г ГІ (RGBA8)
+			screenW, screenH,	// ГёГЁГ°ГЁГ­Г , ГўГ»Г±Г®ГІГ 
 			0,					 // border
-			GL_RGBA,			// формат поступающих данных
-			GL_UNSIGNED_BYTE,	// тип данных
-			nullptr				// пока нет данных (будет заполнено glCopyTexSubImage2D)
+			GL_RGBA,			// ГґГ®Г°Г¬Г ГІ ГЇГ®Г±ГІГіГЇГ ГѕГ№ГЁГµ Г¤Г Г­Г­Г»Гµ
+			GL_UNSIGNED_BYTE,	// ГІГЁГЇ Г¤Г Г­Г­Г»Гµ
+			nullptr				// ГЇГ®ГЄГ  Г­ГҐГІ Г¤Г Г­Г­Г»Гµ (ГЎГіГ¤ГҐГІ Г§Г ГЇГ®Г«Г­ГҐГ­Г® glCopyTexSubImage2D)
 		);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -68,28 +68,28 @@ static GLuint captureScreenToGLTexture() {
 		lastH = screenH;
 	}
 
-	// 3) Привязываем нашу текстуру и копируем текущий back-buffer (FBO = 0) в неё:
+	// 3) ГЏГ°ГЁГўГїГ§Г»ГўГ ГҐГ¬ Г­Г ГёГі ГІГҐГЄГ±ГІГіГ°Гі ГЁ ГЄГ®ГЇГЁГ°ГіГҐГ¬ ГІГҐГЄГіГ№ГЁГ© back-buffer (FBO = 0) Гў Г­ГҐВё:
 	glBindTexture(GL_TEXTURE_2D, captureTexId);
 
-	// Копируем целиком экран (вниз/влево от 0,0) в текстуру, начиная с 0,0
+	// ГЉГ®ГЇГЁГ°ГіГҐГ¬ Г¶ГҐГ«ГЁГЄГ®Г¬ ГЅГЄГ°Г Г­ (ГўГ­ГЁГ§/ГўГ«ГҐГўГ® Г®ГІ 0,0) Гў ГІГҐГЄГ±ГІГіГ°Гі, Г­Г Г·ГЁГ­Г Гї Г± 0,0
 	glCopyTexSubImage2D(
-		GL_TEXTURE_2D, 0,    // который уровень mipmap (0) и таргет
-		0, 0,                // смещение (xOffset, yOffset) в текстуре
-		0, 0,                // какая точка back-buffer берётся (x, y)
-		screenW, screenH     // сколько пикселей копировать
+		GL_TEXTURE_2D, 0,    // ГЄГ®ГІГ®Г°Г»Г© ГіГ°Г®ГўГҐГ­Гј mipmap (0) ГЁ ГІГ Г°ГЈГҐГІ
+		0, 0,                // Г±Г¬ГҐГ№ГҐГ­ГЁГҐ (xOffset, yOffset) Гў ГІГҐГЄГ±ГІГіГ°ГҐ
+		0, 0,                // ГЄГ ГЄГ Гї ГІГ®Г·ГЄГ  back-buffer ГЎГҐГ°ВёГІГ±Гї (x, y)
+		screenW, screenH     // Г±ГЄГ®Г«ГјГЄГ® ГЇГЁГЄГ±ГҐГ«ГҐГ© ГЄГ®ГЇГЁГ°Г®ГўГ ГІГј
 	);
 
-	// 4) Бинд снова очищаем (не обязательно, но принято)
+	// 4) ГЃГЁГ­Г¤ Г±Г­Г®ГўГ  Г®Г·ГЁГ№Г ГҐГ¬ (Г­ГҐ Г®ГЎГїГ§Г ГІГҐГ«ГјГ­Г®, Г­Г® ГЇГ°ГЁГ­ГїГІГ®)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// 5) Возвращаем ID текстуры, куда мы скопировали экран
+	// 5) Г‚Г®Г§ГўГ°Г Г№Г ГҐГ¬ ID ГІГҐГЄГ±ГІГіГ°Г», ГЄГіГ¤Г  Г¬Г» Г±ГЄГ®ГЇГЁГ°Г®ГўГ Г«ГЁ ГЅГЄГ°Г Г­
 	return captureTexId;
 }
 
 // Capturing the game frame from CCEGLView
 class $modify(CCEGLView) {
 	static void onModify(auto & self) {
-		if (!self.setHookPriorityBeforePre("cocos2d::CCEGLView::swapBuffers", "absolllute.megahack")) {
+		if (!self.setHookPriorityBeforePre("cocos2d::CCEGLView::swapBuffers", Priority::Early)) {
 			geode::log::warn("Failed to set hook priority for swapBuffers");
 		}
 	}
@@ -110,9 +110,9 @@ void ErGui::renderGameWindow() {
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObjectX ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
 
-	float maxWidth = INPUT_ITEM_WIDTH * 3.5f; // предел ширины слайдера
-	float minWidth = INPUT_ITEM_WIDTH * 0.5f; // предел ширины слайдера
-	// Берём доступную ширину и ограничиваем её maxWidth
+	float maxWidth = INPUT_ITEM_WIDTH * 3.5f; // ГЇГ°ГҐГ¤ГҐГ« ГёГЁГ°ГЁГ­Г» Г±Г«Г Г©Г¤ГҐГ°Г 
+	float minWidth = INPUT_ITEM_WIDTH * 0.5f; // ГЇГ°ГҐГ¤ГҐГ« ГёГЁГ°ГЁГ­Г» Г±Г«Г Г©Г¤ГҐГ°Г 
+	// ГЃГҐГ°ВёГ¬ Г¤Г®Г±ГІГіГЇГ­ГіГѕ ГёГЁГ°ГЁГ­Гі ГЁ Г®ГЈГ°Г Г­ГЁГ·ГЁГўГ ГҐГ¬ ГҐВё maxWidth
 	float avail = ImGui::GetContentRegionAvail().x - maxWidth * 0.55f;
 	float sliderWidth = (avail > maxWidth) ? maxWidth : avail;
 	if (sliderWidth < minWidth)
@@ -164,7 +164,7 @@ void ErGui::renderGameWindow() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Constrain By Last Object Y");
 
-	// DEBUG - Сохранение вьюпорта в пнг, в корне игры.
+	// DEBUG - Г‘Г®ГµГ°Г Г­ГҐГ­ГЁГҐ ГўГјГѕГЇГ®Г°ГІГ  Гў ГЇГ­ГЈ, Гў ГЄГ®Г°Г­ГҐ ГЁГЈГ°Г».
 	//ImGui::SameLine();
 	//if (ImGui::Button("Save Game Viewport Screenshot")) {
 	//	ScreenRenderer::getCCRenderTexture()->saveToFile("viewport.png");
@@ -262,7 +262,7 @@ void ErGui::renderGameWindow() {
 	}
 	else {
 		ErGui::isGameWindowHovered = false;
-		if (ErGui::isGameWindowTouching) { // Нужно для вычисления позиции мыши, когда она не перекрывает Image, но ещё не отпущено
+		if (ErGui::isGameWindowTouching) { // ГЌГіГ¦Г­Г® Г¤Г«Гї ГўГ»Г·ГЁГ±Г«ГҐГ­ГЁГї ГЇГ®Г§ГЁГ¶ГЁГЁ Г¬Г»ГёГЁ, ГЄГ®ГЈГ¤Г  Г®Г­Г  Г­ГҐ ГЇГҐГ°ГҐГЄГ°Г»ГўГ ГҐГІ Image, Г­Г® ГҐГ№Вё Г­ГҐ Г®ГІГЇГіГ№ГҐГ­Г®
 			updateMousePos(drawSize);
 		}
 	}
