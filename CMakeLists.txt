@@ -53,7 +53,7 @@ add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 setup_geode_mod(${PROJECT_NAME})
 
 set(HAS_IMGUI ON)
-CPMAddPackage("gh:matcool/gd-imgui-cocos#0207a36bbe504d8dbc34c984218114af6af36afc")
+CPMAddPackage("gh:matcool/gd-imgui-cocos#b748f07e6976edb70f51066f025e2dc8a05101f6")
 
 target_link_libraries(${PROJECT_NAME} imgui-cocos)
 
