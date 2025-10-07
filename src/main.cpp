@@ -805,9 +805,12 @@ class $modify(CCTouchDispatcher) {
 		}
 
 		if (ErGui::isGameWindowTouching) {
-			ImGui::GetIO().WantCaptureMouse = false;
+			io.WantCaptureMouse = false;
 			touch->setTouchInfo(touch->getID(), ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
 			ImGui::ClearActiveID();
+			io.MouseDown[0] = false;
+			io.MouseDown[1] = false;
+			io.MouseDown[2] = false;
 		}
 
 		if (type == CCTOUCHENDED || type == CCTOUCHCANCELLED) {
