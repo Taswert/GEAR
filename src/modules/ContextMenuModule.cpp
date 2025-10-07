@@ -4,8 +4,10 @@
 
 void renderContextForSingleObject() {
 	auto editorUI = EditorUI::get();
+	auto lel = LevelEditorLayer::get();
 	auto selectedObject = editorUI->m_selectedObject;
 	auto selectedObjects = editorUI->m_selectedObjects;
+
 
 	if (ErGui::objectUnderCursor && (ErGui::objectUnderCursor == selectedObject ||
 		selectedObjects->containsObject(ErGui::objectUnderCursor))) {
@@ -62,10 +64,11 @@ void renderContextForSingleObject() {
 	ImGui::Dummy({ 5.f, 5.f });
 
 	if (ImGui::Selectable("Copy Color##Single")) {
-		LevelEditorLayer::get()->copyObjectState(ErGui::objectUnderCursor);
+		lel->copyObjectState(ErGui::objectUnderCursor);
 	}
-	if (ImGui::Selectable("Paste Color##Single") && LevelEditorLayer::get()->m_copyStateObject) {
-		auto copyStateObj = LevelEditorLayer::get()->m_copyStateObject;
+	auto cso = lel->m_copyStateObject;
+	if (ImGui::Selectable("Paste Color##Single") && cso) {
+		auto copyStateObj = cso;
 		auto gjBaseColor = ErGui::objectUnderCursor->m_baseColor;
 		auto gjDetailColor = ErGui::objectUnderCursor->m_detailColor;
 
@@ -95,7 +98,7 @@ void renderContextForSingleObject() {
 	ImGui::Dummy({ 5.f,5.f });
 
 	if (ImGui::Selectable("Go To Layer##Single")) {
-		LevelEditorLayer::get()->m_currentLayer = ErGui::objectUnderCursor->m_editorLayer;
+		lel->m_currentLayer = ErGui::objectUnderCursor->m_editorLayer;
 	}
 }
 
@@ -164,6 +167,7 @@ void renderContextForMultipleObjects() {
 
 void renderContextForNoObjects() {
 	auto editorUI = EditorUI::get();
+	auto lel = LevelEditorLayer::get();
 
 	if (ImGui::Selectable("Select All")) {
 		ErGui::selectAllObjects();
@@ -188,7 +192,7 @@ void renderContextForNoObjects() {
 	ImGui::Dummy({ 5.f, 5.f });
 
 	if (ImGui::Selectable("All Layer")) {
-		LevelEditorLayer::get()->m_currentLayer = -1;
+		lel->m_currentLayer = -1;
 	}
 	if (ImGui::Selectable("Next Free Layer")) {
 		ErGui::nextFreeLayer();
@@ -197,7 +201,7 @@ void renderContextForNoObjects() {
 	ImGui::Dummy({ 5.f, 5.f });
 
 	if (ImGui::Selectable("Level Settings")) {
-		LevelEditorLayer::get()->m_editorUI->onSettings(nullptr);
+		editorUI->onSettings(nullptr);
 	}
 }
 

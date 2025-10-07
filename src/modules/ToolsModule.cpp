@@ -5,26 +5,6 @@
 #include "ObjectListModule.hpp"
 #include "EditGroupModule.hpp"
 
-void parseObjects(const char* tabName, EditorUI* editorUI) {
-	auto bsl = static_cast<BoomScrollLayer*>(editorUI->getChildByID(tabName)->getChildren()->objectAtIndex(0));
-	auto el = static_cast<ExtendedLayer*>(bsl->getChildren()->objectAtIndex(0));
-	for (ButtonPage* bp : CCArrayExt<ButtonPage*>(el->getChildren())) {
-		auto menu = static_cast<CCMenu*>(bp->getChildren()->objectAtIndex(0));
-		for (CreateMenuItem* cmi : CCArrayExt<CreateMenuItem*>(menu->getChildren())) {
-			auto bs = static_cast<ButtonSprite*>(cmi->getChildren()->objectAtIndex(0));
-			for (CCNode* gameObject : CCArrayExt<CCNode*>(bs->getChildren())) {
-				if (dynamic_cast<GameObject*>(gameObject)) {
-					std::cout << dynamic_cast<GameObject*>(gameObject)->m_objectID << ", ";
-				}
-			}
-		}
-	}
-}
-
-void EditorUI_toggleSpecialEditButtons(EditorUI* eui) {
-	return reinterpret_cast<void(__thiscall*)(EditorUI*)>(geode::base::get() + 0x119010)(eui);
-}
-
 void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 	float lastButtonX2 = ImGui::GetItemRectMax().x;
@@ -41,7 +21,7 @@ void ErGui::renderToolsModule1() {
 	ImGui::GetWindowDockNode()->LocalFlags = ImGuiDockNodeFlags_NoTabBar | ImGuiDockNodeFlags_NoDocking;
 
 	auto gameManager = GameManager::sharedState();
-	auto editorUI = gameManager->getEditorLayer()->m_editorUI;
+	auto editorUI = EditorUI::get();
 
 	const ImVec2 BTN_SIZE = ImVec2(24.f, 30.f);
 	const ImVec2 DUMMY_PAD = ImVec2(0.f, 2.f);
@@ -90,7 +70,7 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_MDI_ROTATE_RIGHT, &rotationBool, 0, BTN_SIZE, selectableRounding)) {
 		gameManager->setGameVariable("0007", rotationBool);
 		if (rotationBool) {
-			EditorUI_toggleSpecialEditButtons(editorUI);
+			editorUI->toggleSpecialEditButtons();
 		}
 		else {
 			editorUI->m_rotationControl->setVisible(false);
@@ -117,8 +97,8 @@ void ErGui::renderToolsModule1() {
 	ImGui::Separator();
 
 
-	auto selectedObject = EditorUI::get()->m_selectedObject;
-	auto selectedObjects = EditorUI::get()->m_selectedObjects;
+	auto selectedObject = editorUI->m_selectedObject;
+	auto selectedObjects = editorUI->m_selectedObjects;
 	auto copyStateObj = LevelEditorLayer::get()->m_copyStateObject;
 
 	ImGui::BeginDisabled(selectedObject == nullptr);
@@ -248,7 +228,7 @@ void ErGui::renderToolsModule1() {
 	//if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 	//	ImGui::SetTooltip("DEBUG: Shows touched position");
 	//ImGui::Checkbox("DbgTDN", &ErGui::dbgTDN);
-	if (geode::Mod::get()->getSavedValue<bool>("show-zoom-controls")) {
+	if (geode::Mod::get()->getSavedValue<bool>("show-zoom-controls", true)) {
 		ImGui::Separator();
 
 		if (ImGui::Selectable(ICON_MDI_MAGNIFY_PLUS, false, 0, BTN_SIZE, selectableRounding))
@@ -288,7 +268,7 @@ void ErGui::renderToolsModule2() {
 	}
 
 	auto gameManager = GameManager::sharedState();
-	auto editorUI = gameManager->getEditorLayer()->m_editorUI;
+	auto editorUI = EditorUI::get();
 
 	switch (editorUI->m_selectedMode) {
 		case 1: //Delete
@@ -462,7 +442,7 @@ void ErGui::renderToolsModule2() {
 			ImGui::SameLine();
 
 
-			int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+			int selectMode = Mod::get()->getSavedValue<int>("select-mode", 1);
 
 			ImGui::RadioButton("Additive##RADIO",		&selectMode, 1);
 			ImGui::SameLine();
@@ -482,7 +462,7 @@ void ErGui::renderToolsModule2() {
 
 			//ImGui::SameLine();
 			//ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-			//float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
+			//float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier", 1.f);
 			//if (ImGui::DragFloat("Zoom Mul", &zoomMul, 0.1f) && zoomMul >= 0.1f && zoomMul <= 10.f) {
 			//	Mod::get()->setSavedValue("zoom-multiplier", zoomMul);
 			//	editorUI->updateGridNodeSize();
@@ -491,7 +471,7 @@ void ErGui::renderToolsModule2() {
 			ImGui::SameLine();
 
 			
-			float gridSize = Mod::get()->template getSavedValue<float>("grid-size");
+			float gridSize = Mod::get()->template getSavedValue<float>("grid-size", 30.f);
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			if (ImGui::DragFloat("Grid Size", &gridSize, 0.5f) && gridSize >= 0.1f) {
 				Mod::get()->setSavedValue("grid-size", gridSize);
@@ -507,8 +487,6 @@ void ErGui::renderToolsModule2() {
 			if (ImGui::Button("90##GridSizePreset"))	{ gridSize = 90.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 3 blocks
 			if (ImGui::Button("150##GridSizePreset"))	{ gridSize = 150.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 5 blocks
 			ImGui::Text("Grid Presets");
-			//if (ImGui::Button("LOL"))
-			//	std::cout << editorUI->m_editorLayer->m_drawGridLayer->m_gridSize << "\n";
 			break;
 		}
 		case 5: //Image

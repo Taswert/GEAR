@@ -218,6 +218,8 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 				ImVec2 buttonSize, bool isCustomTab = false, bool isFavoriteTab = false) {
 
 	std::vector<ErGui::ObjectConfig> visibleButtons;
+	auto editorUI = EditorUI::get();
+	auto mod = geode::Mod::get();
 
 	// filter
 	if (filter.IsActive()) {
@@ -261,11 +263,11 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 						std::string strId = "##OBJECT-" + name + std::to_string(objects[j]);
 
 						if (ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab)) {
-							if (geode::Mod::get()->getSavedValue<bool>("autoswitch-to-build-mode")) {
-								EditorUI::get()->m_selectedMode = 2;
+							if (mod->getSavedValue<bool>("autoswitch-to-build-mode", true)) {
+								editorUI->m_selectedMode = 2;
 							}
 
-							if (geode::Mod::get()->getSavedValue<bool>("hide-object-list-popup")) {
+							if (mod->getSavedValue<bool>("hide-object-list-popup", true)) {
 								ImGui::CloseCurrentPopup();
 							}
 						}
@@ -280,8 +282,8 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 				for (int j = 0; j < objects.size(); j++) {
 					std::string strId = "##OBJECT-" + name + std::to_string(objects[j]);
 					if (ImageButtonFromFrameName(visibleButtons[i], j, strId.c_str(), buttonSize, isFavoriteTab)) {
-						if (geode::Mod::get()->getSavedValue<bool>("autoswitch-to-build-mode")) {
-							EditorUI::get()->m_selectedMode = 2;
+						if (mod->getSavedValue<bool>("autoswitch-to-build-mode", true)) {
+							editorUI->m_selectedMode = 2;
 						}
 					}
 
@@ -298,16 +300,16 @@ void objectTabCreate(std::string name, std::vector<ErGui::ObjectConfig> const &m
 		if (isCustomTab) {
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 11));
 			ImGui::Separator();
-			if (ImGui::Button(ICON_MDI_PLUS, ImVec2(30, 30))) EditorUI::get()->onNewCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_PLUS, ImVec2(30, 30))) editorUI->onNewCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button(ICON_MDI_MINUS, ImVec2(30, 30))) EditorUI::get()->onDeleteCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_MINUS, ImVec2(30, 30))) editorUI->onDeleteCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button(ICON_MDI_ARROW_LEFT_BOLD, ImVec2(30, 30))) EditorUI::get()->orderDownCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_ARROW_LEFT_BOLD, ImVec2(30, 30))) editorUI->orderDownCustomItem(nullptr);
 			ImGui::SameLine();
 
-			if (ImGui::Button(ICON_MDI_ARROW_RIGHT_BOLD, ImVec2(30, 30))) EditorUI::get()->orderUpCustomItem(nullptr);
+			if (ImGui::Button(ICON_MDI_ARROW_RIGHT_BOLD, ImVec2(30, 30))) editorUI->orderUpCustomItem(nullptr);
 			ImGui::PopStyleVar();
 		}
 	}
@@ -328,7 +330,7 @@ void ErGui::renderObjectList() {
 
 	ErGui::objectCfg[CUSTOM_TAB_KEY] = getCustomObjectsConfig();
 
-	for (auto key : keyOrder) {
+	for (const auto& key : keyOrder) {
 		objectTabCreate(key, ErGui::objectCfg[key], filter, buttonSize, key == CUSTOM_TAB_KEY, key == FAVOURITES_TAB_KEY);
 	}
 

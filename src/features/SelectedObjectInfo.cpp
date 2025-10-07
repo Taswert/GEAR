@@ -47,7 +47,7 @@ void makeLabelFromSet(std::string& selectedInfoString, std::set<int> mySet, cons
 			selectedInfoString += nameSingle + std::string(": ");
 		else
 			selectedInfoString += nameMult + std::string(": ");
-		for (auto id : mySet) {
+		for (const auto& id : mySet) {
 			selectedInfoString += std::to_string(id);
 			if (id != *std::prev(mySet.end()))
 				selectedInfoString += ", ";
@@ -57,13 +57,16 @@ void makeLabelFromSet(std::string& selectedInfoString, std::set<int> mySet, cons
 }
 
 void soiLabelUpdate() {
-	if (!EditorUI::get()) return;
+	auto editorUI = EditorUI::get();
+	if (!editorUI) return;
 
-	auto obj = EditorUI::get()->m_selectedObject;
-	auto objArr = EditorUI::get()->m_selectedObjects;
+	auto mod = geode::Mod::get();
+
+	auto obj = editorUI->m_selectedObject;
+	auto objArr = editorUI->m_selectedObjects;
 
 	// Updating my object info label
-	if (auto label = dynamic_cast<CCLabelBMFont*>(LevelEditorLayer::get()->getChildByID("object-info-label"_spr))) {
+	if (auto label = typeinfo_cast<CCLabelBMFont*>(LevelEditorLayer::get()->getChildByID("object-info-label"_spr))) {
 		//---- Single Selected
 		// Pos: //
 		// Rot: //
@@ -86,26 +89,26 @@ void soiLabelUpdate() {
 
 		std::string selectedInfoString = "";
 
-		bool soiPosition =		geode::Mod::get()->getSavedValue<bool>("soi-position");
-		bool soiRotation =		geode::Mod::get()->getSavedValue<bool>("soi-rotation");
-		bool soiScale =			geode::Mod::get()->getSavedValue<bool>("soi-scale");
-		bool soiColor =			geode::Mod::get()->getSavedValue<bool>("soi-color");
-		bool soiHSV =			geode::Mod::get()->getSavedValue<bool>("soi-hsv");
-		bool soiGroups =		geode::Mod::get()->getSavedValue<bool>("soi-groups");
-		bool soiZLayer =		geode::Mod::get()->getSavedValue<bool>("soi-zlayer");
-		bool soiZOrder =		geode::Mod::get()->getSavedValue<bool>("soi-zorder");
-		bool soiObjectID =		geode::Mod::get()->getSavedValue<bool>("soi-objectid");
-		bool soiTargetGroup =	geode::Mod::get()->getSavedValue<bool>("soi-targetgroup");
-		bool soiItemID =		geode::Mod::get()->getSavedValue<bool>("soi-itemid");
-		bool soiBlockID =		geode::Mod::get()->getSavedValue<bool>("soi-blockid");
-		bool soiParticles =		geode::Mod::get()->getSavedValue<bool>("soi-particles");
-		bool soiHidden =		geode::Mod::get()->getSavedValue<bool>("soi-hidden");
-		bool soiNoTouch =		geode::Mod::get()->getSavedValue<bool>("soi-no-touch");
-		bool soiHighDetail =	geode::Mod::get()->getSavedValue<bool>("soi-high-detail");
-		bool soiObjectCount =	geode::Mod::get()->getSavedValue<bool>("soi-object-count");
+		bool soiPosition =		mod->getSavedValue<bool>("soi-position", true);
+		bool soiRotation =		mod->getSavedValue<bool>("soi-rotation", true);
+		bool soiScale =			mod->getSavedValue<bool>("soi-scale", true);
+		bool soiColor =			mod->getSavedValue<bool>("soi-color", true);
+		bool soiHSV =			mod->getSavedValue<bool>("soi-hsv", false);
+		bool soiGroups =		mod->getSavedValue<bool>("soi-groups", true);
+		bool soiZLayer =		mod->getSavedValue<bool>("soi-zlayer", true);
+		bool soiZOrder =		mod->getSavedValue<bool>("soi-zorder", true);
+		bool soiObjectID =		mod->getSavedValue<bool>("soi-objectid", false);
+		bool soiTargetGroup =	mod->getSavedValue<bool>("soi-targetgroup", true);
+		bool soiItemID =		mod->getSavedValue<bool>("soi-itemid", false);
+		bool soiBlockID =		mod->getSavedValue<bool>("soi-blockid", false);
+		bool soiParticles =		mod->getSavedValue<bool>("soi-particles", true);
+		bool soiHidden =		mod->getSavedValue<bool>("soi-hidden", true);
+		bool soiNoTouch =		mod->getSavedValue<bool>("soi-no-touch", true);
+		bool soiHighDetail =	mod->getSavedValue<bool>("soi-high-detail", false);
+		bool soiObjectCount =	mod->getSavedValue<bool>("soi-object-count", true);
 
 		if (obj) {
-			auto eObj = dynamic_cast<EffectGameObject*>(obj);
+			auto eObj = typeinfo_cast<EffectGameObject*>(obj);
 
 			// Pos
 			if (soiPosition) {
@@ -210,7 +213,7 @@ void soiLabelUpdate() {
 			// Particle Count
 			if (soiParticles) {
 				int particleCount = 0;
-				if (auto pobj = dynamic_cast<ParticleGameObject*>(obj)) {
+				if (auto pobj = typeinfo_cast<ParticleGameObject*>(obj)) {
 					std::string particleSize = pobj->m_particleData;
 					if (particleSize != "") {
 						particleSize = particleSize.erase(particleSize.find_first_of('a'));
@@ -249,7 +252,7 @@ void soiLabelUpdate() {
 
 			// Object Count 
 			if (soiObjectCount) selectedInfoString += "Objects: " + std::to_string(objArr->count()) + "\n";
-			auto randomObj = dynamic_cast<GameObject*>(objArr->objectAtIndex(0));
+			auto randomObj = typeinfo_cast<GameObject*>(objArr->objectAtIndex(0));
 
 			int minBaseColor = randomObj->m_baseColor->m_colorID;
 			int maxBaseColor = randomObj->m_baseColor->m_colorID;
@@ -274,7 +277,7 @@ void soiLabelUpdate() {
 			int particleCount = 0;	
 			for (auto objInArr : CCArrayExt<GameObject*>(objArr)) {
 
-				auto eObj = dynamic_cast<EffectGameObject*>(objInArr);
+				auto eObj = typeinfo_cast<EffectGameObject*>(objInArr);
 
 				// Base Color
 				if (objInArr->m_baseColor->m_colorID < minBaseColor) minBaseColor = objInArr->m_baseColor->m_colorID;
@@ -288,7 +291,7 @@ void soiLabelUpdate() {
 
 				// Groups
 				if (objInArr->m_groups) {
-					for (auto id : *objInArr->m_groups) {
+					for (const auto& id : *objInArr->m_groups) {
 						if (id == 0) break;
 						groupIDs.insert(id);
 					}
@@ -321,7 +324,7 @@ void soiLabelUpdate() {
 				}
 
 				// Particle Count
-				if (auto pobj = dynamic_cast<ParticleGameObject*>(objInArr)) {
+				if (auto pobj = typeinfo_cast<ParticleGameObject*>(objInArr)) {
 					std::string particleSize = pobj->m_particleData;
 					if (particleSize != "") {
 						particleSize = particleSize.erase(particleSize.find_first_of('a'));
@@ -382,7 +385,6 @@ class $modify(CCScheduler) {
 		static float dtSum = 0.f;
 		if (g_soiNeedsUpdate) {
 			dtSum += dt;
-			//std::cout << dtSum << "Updated\n";
 			soiLabelUpdate();
 			g_soiNeedsUpdate = false;
 		}

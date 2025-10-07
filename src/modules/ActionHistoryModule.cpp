@@ -50,7 +50,7 @@ void ErGui::renderActionHistoryModule() {
 	if (ImGui::CollapsingHeader("Undo List")) {
 		auto undoArray = GameManager::sharedState()->m_levelEditorLayer->m_undoObjects;
 		int i = 0;
-		for (auto undoObject : CCArrayExt<UndoObject*>(undoArray)) {
+		for (const auto& undoObject : CCArrayExt<UndoObject*>(undoArray)) {
 			std::string myText = "[";
 			myText += std::to_string(i);
 			myText += "]:";
@@ -87,7 +87,7 @@ void ErGui::renderActionHistoryModule() {
 	if (ImGui::CollapsingHeader("Redo List")) {
 		auto redoArray = GameManager::sharedState()->m_levelEditorLayer->m_redoObjects;
 		int i = 0;
-		for (auto redoObject : CCArrayExt<UndoObject*>(redoArray)) {
+		for (const auto& redoObject : CCArrayExt<UndoObject*>(redoArray)) {
 			std::string myText = "[";
 			myText += std::to_string(i);
 			myText += "]: ";

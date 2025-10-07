@@ -189,7 +189,7 @@ namespace ErGui {
 
 	void addObjectsToUndoList(CCArray* objArr, UndoCommand command) {
 		CCArray* copyObjArr = CCArray::create();
-		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		for (const auto& obj : CCArrayExt<GameObject*>(objArr)) {
 			auto objCopy = GameObjectCopy::create(obj);
 			copyObjArr->addObject(objCopy);
 			//objCopy->resetObject();
@@ -251,7 +251,8 @@ namespace ErGui {
 
 	void nextFreeLayer() {
 		std::set<int> layersSet;
-		for (auto obj : CCArrayExt<GameObject*>(LevelEditorLayer::get()->m_objects)) {
+		auto lel = LevelEditorLayer::get();
+		for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
 			if (obj->m_editorLayer >= 0)
 				layersSet.insert(obj->m_editorLayer);
 			if (obj->m_editorLayer2 > 0)
@@ -266,7 +267,7 @@ namespace ErGui {
 			}
 		}
 
-		LevelEditorLayer::get()->m_currentLayer = result;
+		lel->m_currentLayer = result;
 	}
 
 	CCRect normalizeRect(CCRect rect) {

@@ -68,9 +68,9 @@ std::string colorPickerPopup(std::string btnStr, ColorAction* ccMyColor) {
 		float hsv[4] = { savedHueEC, savedSaturationEC, savedValueEC, ccMyColor->m_fromOpacity };
 		ImGuiColorEditFlags flags =
 			ImGuiColorEditFlags_InputHSV  | ImGuiColorEditFlags_AlphaBar;
-		if (geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel"))
+		if (geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel", true))
 			flags |= ImGuiColorEditFlags_PickerHueWheel;
-		if (!geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel"))
+		if (!geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel", false))
 			flags |= ImGuiColorEditFlags_DisableWheelRot;
 
 		if (ccMyColor->m_copyID == 0) {

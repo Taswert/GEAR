@@ -4,22 +4,26 @@ static void renderMenuBar() {
 	if (ImGui::BeginMenuBar()) {
         bool undoEnabled = false;
         bool redoEnabled = false;
-        
-        if (LevelEditorLayer::get()->m_undoObjects && LevelEditorLayer::get()->m_undoObjects->count() > 0)
+        auto editorUI = EditorUI::get();
+        auto lel = LevelEditorLayer::get();
+        auto undoObjects = lel->m_undoObjects;
+        auto redoObjects = lel->m_redoObjects;
+
+        if (undoObjects && undoObjects->count() > 0)
             undoEnabled = true;
-        if (LevelEditorLayer::get()->m_redoObjects && LevelEditorLayer::get()->m_redoObjects->count() > 0)
+        if (redoObjects && redoObjects->count() > 0)
             redoEnabled = true;
         
         if (ImGui::MenuItem("Undo", nullptr, false, undoEnabled)) {
-			EditorUI::get()->undoLastAction(nullptr);
+			editorUI->undoLastAction(nullptr);
 		}
 
 		if (ImGui::MenuItem("Redo", nullptr, false, redoEnabled)) {
-			EditorUI::get()->redoLastAction(nullptr);
+            editorUI->redoLastAction(nullptr);
 		}
 
         if (ImGui::MenuItem("Hide UI")) {
-            LevelEditorLayer::get()->getChildByID("hideUIMenu"_spr)->getChildByID("hideUIBtn"_spr)->setVisible(true);
+            lel->getChildByID("hideUIMenu"_spr)->getChildByID("hideUIBtn"_spr)->setVisible(true);
             ErGui::hideUI = !ErGui::hideUI;
         }
 
@@ -41,7 +45,8 @@ static void renderMenuBar() {
             ImGui::Dummy({ 5.f, 5.f }); // Create / Edit
             
             bool objectsSelected = false;
-            if (EditorUI::get()->m_selectedObjects || EditorUI::get()->m_selectedObjects->count() > 0)
+            auto selectedObjects = editorUI->m_selectedObjects;
+            if (selectedObjects || selectedObjects->count() > 0)
                 objectsSelected = true;
             
 
@@ -128,41 +133,41 @@ static void renderMenuBar() {
             bool increaseUndoRedo =         gm->getGameVariable("0013");    //
             bool smallWarpBtns =            gm->getGameVariable("0169");    //
             bool ignoreDamage =             gm->getGameVariable("0009");    //
-            bool triangleColorWheel =       geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel");     //
-            bool rotateColorWheel =         geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel");       //
-            bool hideObjectListPopup =      geode::Mod::get()->getSavedValue<bool>("hide-object-list-popup");   //
-            bool autoswitchToBuildMode =    geode::Mod::get()->getSavedValue<bool>("autoswitch-to-build-mode"); //
-            bool showLinkControls =         gm->getGameVariable("0097");                                        // 
-            bool showZoomControls =         geode::Mod::get()->getSavedValue<bool>("show-zoom-controls");       // Shows zoom controls buttons on toolbox
+            bool triangleColorWheel =       geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel", true);       //
+            bool rotateColorWheel =         geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel", false);        //
+            bool hideObjectListPopup =      geode::Mod::get()->getSavedValue<bool>("hide-object-list-popup", true);     //
+            bool autoswitchToBuildMode =    geode::Mod::get()->getSavedValue<bool>("autoswitch-to-build-mode", true);   //
+            bool showLinkControls =         gm->getGameVariable("0097");                                                // 
+            bool showZoomControls =         geode::Mod::get()->getSavedValue<bool>("show-zoom-controls", true);         // Shows zoom controls buttons on toolbox
             bool showObjectInfo =           gm->getGameVariable("0041");
-			bool fillSelectionZone =        geode::Mod::get()->getSavedValue<bool>("fill-selection-zone");      // Fills selection zone with solid color
-			bool hoveringSelects =          geode::Mod::get()->getSavedValue<bool>("hovering-selects");         // Hovers objects in the selection zone
-            bool deselectControls =         geode::Mod::get()->getSavedValue<bool>("deselect-controls");        // Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
-            bool autoBuildhelper =          geode::Mod::get()->getSavedValue<bool>("auto-buildhelper");         // Automatically applies Build helper on duplicated objects
-			bool gamewindowStaticRatio =    geode::Mod::get()->getSavedValue<bool>("gamewindow-static-ratio");  // Game window keeps executable window ratio
+			bool fillSelectionZone =        geode::Mod::get()->getSavedValue<bool>("fill-selection-zone", false);       // Fills selection zone with solid color
+			bool hoveringSelects =          geode::Mod::get()->getSavedValue<bool>("hovering-selects", true);           // Hovers objects in the selection zone
+            bool deselectControls =         geode::Mod::get()->getSavedValue<bool>("deselect-controls", false);         // Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
+            bool autoBuildhelper =          geode::Mod::get()->getSavedValue<bool>("auto-buildhelper", false);          // Automatically applies Build helper on duplicated objects
+			bool gamewindowStaticRatio =    geode::Mod::get()->getSavedValue<bool>("gamewindow-static-ratio", false);   // Game window keeps executable window ratio
             //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
 
 
             bool isAnyItemClicked = false;
             
             if (ImGui::BeginMenu("Selected Object Info")) {
-                bool soiPosition =      geode::Mod::get()->getSavedValue<bool>("soi-position");
-                bool soiRotation =      geode::Mod::get()->getSavedValue<bool>("soi-rotation");
-                bool soiScale =         geode::Mod::get()->getSavedValue<bool>("soi-scale");
-                bool soiColor =         geode::Mod::get()->getSavedValue<bool>("soi-color");
-                bool soiHSV =           geode::Mod::get()->getSavedValue<bool>("soi-hsv");
-                bool soiGroups =        geode::Mod::get()->getSavedValue<bool>("soi-groups");
-                bool soiZLayer =        geode::Mod::get()->getSavedValue<bool>("soi-zlayer");
-                bool soiZOrder =        geode::Mod::get()->getSavedValue<bool>("soi-zorder");
-                bool soiObjectID =      geode::Mod::get()->getSavedValue<bool>("soi-objectid");
-                bool soiTargetGroup =   geode::Mod::get()->getSavedValue<bool>("soi-targetgroup");
-                bool soiItemID =        geode::Mod::get()->getSavedValue<bool>("soi-itemid");
-                bool soiBlockID =       geode::Mod::get()->getSavedValue<bool>("soi-blockid");
-                bool soiParticles =     geode::Mod::get()->getSavedValue<bool>("soi-particles");
-                bool soiHidden =        geode::Mod::get()->getSavedValue<bool>("soi-hidden");
-                bool soiNoTouch =       geode::Mod::get()->getSavedValue<bool>("soi-no-touch");
-                bool soiHighDetail =    geode::Mod::get()->getSavedValue<bool>("soi-high-detail");
-                bool soiObjectCount =   geode::Mod::get()->getSavedValue<bool>("soi-object-count");
+                bool soiPosition =      geode::Mod::get()->getSavedValue<bool>("soi-position", true);
+                bool soiRotation =      geode::Mod::get()->getSavedValue<bool>("soi-rotation", true);
+                bool soiScale =         geode::Mod::get()->getSavedValue<bool>("soi-scale", true);
+                bool soiColor =         geode::Mod::get()->getSavedValue<bool>("soi-color", true);
+                bool soiHSV =           geode::Mod::get()->getSavedValue<bool>("soi-hsv", false);
+                bool soiGroups =        geode::Mod::get()->getSavedValue<bool>("soi-groups", true);
+                bool soiZLayer =        geode::Mod::get()->getSavedValue<bool>("soi-zlayer", true);
+                bool soiZOrder =        geode::Mod::get()->getSavedValue<bool>("soi-zorder", true);
+                bool soiObjectID =      geode::Mod::get()->getSavedValue<bool>("soi-objectid", false);
+                bool soiTargetGroup =   geode::Mod::get()->getSavedValue<bool>("soi-targetgroup", true);
+                bool soiItemID =        geode::Mod::get()->getSavedValue<bool>("soi-itemid", false);
+                bool soiBlockID =       geode::Mod::get()->getSavedValue<bool>("soi-blockid", false);
+                bool soiParticles =     geode::Mod::get()->getSavedValue<bool>("soi-particles", true);
+                bool soiHidden =        geode::Mod::get()->getSavedValue<bool>("soi-hidden", true);
+                bool soiNoTouch =       geode::Mod::get()->getSavedValue<bool>("soi-no-touch", true);
+                bool soiHighDetail =    geode::Mod::get()->getSavedValue<bool>("soi-high-detail", false);
+                bool soiObjectCount =   geode::Mod::get()->getSavedValue<bool>("soi-object-count", true);
 
                 ImGui::MenuItem("Show Position ", NULL, &soiPosition);
                 ImGui::MenuItem("Show Rotation ", NULL, &soiRotation);
@@ -208,7 +213,7 @@ static void renderMenuBar() {
                 
                 // uh 
                 if (LevelEditorLayer::get()) {
-                    if (auto label = dynamic_cast<CCLabelBMFont*>(LevelEditorLayer::get()->getChildByID("object-info-label"_spr)))
+                    if (auto label = typeinfo_cast<CCLabelBMFont*>(LevelEditorLayer::get()->getChildByID("object-info-label"_spr)))
                         if (showObjectInfo)
                             label->setVisible(true);
                         else
@@ -395,7 +400,7 @@ static void renderMenuBar() {
                 geode::Mod::get()->setSavedValue<bool>("gamewindow-static-ratio", gamewindowStaticRatio);
                 
 
-                LevelEditorLayer::get()->updateOptions();
+                lel->updateOptions();
             }
             //geode::Mod::get()->setSavedValue<bool>("select-direction-from-cursor", selectDirectionFromCursor);
 
@@ -404,11 +409,11 @@ static void renderMenuBar() {
 
         if (ImGui::MenuItem("Level Settings")) {
             bool foundSettings = false;
-            for (auto child : CCArrayExt<CCNode*>(CCDirector::sharedDirector()->getRunningScene()->getChildren())) {
-                if (dynamic_cast<LevelSettingsLayer*>(child)) foundSettings = true;
+            for (const auto& child : CCArrayExt<CCNode*>(CCDirector::sharedDirector()->getRunningScene()->getChildren())) {
+                if (typeinfo_cast<LevelSettingsLayer*>(child)) foundSettings = true;
             }
             if (!foundSettings)
-                LevelEditorLayer::get()->m_editorUI->onSettings(nullptr);
+                lel->m_editorUI->onSettings(nullptr);
         }
 
 		ImGui::EndMenuBar();

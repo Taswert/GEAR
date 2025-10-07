@@ -69,18 +69,19 @@ void selectObjectWithFilter(GameObject* obj, bool p1) {
 }
 
 void manualObjectsSelect(CCArray* objsInShape) {
-	int selectMode = Mod::get()->getSavedValue<int>("select-mode");
+	int selectMode = Mod::get()->getSavedValue<int>("select-mode", 1);
+	auto editorUI = EditorUI::get();
 
 	switch (selectMode) {
 		case 3: { // Intersective
 			CCArray* objArr = CCArray::create();
 
-			for (auto obj : CCArrayExt<GameObject*>(objsInShape)) {
+			for (const auto& obj : CCArrayExt<GameObject*>(objsInShape)) {
 				if (obj->m_isSelected) {
 					objArr->addObject(obj);
 				}
 			}
-			EditorUI::get()->deselectAll();
+			editorUI->deselectAll();
 			if (objArr->count() > 0) {
 				selectObjectsWithFilter(objArr, false);
 			}
@@ -89,11 +90,11 @@ void manualObjectsSelect(CCArray* objsInShape) {
 		case 2: { // Subtractive
 			CCArray* sfr = ErGui::selectFilterRealization(objsInShape);
 			for (auto obj : CCArrayExt<GameObject*>(sfr)) {
-				EditorUI::get()->deselectObject(obj);
+				editorUI->deselectObject(obj);
 			}
-			if (EditorUI::get()->m_selectedObjects->count() == 1) {
-				EditorUI::get()->m_selectedObject = static_cast<GameObject*>(EditorUI::get()->m_selectedObjects->objectAtIndex(0));
-				EditorUI::get()->m_selectedObjects->removeAllObjects();
+			if (editorUI->m_selectedObjects->count() == 1) {
+				editorUI->m_selectedObject = static_cast<GameObject*>(editorUI->m_selectedObjects->objectAtIndex(0));
+				editorUI->m_selectedObjects->removeAllObjects();
 			}
 			break;
 		}
@@ -137,7 +138,7 @@ void exitEditor() { // EditorUI is already destroyed here
 	// Save Object Config
 	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
 	matjson::Value j;
-	for (auto key : ErGui::keyOrder) {
+	for (const auto& key : ErGui::keyOrder) {
 		j[key] = ErGui::objectCfg[key];
 	}
 	std::ofstream oCfgFile = std::ofstream(cfgDir);
@@ -211,7 +212,7 @@ class $modify(GearEditorUI, EditorUI) {
 
 	CCArray* pasteObjects(gd::string p0, bool p1, bool p2) {
 		auto objArr = EditorUI::pasteObjects(p0, p1, p2);
-		if (geode::Mod::get()->getSavedValue<bool>("auto-buildhelper") && !p1 && !p2) {
+		if (geode::Mod::get()->getSavedValue<bool>("auto-buildhelper", false) && !p1 && !p2) {
 			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
 		}
 		return objArr;
@@ -249,8 +250,6 @@ class $modify(GearEditorUI, EditorUI) {
 		else {
 			obj->m_isSelected = 0;
 		}
-
-		//std::cout << obj->m_colorSprite << "\n";
 	}
 
 	void selectObjects(CCArray* objArr, bool p1) {
@@ -416,7 +415,7 @@ class $modify(GearEditorUI, EditorUI) {
 
 
 		cocos2d::ccColor4F lassoColor = { 0.f, 1.f, 0.f, 1.f };
-		switch (Mod::get()->getSavedValue<int>("select-mode")) {
+		switch (Mod::get()->getSavedValue<int>("select-mode", 1)) {
 		case 2:	// Subtractive
 			lassoColor = { 1.f, 0.f, 1.f, 1.f };
 			break;
@@ -429,7 +428,7 @@ class $modify(GearEditorUI, EditorUI) {
 		}
 
 		if (!ErGui::isFreeMoveAndObjectTouching && !someControlTouched) {
-			ccColor4F selectionFillColor = Mod::get()->getSavedValue<bool>("fill-selection-zone") ?
+			ccColor4F selectionFillColor = Mod::get()->getSavedValue<bool>("fill-selection-zone", false) ?
 				ccColor4F{ lassoColor.r - lassoColor.r / 1.3f, lassoColor.g - lassoColor.g / 1.3f, lassoColor.b - lassoColor.b / 1.3f, 0.1f } :
 				ccColor4F{ 0, 0, 0, 0 };
 
@@ -442,7 +441,7 @@ class $modify(GearEditorUI, EditorUI) {
 				if (ErGui::editorUISwipePoints.size() > 1) {
 					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), selectionFillColor, 0.3f, lassoColor);
 				}
-				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects")) 
+				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects", true)) 
 					ErGui::forEachObject(this->m_editorLayer, ErGui::hoverObjectLasso);
 				return;
 			}
@@ -465,7 +464,7 @@ class $modify(GearEditorUI, EditorUI) {
 					//ErGui::editorUIDrawNode->drawRect(ErGui::selectRect, { 1.f - 1.f / 1.33f, 0, 0, 0.1f }, 0.3f, {1.f, 0, 0, 1.f});
 					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), selectionFillColor, 0.3f, lassoColor);
 				}
-				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects")) {
+				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects", true)) {
 					ErGui::forEachObject(this->m_editorLayer, ErGui::hoverObjectSquare); // Replace with hoverObjectSquare when done properly
 				}
 			}
@@ -510,6 +509,9 @@ class $modify(GearEditorUI, EditorUI) {
 		}
 		
 
+		auto lel = LevelEditorLayer::get();
+		auto currentLayer = lel->m_currentLayer;
+
 		if (!ErGui::isFreeMoveAndObjectTouching) {
 			//LASSO
 			if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
@@ -518,7 +520,7 @@ class $modify(GearEditorUI, EditorUI) {
 				CCArray* objArr = CCArray::create();
 				for (auto obj : CCArrayExt<GameObject*>(GameManager::sharedState()->getEditorLayer()->m_objects)) {
 
-					if (!(obj->m_editorLayer == LevelEditorLayer::get()->m_currentLayer || (obj->m_editorLayer2 == LevelEditorLayer::get()->m_currentLayer && obj->m_editorLayer2 != 0) || this->m_editorLayer->m_currentLayer == -1)) continue;
+					if (!(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)) continue;
 
 					auto editorLayer = GameManager::sharedState()->getEditorLayer();
 					auto cameraPos = editorLayer->m_objectLayer->getPosition();
@@ -541,10 +543,11 @@ class $modify(GearEditorUI, EditorUI) {
 				GameObject* selectedObj = this->m_selectedObject; // could be nullptr
 
 				CCArray* undoObjects = CCArray::create();
-				undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
+				auto lelUndoObjects = lel->m_undoObjects;
+				undoObjects->addObjectsFromArray(lelUndoObjects);
 				EditorUI::ccTouchEnded(touch, event);
-				LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
-				LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+				lelUndoObjects->removeAllObjects();
+				lelUndoObjects->addObjectsFromArray(undoObjects);
 				this->deselectAll();
 
 				this->selectObjects(selectedObjs, false);
@@ -555,7 +558,7 @@ class $modify(GearEditorUI, EditorUI) {
 				ErGui::editorUIDrawNode->clear();
 
 				if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
-					LevelEditorLayer::get()->m_undoObjects->removeLastObject();
+					lelUndoObjects->removeLastObject();
 				}
 
 				return;
@@ -571,7 +574,8 @@ class $modify(GearEditorUI, EditorUI) {
 
 				// saving undo list
 				CCArray* undoObjects = CCArray::create();
-				undoObjects->addObjectsFromArray(LevelEditorLayer::get()->m_undoObjects);
+				auto lelUndoObjects = lel->m_undoObjects;
+				undoObjects->addObjectsFromArray(lelUndoObjects);
 
 
 				EditorUI::ccTouchEnded(touch, event);
@@ -587,13 +591,13 @@ class $modify(GearEditorUI, EditorUI) {
 				if (selectedObj) this->selectObject(selectedObj, false);
 
 				// loading undo list
-				LevelEditorLayer::get()->m_undoObjects->removeAllObjects();
-				LevelEditorLayer::get()->m_undoObjects->addObjectsFromArray(undoObjects);
+				lelUndoObjects->removeAllObjects();
+				lelUndoObjects->addObjectsFromArray(undoObjects);
 
 				this->createUndoSelectObject(false);
 				manualObjectsSelect(selectedObjsDelta);
 				if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
-					LevelEditorLayer::get()->m_undoObjects->removeLastObject();
+					lelUndoObjects->removeLastObject();
 				}
 
 				return;
@@ -612,7 +616,7 @@ class $modify(GearEditorUI, EditorUI) {
 
 
 			// Disable Rotation/Scale/Transform controls when clicked on empty space
-			if (this->m_editorLayer->m_objectLayer->getPosition() == ErGui::beginBatchLayerPosition && Mod::get()->getSavedValue<bool>("deselect-controls")) {
+			if (this->m_editorLayer->m_objectLayer->getPosition() == ErGui::beginBatchLayerPosition && Mod::get()->getSavedValue<bool>("deselect-controls", false)) {
 				GameManager::sharedState()->setGameVariable("0007", false);
 				rotationControl->setVisible(false);
 				scaleControl->setVisible(false);
@@ -644,7 +648,6 @@ class $modify(GearEditorUI, EditorUI) {
 //			rowOffset += 2;
 //		} while (botYRounded < topY);
 //
-//		//std::cout << rowOffset << "\n";
 //
 //
 //		float leftX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale();
@@ -656,18 +659,10 @@ class $modify(GearEditorUI, EditorUI) {
 //			colOffset += 2;
 //		} while (leftXRounded < rightX);
 //
-//		//std::cout << colOffset << "\n";
 //		
 //		//Never ask man his salary, woman her age and Taswert, why is there +8
 //		unsigned int result = colOffset + rowOffset + 8;
 //		if (result > 398) result = 398;
-//
-//		//std::cout << result << "\n\n";
-//
-//		//std::cout << "Size: " << m_timeMarkers->count() << "\n";
-//		//std::cout << "String: " << m_timeMarkerString << "\n";
-//		//if (m_timeMarkers->count()) std::cout << static_cast<CCString*>(m_timeMarkers->objectAtIndex(1))->m_sString << "\n";
-//		//std::cout << "\n";
 //
 //
 //		if (GameManager::sharedState()->getGameVariable("0038")) {
@@ -710,7 +705,8 @@ class $modify(CCEGLView) {
 				continue;
 			}
 
-			if (EditorUI::get() && !EditorUI::get()->m_isPaused && !io.WantCaptureMouse) {
+			auto editorUI = EditorUI::get();
+			if (editorUI && !editorUI->m_isPaused && !io.WantCaptureMouse) {
 				switch (msg.message) {
 					case WM_RBUTTONDOWN: {
 
@@ -827,51 +823,13 @@ $on_mod(Loaded) {
 	//AllocConsole();
 	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 
-	if (!Mod::get()->hasSavedValue("grid-size"))					Mod::get()->setSavedValue("grid-size", 30.f);
-	if (!Mod::get()->hasSavedValue("zoom-multiplier"))				Mod::get()->setSavedValue("zoom-multiplier", 1.f);
-	if (!Mod::get()->hasSavedValue("select-mode"))					Mod::get()->setSavedValue("select-mode", 1);
-	if (!Mod::get()->hasSavedValue("hide-object-list-popup"))		Mod::get()->setSavedValue("hide-object-list-popup", true);
-	if (!Mod::get()->hasSavedValue("autoswitch-to-build-mode"))		Mod::get()->setSavedValue("autoswitch-to-build-mode", true);
-	if (!Mod::get()->hasSavedValue("show-zoom-controls"))			Mod::get()->setSavedValue("show-zoom-controls", true);
-
-	if (!Mod::get()->hasSavedValue("soi-position"))					Mod::get()->setSavedValue("soi-position", true);
-	if (!Mod::get()->hasSavedValue("soi-rotation"))					Mod::get()->setSavedValue("soi-rotation", true);
-	if (!Mod::get()->hasSavedValue("soi-scale"))					Mod::get()->setSavedValue("soi-scale", true);
-	if (!Mod::get()->hasSavedValue("soi-color"))					Mod::get()->setSavedValue("soi-color", true);
-	if (!Mod::get()->hasSavedValue("soi-hsv"))						Mod::get()->setSavedValue("soi-hsv", false);
-	if (!Mod::get()->hasSavedValue("soi-groups"))					Mod::get()->setSavedValue("soi-groups", true);
-	if (!Mod::get()->hasSavedValue("soi-zlayer"))					Mod::get()->setSavedValue("soi-zlayer", true);
-	if (!Mod::get()->hasSavedValue("soi-zorder"))					Mod::get()->setSavedValue("soi-zorder", true);
-	if (!Mod::get()->hasSavedValue("soi-objectid"))					Mod::get()->setSavedValue("soi-objectid", false);
-	if (!Mod::get()->hasSavedValue("soi-targetgroup"))				Mod::get()->setSavedValue("soi-targetgroup", true);
-	if (!Mod::get()->hasSavedValue("soi-itemid"))					Mod::get()->setSavedValue("soi-itemid", false);
-	if (!Mod::get()->hasSavedValue("soi-blockid"))					Mod::get()->setSavedValue("soi-blockid", false);
-	if (!Mod::get()->hasSavedValue("soi-particles"))				Mod::get()->setSavedValue("soi-particles", true);
-	if (!Mod::get()->hasSavedValue("soi-hidden"))					Mod::get()->setSavedValue("soi-hidden", true);
-	if (!Mod::get()->hasSavedValue("soi-no-touch"))					Mod::get()->setSavedValue("soi-no-touch", true);
-	if (!Mod::get()->hasSavedValue("soi-high-detail"))				Mod::get()->setSavedValue("soi-high-detail", false);
-	if (!Mod::get()->hasSavedValue("soi-object-count"))				Mod::get()->setSavedValue("soi-object-count", true);
-	
-	if (!Mod::get()->hasSavedValue("fill-selection-zone"))			Mod::get()->setSavedValue("fill-selection-zone", false);
-	if (!Mod::get()->hasSavedValue("hovering-selects"))				Mod::get()->setSavedValue("hovering-selects", true);
-
-	if (!Mod::get()->hasSavedValue("deselect-controls"))			Mod::get()->setSavedValue("deselect-controls", false);
-	if (!Mod::get()->hasSavedValue("auto-buildhelper"))				Mod::get()->setSavedValue("auto-buildhelper", false);
-	if (!Mod::get()->hasSavedValue("gamewindow-static-ratio"))		Mod::get()->setSavedValue("gamewindow-static-ratio", false);
-	//if (Mod::get()->getSavedValue<int>("build-color-1") == 0) Mod::get()->setSavedValue("build-color-1", 1);
-	//if (Mod::get()->getSavedValue<int>("build-color-2") == 0) Mod::get()->setSavedValue("build-color-2", 1);
-	//if (Mod::get()->getSavedValue<bool>("enable-build-color-1") == 0) Mod::get()->setSavedValue("enable-build-color-1", 1);
-	//if (Mod::get()->getSavedValue<bool>("enable-build-color-2") == 0) Mod::get()->setSavedValue("enable-build-color-2", 1);
 	
 	ErGui::editorUIbottomConstrainPatch->enable();
 	//ErGui::vanillaGridOpaquePatch->enable();
 	
 	// DEBUG - позволяет смотреть оффсеты полей
 	//ErGui::objectCfg = data;
-	//std::cout
-	//	<< "Offset DrawGridLayer::m_gridSize = "
-	//	<< offsetof(DrawGridLayer, DrawGridLayer::m_gridSize)
-	//	<< " bytes\n";
+	//log::info ("Offset DrawGridLayer::m_gridSize = {} bytes", offsetof(DrawGridLayer, DrawGridLayer::m_gridSize));
 
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
@@ -893,7 +851,7 @@ $on_mod(Loaded) {
 		auto cpiDir = Mod::get()->getResourcesDir() / "gear-copy-paste-icons.ttf";
 
 		io.Fonts->AddFontFromFileTTF(interDir.string().c_str(), 15.f);
-
+		
 		static const ImWchar mdi_icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
 		ImFontConfig iconConfig;
 		iconConfig.MergeMode = true;
@@ -906,7 +864,7 @@ $on_mod(Loaded) {
 
 		static const ImWchar cpi_icons_ranges[] = { ICON_MIN_GEARCPI, ICON_MAX_GEARCPI, 0 };
 		if (!io.Fonts->AddFontFromFileTTF(cpiDir.string().c_str(), 24.f, &iconConfig, cpi_icons_ranges)) {
-			std::cout << "Failed to load font: " << cpiDir.string();
+			log::info("Failed to load font: {}", cpiDir.string());
 		}
 		
 		ErGui::initImGuiStyling();

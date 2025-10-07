@@ -11,7 +11,7 @@ static std::set<cocos2d::enumKeyCodes> editorUIHoldingKeys;
 void releaseEditorUIKeys() {
 	if (!editorUIHoldingKeys.empty()) {
 		auto copy = editorUIHoldingKeys;
-		for (auto key : copy) {
+		for (const auto& key : copy) {
 			CCDirector::sharedDirector()->getKeyboardDispatcher()->dispatchKeyboardMSG(key, false, false);
 		}
 		editorUIHoldingKeys.clear();

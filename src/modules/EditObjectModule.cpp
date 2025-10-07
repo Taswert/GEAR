@@ -84,9 +84,9 @@ void drawColorSettings(GameObject* obj) {
 	float hsv[4] = { savedHueEO, savedSaturationEO, savedValueEO, eObj->m_opacity };
 	ImGuiColorEditFlags flags =
 		ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_AlphaBar;
-	if (geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel"))
+	if (geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel", true))
 		flags |= ImGuiColorEditFlags_PickerHueWheel;
-	if (!geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel"))
+	if (!geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel", false))
 		flags |= ImGuiColorEditFlags_DisableWheelRot;
 
 	if (eObj->m_copyColorID == 0) {
@@ -836,24 +836,26 @@ void renderObjectSettings(GameObject* obj) {
 		ImGui::Text("This object is not supported yet...");
 	}
 
+	auto editorUI = EditorUI::get();
 	if (ImGui::CollapsingHeader("Vanilla Settings")) {
 		if (ImGui::Button("Edit Object")) {
-			EditorUI::get()->editObject(nullptr);
+			editorUI->editObject(nullptr);
 		}
 		if (ImGui::Button("Edit Special")) {
-			EditorUI::get()->editObjectSpecial(0);
+			editorUI->editObjectSpecial(0);
 		}
 	}
 }
 
 void renderMultiObjectSettings(CCArray* objArr) {
+	auto editorUI = EditorUI::get();
 	ImGui::Text("MultiObject is not supported yet...");
 	if (ImGui::CollapsingHeader("Vanilla Settings")) {
 		if (ImGui::Button("Edit Object")) {
-			EditorUI::get()->editObject(nullptr);
+			editorUI->editObject(nullptr);
 		}
 		if (ImGui::Button("Edit Special")) {
-			EditorUI::get()->editObjectSpecial(0);
+			editorUI->editObjectSpecial(0);
 		}
 	}
 }

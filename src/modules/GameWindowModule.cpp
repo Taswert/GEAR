@@ -171,7 +171,7 @@ void ErGui::renderGameWindow() {
 	//}
 
 	ImVec2 drawSize;
-	if (Mod::get()->getSavedValue<bool>("gamewindow-static-ratio")) {
+	if (Mod::get()->getSavedValue<bool>("gamewindow-static-ratio", false)) {
 		ImVec2 gameWinSize = ImGui::GetContentRegionAvail();
 		ImVec2 cursorStart = ImGui::GetCursorPos();
 

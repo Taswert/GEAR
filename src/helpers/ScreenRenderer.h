@@ -35,7 +35,6 @@ using namespace geode::prelude;
 //
 //
 //		ImTextureID imguiTexture = (ImTextureID)(intptr_t)ErGui::gameFrame;
-//		std::cout << glTextureSize.width << " " << glTextureSize.height << "\n";
 //		return RenderedTexture(imguiTexture, glTextureSize);
 //	}
 //

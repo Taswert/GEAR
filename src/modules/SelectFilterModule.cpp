@@ -66,7 +66,7 @@ bool ErGui::selectFilterRealization(GameObject* obj) {
 
 	if (!ErGui::channelFilterSet.empty() && ErGui::filterByChannel) {
 		isFilterOn = true;
-		if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+		if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 			if (ErGui::channelFilterSet.contains(egObj->m_channelValue)) {
 				shouldSelect = true;
 			}
@@ -142,7 +142,6 @@ CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
 				bool foundGroup = false;
 				for (int i = 0; i < obj->m_groups->size(); i++) {
 					if (ErGui::groupsFilterSet.contains(obj->m_groups->at(i))) {
-						//std::cout << "ye\n";
 						shouldSelect = true;
 						foundGroup = true;
 					}
@@ -158,7 +157,7 @@ CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
 
 		if (!ErGui::channelFilterSet.empty() && ErGui::filterByChannel) {
 			isFilterOn = true;
-			if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+			if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 				if (ErGui::channelFilterSet.contains(egObj->m_channelValue)) {
 					shouldSelect = true;
 				}

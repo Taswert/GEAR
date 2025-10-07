@@ -39,7 +39,7 @@ void ErGui::CopyEGMState::copyState(GameObject* obj) {
 	NonStickY = obj->m_isNonStickY;
 	ScaleStick = obj->m_isScaleStick;
 
-	if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+	if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 		ego_orderVal = egObj->m_ordValue;
 		ego_channelVal = egObj->m_channelValue;
 		ego_controlID = egObj->m_controlID;
@@ -54,7 +54,6 @@ void ErGui::CopyEGMState::copyState(GameObject* obj) {
 void ErGui::CopyEGMState::pasteState(GameObject* obj) {
 	if (obj->m_groups) {
 		for (int i = 0; obj->m_groups->at(0) != 0; i++) {
-			//std::cout << obj->m_groups->at(0) << " ";
 			obj->removeFromGroup(obj->m_groups->at(0));
 		}
 	}
@@ -95,7 +94,7 @@ void ErGui::CopyEGMState::pasteState(GameObject* obj) {
 	obj->m_isNonStickY = NonStickY;
 	obj->m_isScaleStick = ScaleStick;
 
-	if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+	if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 		egObj->m_ordValue = ego_orderVal;
 		egObj->m_channelValue = ego_channelVal;
 		egObj->m_controlID = ego_controlID;

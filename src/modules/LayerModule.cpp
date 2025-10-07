@@ -118,12 +118,11 @@ class $modify(LevelEditorLayer) {
     void updateObjectColors(CCArray* objs) {
         if (objs && objs->count() > 0) {
             auto obj = static_cast<GameObject*>(objs->objectAtIndex(0));
-            std::cout << obj->getColor().r << " " << obj->getColor().g << " " << obj->getColor().b << "\n";
+            log::info("{} {} {}", obj->getColor().r, obj->getColor().g, obj->getColor().b);
             LevelEditorLayer::updateObjectColors(objs);
-            std::cout << obj->getColor().r << " " << obj->getColor().g << " " << obj->getColor().b << "\n\n";
+            log::info("{} {} {}", obj->getColor().r, obj->getColor().g, obj->getColor().b);
         }
         else {
-            std::cout << "no\n";
             LevelEditorLayer::updateObjectColors(objs);
         }
     }
@@ -152,7 +151,7 @@ class $modify(LevelEditorLayer) {
             }
 
             // Hovering
-            if (geode::Mod::get()->getSavedValue<bool>("hovering-selects")) {
+            if (geode::Mod::get()->getSavedValue<bool>("hovering-selects", true)) {
                 if (static_cast<ErGui::GearGameObject*>(obj)->m_fields->m_isHovered) {
 
 
@@ -168,8 +167,6 @@ class $modify(LevelEditorLayer) {
                 }
             }
         }
-
-        //std::cout << "\n";
     }
 };
 

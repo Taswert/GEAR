@@ -26,7 +26,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Go To Layer")) {
-		LevelEditorLayer::get()->m_currentLayer = obj->m_editorLayer;
+		lel->m_currentLayer = obj->m_editorLayer;
 	}
 
 	if (ImGui::CollapsingHeader("Object Info")) {
@@ -182,7 +182,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::InputInt("##EditorL1", &el1);
 		setMin(el1, 0);
 		ImGui::SameLine();
-		if (ImGui::Button("CL##EditorL1")) el1 = LevelEditorLayer::get()->m_currentLayer;
+		if (ImGui::Button("CL##EditorL1")) el1 = lel->m_currentLayer;
 		ImGui::SetItemTooltip("Set to current Editor Layer");
 		ImGui::SameLine();
 		ImGui::Text("EditorL1");
@@ -195,7 +195,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::InputInt("##EditorL2", &el2);
 		setMin(el2, 0);
 		ImGui::SameLine();
-		if (ImGui::Button("CL##EditorL2")) el2 = LevelEditorLayer::get()->m_currentLayer;
+		if (ImGui::Button("CL##EditorL2")) el2 = lel->m_currentLayer;
 		ImGui::SetItemTooltip("Set to current Editor Layer");
 		ImGui::SameLine();
 		ImGui::Text("EditorL2");
@@ -221,8 +221,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::InputInt("Material", &material);
 		obj->m_objectMaterial = material;
 
-		//if (dynamic_cast<EffectGameObject*>(obj)) ImGui::Text("ControlID: %d", static_cast<EffectGameObject*>(obj)->m_controlID);
-		if (dynamic_cast<EffectGameObject*>(obj)) {
+		//if (typeinfo_cast<EffectGameObject*>(obj)) ImGui::Text("ControlID: %d", static_cast<EffectGameObject*>(obj)->m_controlID);
+		if (typeinfo_cast<EffectGameObject*>(obj)) {
 			auto egObj = static_cast<EffectGameObject*>(obj);
 
 			int ordVal = egObj->m_ordValue;
@@ -297,7 +297,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SameLine(160);
 		ImGui::Checkbox("Scale Stick", &obj->m_isScaleStick);
 
-		if (dynamic_cast<EffectGameObject*>(obj)) {
+		if (typeinfo_cast<EffectGameObject*>(obj)) {
 			ImGui::SeparatorText("EffectGameObject");
 			auto egObj = static_cast<EffectGameObject*>(obj);
 			ImGui::Checkbox("Single PTouch", &egObj->m_isSinglePTouch);
@@ -368,31 +368,29 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			int regroupedID = regroupFrom;
 			bool offlimit = false;
 
-			//std::cout << "Map:\n";
 			for (int i = 0; i < groupsFromObjArr.size(); i++) {
 				if (groupsFromObjArr[i].first >= regroupStart && groupsFromObjArr[i].first <= regroupEnd) {
 					
 					if (regroupOnlyFree) {
-						//std::cout << regroupedID << " " << lel->m_groups[regroupedID] << "\n";
+						//log::info("{} {}", regroupedID, lel->m_groups[regroupedID]);
 						while (regroupedID <= 9999 && lel->m_groups[regroupedID] && lel->m_groups[regroupedID]->count() > 0) {
-							//std::cout << regroupedID << " - Not Free, adding...\n";
+							//log::info("{} - Not Free, adding...", regroupedID);
 							regroupedID++;
 						}
 					}
 					
 					if (regroupedID > 9999) {
 						offlimit = true;
-						//std::cout << "OFFLIMIT! BREAKING REGROUP!\n";
+						//log::info("OFFLIMIT! BREAKING REGROUP!\n");
 						break;
 					}
 
-					//std::cout << groupsFromObjArr[i].first << " " << regroupedID << "\n";
+					//log::info("{} {}", groupsFromObjArr[i].first, regroupedID);
 					regroupedMap.emplace(groupsFromObjArr[i].first, regroupedID);
 					regroupedID++;
 
 				}
 			}
-			//std::cout << "\n";
 			
 			if (!offlimit) {
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -409,7 +407,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 							idsToAdd.emplace(pair.second);
 						}
 
-						if (auto eObj = dynamic_cast<EffectGameObject*>(obj)) {
+						if (auto eObj = typeinfo_cast<EffectGameObject*>(obj)) {
 							if (eObj->m_objectID != 1006 || eObj->m_pulseTargetType == 1) {
 								if (idToRecenter == 0 && eObj->m_centerGroupID == pair.first)
 									idToRecenter = pair.second;
@@ -422,7 +420,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 					}
 
 					// Actual Group Adding
-					for (int i : idsToAdd) {
+					for (const int& i : idsToAdd) {
 						if (!lel->m_groups[i]) {
 							CCArray* arr = CCArray::create();
 							arr->retain();
@@ -432,8 +430,8 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 						obj->addToGroup(i);
 					}
 
-					if (idToRetarget != 0 && dynamic_cast<EffectGameObject*>(obj)) dynamic_cast<EffectGameObject*>(obj)->m_targetGroupID = idToRetarget;
-					if (idToRecenter != 0 && dynamic_cast<EffectGameObject*>(obj)) dynamic_cast<EffectGameObject*>(obj)->m_centerGroupID = idToRecenter;
+					if (idToRetarget != 0 && typeinfo_cast<EffectGameObject*>(obj)) typeinfo_cast<EffectGameObject*>(obj)->m_targetGroupID = idToRetarget;
+					if (idToRecenter != 0 && typeinfo_cast<EffectGameObject*>(obj)) typeinfo_cast<EffectGameObject*>(obj)->m_centerGroupID = idToRecenter;
 				}
 				groupInfoUpdate();
 			}
@@ -605,7 +603,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		}
 		ImGui::PopStyleVar();
 
-
+		auto currentLayer = lel->m_currentLayer;
 		if (int delta = deltaInputIntImproved("EditorL1", maxEl1, minEl1, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				obj->m_editorLayer += delta;
@@ -616,10 +614,10 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL1")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				if (LevelEditorLayer::get()->m_currentLayer < 0) 
+				if (currentLayer < 0) 
 					obj->m_editorLayer = 0;
 				else 
-					obj->m_editorLayer = LevelEditorLayer::get()->m_currentLayer;
+					obj->m_editorLayer = currentLayer;
 			}
 			groupInfoUpdate();
 		}
@@ -635,10 +633,10 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL2")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				if (LevelEditorLayer::get()->m_currentLayer < 0)
+				if (currentLayer < 0)
 					obj->m_editorLayer2 = 0;
 				else
-					obj->m_editorLayer2 = LevelEditorLayer::get()->m_currentLayer;
+					obj->m_editorLayer2 = currentLayer;
 			}
 			groupInfoUpdate();
 		}
@@ -787,11 +785,11 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::SameLine(160);
 		if (ImGui::Checkbox("No Touch", &cb_NoTouch)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				LevelEditorLayer::get()->removeObjectFromSection(obj);
+				lel->removeObjectFromSection(obj);
 				obj->m_isNoTouch = cb_NoTouch;
 				obj->setType(obj->m_savedObjectType);
 				obj->saveActiveColors();
-				LevelEditorLayer::get()->addToSection(obj);
+				lel->addToSection(obj);
 			}
 		}
 	
@@ -868,7 +866,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			ImGui::SeparatorText("EffectGameObject");
 			if (ImGui::Checkbox("Single PTouch", &cb_SinglePTouch)) {
 				for (auto obj : CCArrayExt<EffectGameObject*>(objArr)) {
-					if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 						egObj->m_isSinglePTouch = cb_SinglePTouch;
 					}
 				}
@@ -876,7 +874,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			ImGui::SameLine(160);
 			if (ImGui::Checkbox("Preview", &cb_Preview)) {
 				for (auto obj : CCArrayExt<EffectGameObject*>(objArr)) {
-					if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 						egObj->m_shouldPreview = cb_Preview;
 						lel->tryUpdateSpeedObject(egObj, false);
 					}
@@ -885,7 +883,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 
 			if (ImGui::Checkbox("Center Effect", &cb_CenterEffect)) {
 				for (auto obj : CCArrayExt<EffectGameObject*>(objArr)) {
-					if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 						egObj->m_hasCenterEffect = cb_CenterEffect;
 					}
 				}
@@ -893,7 +891,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			ImGui::SameLine(160);
 			if (ImGui::Checkbox("Reverse", &cb_Reverse)) {
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-					if (auto egObj = dynamic_cast<EffectGameObject*>(obj)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
 						egObj->m_isReverse = cb_Reverse;
 						lel->tryUpdateSpeedObject(egObj, false);
 					}
@@ -906,7 +904,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 void ErGui::renderEditGroupModule() {
 	ImGui::Begin("Group");
 
-	auto lel = GameManager::sharedState()->m_levelEditorLayer;
+	auto lel = LevelEditorLayer::get();
 	auto obj = lel->m_editorUI->m_selectedObject;
 	auto objArr = lel->m_editorUI->m_selectedObjects;
 	if (obj) {
@@ -1039,8 +1037,8 @@ void ErGui::groupInfoUpdate() {
 		if (obj->m_isNonStickY)				ErGui::cb_NonStickY = true;
 		if (obj->m_isScaleStick)			ErGui::cb_ScaleStick = true;
 
-		if (dynamic_cast<EffectGameObject*>(obj)) {
-			ErGui::firstEgObj = dynamic_cast<EffectGameObject*>(obj);
+		if (typeinfo_cast<EffectGameObject*>(obj)) {
+			ErGui::firstEgObj = typeinfo_cast<EffectGameObject*>(obj);
 			if (ErGui::firstEgObj->m_isSinglePTouch)	ErGui::cb_SinglePTouch = true;
 			if (ErGui::firstEgObj->m_shouldPreview)		ErGui::cb_Preview = true;
 			if (ErGui::firstEgObj->m_hasCenterEffect)	ErGui::cb_CenterEffect = true;
@@ -1059,7 +1057,7 @@ void ErGui::groupInfoUpdate() {
 	}
 
 	groupSet.erase(0);
-	for (auto obj : groupSet) {
+	for (const auto& obj : groupSet) {
 		ErGui::groupsFromObjArr.push_back(obj);
 	}
 

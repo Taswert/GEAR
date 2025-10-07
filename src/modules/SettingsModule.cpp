@@ -35,6 +35,9 @@ void ErGui::renderSettingsModule() {
     }
 
     auto gm = GameManager::get();
+    auto lel = LevelEditorLayer::get();
+    auto editorUI = EditorUI::get();
+    auto mod = Mod::get();
 
     previewAnimations = gm->getGameVariable("0118");
     previewParticles = gm->getGameVariable("0117");
@@ -55,9 +58,9 @@ void ErGui::renderSettingsModule() {
     showBackground = !gm->getGameVariable("0078");
     showParticleIcons = !gm->getGameVariable("0137");
 
-    showCenter = Mod::get()->getSavedValue<bool>("show-center");
-    showDashOrbs = Mod::get()->getSavedValue<bool>("show-dash-orbs");
-    showMG = Mod::get()->getSavedValue<bool>("show-mg");
+    showCenter = mod->getSavedValue<bool>("show-center");
+    showDashOrbs = mod->getSavedValue<bool>("show-dash-orbs");
+    showMG = mod->getSavedValue<bool>("show-mg");
 
     ImGui::SeparatorText("Previews");
 
@@ -73,7 +76,7 @@ void ErGui::renderSettingsModule() {
 
     if (ImGui::Checkbox("Preview Shaders", &previewShaders)) {
         gm->setGameVariable("0158", previewShaders);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     // if (ImGui::Checkbox("LDM", &ldm)) {
@@ -82,9 +85,8 @@ void ErGui::renderSettingsModule() {
 
     if (ImGui::Checkbox("Preview Mode", &previewMode)) {
         gm->setGameVariable("0036", previewMode);
-        auto lel = LevelEditorLayer::get();
         if (lel->m_playbackMode != PlaybackMode::Not) {
-            EditorUI::get()->onStopPlaytest(EditorUI::get()->m_playtestBtn);
+            editorUI->onStopPlaytest(editorUI->m_playtestBtn);
         }
         lel->updateEditorMode();
         lel->updateOptions();
@@ -124,7 +126,7 @@ void ErGui::renderSettingsModule() {
     
     if (ImGui::Checkbox("Grid", &showGrid)) {
         gm->setGameVariable("0038", showGrid);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     if (ImGui::Checkbox("Guidelines", &songGuidelines)) {
@@ -132,11 +134,11 @@ void ErGui::renderSettingsModule() {
     }
 
     if (ImGui::Checkbox("Center", &showCenter)) {
-        Mod::get()->setSavedValue("show-center", showCenter);
+        mod->setSavedValue("show-center", showCenter);
     }
 
     if (ImGui::Checkbox("Dash Orbs", &showDashOrbs)) {
-        Mod::get()->setSavedValue("show-dash-orbs", showDashOrbs);
+        mod->setSavedValue("show-dash-orbs", showDashOrbs);
     }
 
     // Ugly Looking :(
@@ -162,59 +164,59 @@ void ErGui::renderSettingsModule() {
 
     if (ImGui::Checkbox("Duration Lines", &durationLines)) {
         gm->setGameVariable("0058", durationLines);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     if (ImGui::Checkbox("Effect Lines", &effectLines)) {
         gm->setGameVariable("0043", effectLines);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     if (ImGui::Checkbox("Path", &showPath)) {
         gm->setGameVariable("0152", !showPath);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     if (ImGui::Checkbox("Clicks", &showClicks)) {
         gm->setGameVariable("0149", showClicks);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     if (ImGui::Checkbox("Hitboxes", &showHitboxes)) {
         gm->setGameVariable("0045", showHitboxes);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     ImGui::SeparatorText("Grounds");
 
     if (ImGui::Checkbox("Ground", &showGround)) {
         gm->setGameVariable("0037", showGround);
-        LevelEditorLayer::get()->m_groundLayer->setVisible(showGround);
-        LevelEditorLayer::get()->updateOptions();
+        lel->m_groundLayer->setVisible(showGround);
+        lel->updateOptions();
     }
 
 
-    if (auto gjmg = dynamic_cast<GJMGLayer*>(dynamic_cast<CCNode*>(LevelEditorLayer::get()->m_objectLayer->getParent())->getChildren()->objectAtIndex(1))) {
+    if (auto gjmg = typeinfo_cast<GJMGLayer*>(typeinfo_cast<CCNode*>(lel->m_objectLayer->getParent())->getChildren()->objectAtIndex(1))) {
         if (ImGui::Checkbox("Middleground", &showMG)) {
-            Mod::get()->setSavedValue("show-mg", showMG);
+            mod->setSavedValue("show-mg", showMG);
             gjmg->setVisible(showMG);
         }
     }
 
     if (ImGui::Checkbox("Background", &showBackground)) {
         gm->setGameVariable("0078", !showBackground);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
     
     ImGui::SeparatorText("Objects");
 
     if (ImGui::Checkbox("Show Invisible", &showInvisible)) {
         gm->setGameVariable("0121", !showInvisible);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
     }
 
     if (ImGui::Checkbox("Show Only LDM", &showLdm)) {
-        for (auto obj : CCArrayExt<GameObject*>(LevelEditorLayer::get()->m_objects)) {
+        for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
             if (obj->m_isHighDetail) {
                 obj->setVisible(!showLdm);
             }
@@ -223,19 +225,45 @@ void ErGui::renderSettingsModule() {
 
     if (ImGui::Checkbox("Show Particle Icons", &showParticleIcons)) {
         gm->setGameVariable("0137", !showParticleIcons);
-        LevelEditorLayer::get()->updateOptions();
+        lel->updateOptions();
 
-        for (const auto obj : CCArrayExt<GameObject*>(LevelEditorLayer::get()->m_objects)) {
+        for (const auto& obj : CCArrayExt<GameObject*>(lel->m_objects)) {
 
-            if (const auto pObj = dynamic_cast<ParticleGameObject*>(obj)) {
-                // I Hope this will not cause any troubles lol
+            if (const auto pObj = typeinfo_cast<ParticleGameObject*>(obj)) {
+                // I Hate this so muuuuuuuuuuuuuuuuuuuuuuuuuuuuuch
                 if (showParticleIcons) {
-                    static_cast<CCSprite*>(static_cast<CCSprite*>(pObj->getChildren()->objectAtIndex(0))->getChildren()->objectAtIndex(0))->setOpacity(50);
-                    static_cast<CCSprite*>(pObj->getChildren()->objectAtIndex(1))->setOpacity(50);
+                    auto arr1 = pObj->getChildrenExt();
+                    if (arr1.size() > 0) {
+                        if (auto spr1 = static_cast<CCSprite*>(arr1[0])) {
+                            auto arr2 = spr1->getChildrenExt();
+                            if (arr2.size() > 0) {
+                                if (auto spr2 = static_cast<CCSprite*>(arr2[0])) {
+                                    spr2->setOpacity(50);
+                                }
+                            }
+                        }
+                    }
+                    if (arr1.size() > 1) {
+                        if (auto spr = static_cast<CCSprite*>(arr1[1])) 
+                            spr->setOpacity(50);
+                    }
                 }
                 else {
-                    static_cast<CCSprite*>(static_cast<CCSprite*>(pObj->getChildren()->objectAtIndex(0))->getChildren()->objectAtIndex(0))->setOpacity(0);
-                    static_cast<CCSprite*>(pObj->getChildren()->objectAtIndex(1))->setOpacity(0);
+                    auto arr1 = pObj->getChildrenExt();
+                    if (arr1.size() > 0) {
+                        if (auto spr1 = static_cast<CCSprite*>(arr1[0])) {
+                            auto arr2 = spr1->getChildrenExt();
+                            if (arr2.size() > 0) {
+                                if (auto spr2 = static_cast<CCSprite*>(arr2[0])) {
+                                    spr2->setOpacity(0);
+                                }
+                            }
+                        }
+                    }
+                    if (arr1.size() > 1) {
+                        if (auto spr = static_cast<CCSprite*>(arr1[1]))
+                            spr->setOpacity(0);
+                    }
                 }
             }
         }
@@ -245,7 +273,6 @@ void ErGui::renderSettingsModule() {
 }
 
 
-// why tf this doesn't work?????
 class $modify(EditorUI) {
     CCArray* pasteObjects(gd::string p0, bool p1, bool p2) {
         auto objArr = EditorUI::pasteObjects(p0, p1, p2);
@@ -253,7 +280,6 @@ class $modify(EditorUI) {
         for (auto obj : CCArrayExt<GameObject*>(objArr)) {
             if (obj->m_isHighDetail) {
                 obj->setVisible(!ErGui::showLdm);
-                std::cout << "Visible: " << obj->isVisible() << " " << !ErGui::showLdm << "\n";
             }
         }
 

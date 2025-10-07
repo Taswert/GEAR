@@ -6,8 +6,9 @@ using namespace geode::prelude;
 
 namespace ErGui {
 	void hoverObjectLasso(GameObject* obj) {
-		auto cameraPos = EditorUI::get()->m_editorLayer->m_objectLayer->getPosition();
-		auto cameraScale = EditorUI::get()->m_editorLayer->m_objectLayer->getScale();
+		auto batchLayer = EditorUI::get()->m_editorLayer->m_objectLayer;
+		auto cameraPos = batchLayer->getPosition();
+		auto cameraScale = batchLayer->getScale();
 
 		auto objPos = obj->getPosition();
 		auto newPos = cocos2d::CCPoint(

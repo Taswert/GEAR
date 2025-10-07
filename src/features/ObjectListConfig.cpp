@@ -26,7 +26,7 @@ struct matjson::Serialize<ErGui::ObjectConfig> {
 		// Собираем JSON-массив из вектора int
 		std::vector<matjson::Value> arr;
 		arr.reserve(obj.objectIdVector.size());
-		for (int id : obj.objectIdVector) {
+		for (const int& id : obj.objectIdVector) {
 			arr.emplace_back(id);
 		}
 		// Value(std::vector<matjson::Value>) создаёт JSON-массив :contentReference[oaicite:0]{index=0}
@@ -48,7 +48,7 @@ $on_mod(Loaded) {
 
 	if (!parsed) {
 		matjson::Value j;
-		for (auto key : ErGui::keyOrder) {
+		for (const auto& key : ErGui::keyOrder) {
 			j[key] = ErGui::getDefaultObjectCfg()[key];
 		}
 
@@ -58,7 +58,7 @@ $on_mod(Loaded) {
 			oCfgFile.write(j.dump().c_str(), j.dump().size());
 			oCfgFile.close();
 		}
-		std::cout << "Failed to parse json: " << someError.message << " " << typeid(someError).name() << "\n";
+		log::info("Failed to parse json: {} {}", someError.message, typeid(someError).name());
 
 		ErGui::objectCfg = ErGui::getDefaultObjectCfg();
 
