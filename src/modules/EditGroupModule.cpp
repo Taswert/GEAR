@@ -104,7 +104,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		for (int i = 0; i < obj->m_groupCount; i++) {
 			int groupInt = obj->m_groups->at(i);
-			auto btnStr = fmt::format("{}##RMVGROUP", groupInt).c_str();
+			auto btnStr = fmt::format("{}##RMVGROUP", groupInt);
 
 			if (lel->m_parentGroupsDict->objectForKey(groupInt) == obj) {
 				// Styling Push
@@ -113,7 +113,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
 
 				// The Button
-				if (ImGui::Button(btnStr, { 36.f, 20.f })) {
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 					lel->m_parentGroupsDict->removeObjectForKey(groupInt);
 				}
 
@@ -124,7 +124,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 			}
 			else {
 				// Parent Group Button
-				if (ImGui::Button(btnStr, { 36.f, 20.f })) {
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 					obj->removeFromGroup(groupInt);
 					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
 				}
@@ -492,7 +492,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		for (int i = 0; i < groupsSize; i++) {
 			// Init
 			int groupInt = groupsFromObjArr[i].first;
-			auto btnStr = fmt::format("{}##RMVGROUP", groupInt).c_str();
+			auto btnStr = fmt::format("{}##RMVGROUP", groupInt);
 
 			// Styling Push
 			if (groupsFromObjArr[i].second != objArr->count()) {
@@ -502,7 +502,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			}
 
 			// THE Button
-			if (ImGui::Button(btnStr, { 36.f, 20.f })) {
+			if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 					obj->removeFromGroup(groupInt);
 					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
