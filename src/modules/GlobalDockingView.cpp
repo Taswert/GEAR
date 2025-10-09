@@ -288,7 +288,9 @@ static void renderMenuBar() {
                 isAnyItemClicked = true;
             }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-                ImGui::SetTooltip("Warp control buttons are 50% smaller (Restart editor to work).");
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted("Warp control buttons are 50% smaller (Restart editor to work).");
+                ImGui::EndTooltip();
             }
 
             if (ImGui::MenuItem("Auto Build Helper", NULL, &autoBuildhelper)) {
