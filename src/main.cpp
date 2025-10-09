@@ -465,7 +465,7 @@ class $modify(GearEditorUI, EditorUI) {
 					ErGui::editorUIDrawNode->drawPolygon(ErGui::editorUISwipePoints.data(), ErGui::editorUISwipePoints.size(), selectionFillColor, 0.3f, lassoColor);
 				}
 				if (geode::Mod::get()->getSavedValue<bool>("hovering-selects", true)) {
-					ErGui::forEachObject(this->m_editorLayer, ErGui::hoverObjectSquare); // Replace with hoverObjectSquare when done properly
+					ErGui::forEachObject(this->m_editorLayer, ErGui::hoverObjectSquare);
 				}
 			}
 		}
@@ -631,63 +631,6 @@ class $modify(GearEditorUI, EditorUI) {
 };
 
 
-//class $modify(DrawGridLayer) {
-//	void draw() {
-//		int colOffset = 0;
-//		int rowOffset = 0;
-//		float step = this->m_gridSize;
-//		auto lel = LevelEditorLayer::get();
-//
-//
-//		float botY = lel->m_objectLayer->getPositionY() / lel->m_objectLayer->getScale() * -1;
-//		float botYRounded = std::round(botY / step) * step;
-//		float topY = CCDirector::sharedDirector()->getWinSize().height / lel->m_objectLayer->getScale() + botY;
-//
-//		do {
-//			botYRounded += step;
-//			rowOffset += 2;
-//		} while (botYRounded < topY);
-//
-//
-//
-//		float leftX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale();
-//		float leftXRounded = std::round(leftX / step) * step;
-//		float rightX = CCDirector::sharedDirector()->getWinSize().width / lel->m_objectLayer->getScale() + leftX;
-//
-//		do {
-//			leftXRounded += step;
-//			colOffset += 2;
-//		} while (leftXRounded < rightX);
-//
-//		
-//		//Never ask man his salary, woman her age and Taswert, why is there +8
-//		unsigned int result = colOffset + rowOffset + 8;
-//		if (result > 398) result = 398;
-//
-//
-//		if (GameManager::sharedState()->getGameVariable("0038")) {
-//			cocos2d::ccDrawColor4B(ErGui::gridColor[0], ErGui::gridColor[1], ErGui::gridColor[2], ErGui::gridColor[3]);		// Color (DefaultRGBA - 0, 0, 0, 150)
-//			glLineWidth(ErGui::gridWidth);																					// Width (Default - 1.f)
-//			cocos2d::ccDrawLines(reinterpret_cast<CCPoint*>(this->m_pointArray1), result);									// Point & Lines Number
-//			glLineWidth(1.f);
-//		}
-//
-//		DrawGridLayer::draw();
-//	}
-//};
-
-
-
-//class $modify(CCDirector) {
-//	void drawScene() {
-//		CCDirector::drawScene();
-//		//if (ImGuiCocos::get().isInitialized())
-//		//	ImGuiCocos::get().drawFrame();
-//		ErGui::gameFrame = captureScreenToGLTexture();
-//		
-//	}
-//};
-
 class $modify(CCEGLView) {
 
 	void pollEvents() {
@@ -777,7 +720,6 @@ class $modify(CCEGLView) {
 
 		}
 
-		// Гарантированно почистить, если Windows не прислала UP
 		if (ErGui::rightTouch && !GetAsyncKeyState(VK_RBUTTON)) {
 			auto setCancelled = CCSet::create();
 			setCancelled->addObject(ErGui::rightTouch);
@@ -823,16 +765,12 @@ class $modify(CCTouchDispatcher) {
 };
 
 $on_mod(Loaded) {
-	//AllocConsole();
-	//freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
-
-	
 	ErGui::editorUIbottomConstrainPatch->enable();
 	//ErGui::vanillaGridOpaquePatch->enable();
 	
-	// DEBUG - позволяет смотреть оффсеты полей
+	// DEBUG - allows to take a look on fields offsets
 	//ErGui::objectCfg = data;
-	//log::info ("Offset DrawGridLayer::m_gridSize = {} bytes", offsetof(DrawGridLayer, DrawGridLayer::m_gridSize));
+	//log::info("Offset DrawGridLayer::m_gridSize = {} bytes", offsetof(DrawGridLayer, DrawGridLayer::m_gridSize));
 
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();

@@ -78,7 +78,9 @@ void ErGui::renderActionHistoryModule() {
 				myText += "Something done to object(s) ";
 				break;
 			}
-			myText += std::format("[{}]", static_cast<void*>(undoObject)) + "(" + std::to_string(undoObject->m_objects ? static_cast<int>(undoObject->m_objects->count()) : 1) + ")";
+			myText += fmt::format("({})", undoObject->m_objects ? static_cast<int>(undoObject->m_objects->count()) : 1);
+			// Debug
+			//myText += fmt::format("[{}]({})", static_cast<void*>(undoObject), undoObject->m_objects ? static_cast<int>(undoObject->m_objects->count()) : 1);
 			ImGui::Text(myText.c_str());
 			i++;
 		}
@@ -115,7 +117,9 @@ void ErGui::renderActionHistoryModule() {
 				myText += "Something done to object(s) ";
 				break;
 			}
-			myText += std::format("[{}]", static_cast<void*>(redoObject)) + "(" + std::to_string(redoObject->m_objects ? static_cast<int>(redoObject->m_objects->count()) : 1) + ")";
+			myText += fmt::format("({})", redoObject->m_objects ? static_cast<int>(redoObject->m_objects->count()) : 1);
+			// Debug
+			//myText += std::format("[{}]({})", static_cast<void*>(redoObject), std::to_string(redoObject->m_objects ? static_cast<int>(redoObject->m_objects->count()) : 1));
 			ImGui::Text(myText.c_str());
 			i++;
 		}

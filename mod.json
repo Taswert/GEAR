@@ -9,7 +9,8 @@
 	"developers": [ "Taswert", "RainixGD", "RaZooM" ],
 	"description": "Reimagine your Editor UI with ImGui",
 	"links": {
-		"community": "https://discord.gg/6WGqURwYy4"
+		"community": "https://discord.gg/6WGqURwYy4",
+		"source": "https://github.com/Taswert/GEAR"
 	},
 	"resources": {
 		"files": [

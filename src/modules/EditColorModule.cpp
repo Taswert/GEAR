@@ -163,9 +163,9 @@ void customColorButton(int* objColorId, int btnColorId, const char* colorName, b
 	// Button name
 	std::string btnStr;
 	if (colorName)
-		btnStr = std::string("color") + std::to_string(btnColorId) + "-" + colorName + std::string("##COLOR-BUTTON-POPUP");
+		btnStr = fmt::format("color {} - {}##COLOR-BUTTON-POPUP", btnColorId, colorName);
 	else
-		btnStr = std::string("color") + std::to_string(btnColorId) + std::string("##COLOR-BUTTON-POPUP");
+		btnStr = fmt::format("color {}##COLOR - BUTTON - POPUP", btnColorId);
 
 	// Custom button color
 	ImVec4 newBtnColor;

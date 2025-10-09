@@ -6,6 +6,7 @@ static void renderMenuBar() {
         bool redoEnabled = false;
         auto editorUI = EditorUI::get();
         auto lel = LevelEditorLayer::get();
+        auto mod = geode::Mod::get();
         auto undoObjects = lel->m_undoObjects;
         auto redoObjects = lel->m_redoObjects;
 
@@ -133,41 +134,42 @@ static void renderMenuBar() {
             bool increaseUndoRedo =         gm->getGameVariable("0013");    //
             bool smallWarpBtns =            gm->getGameVariable("0169");    //
             bool ignoreDamage =             gm->getGameVariable("0009");    //
-            bool triangleColorWheel =       geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel", true);       //
-            bool rotateColorWheel =         geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel", false);        //
-            bool hideObjectListPopup =      geode::Mod::get()->getSavedValue<bool>("hide-object-list-popup", true);     //
-            bool autoswitchToBuildMode =    geode::Mod::get()->getSavedValue<bool>("autoswitch-to-build-mode", true);   //
+            bool triangleColorWheel =       mod->getSavedValue<bool>("triangle-color-wheel", true);       //
+            bool rotateColorWheel =         mod->getSavedValue<bool>("rotate-color-wheel", false);        //
+            bool hideObjectListPopup =      mod->getSavedValue<bool>("hide-object-list-popup", true);     //
+            bool autoswitchToBuildMode =    mod->getSavedValue<bool>("autoswitch-to-build-mode", true);   //
             bool showLinkControls =         gm->getGameVariable("0097");                                                // 
-            bool showZoomControls =         geode::Mod::get()->getSavedValue<bool>("show-zoom-controls", true);         // Shows zoom controls buttons on toolbox
+            bool showZoomControls =         mod->getSavedValue<bool>("show-zoom-controls", true);         // Shows zoom controls buttons on toolbox
             bool showObjectInfo =           gm->getGameVariable("0041");
-			bool fillSelectionZone =        geode::Mod::get()->getSavedValue<bool>("fill-selection-zone", false);       // Fills selection zone with solid color
-			bool hoveringSelects =          geode::Mod::get()->getSavedValue<bool>("hovering-selects", true);           // Hovers objects in the selection zone
-            bool deselectControls =         geode::Mod::get()->getSavedValue<bool>("deselect-controls", false);         // Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
-            bool autoBuildhelper =          geode::Mod::get()->getSavedValue<bool>("auto-buildhelper", false);          // Automatically applies Build helper on duplicated objects
-			bool gamewindowStaticRatio =    geode::Mod::get()->getSavedValue<bool>("gamewindow-static-ratio", false);   // Game window keeps executable window ratio
+			bool fillSelectionZone =        mod->getSavedValue<bool>("fill-selection-zone", false);       // Fills selection zone with solid color
+			bool hoveringSelects =          mod->getSavedValue<bool>("hovering-selects", true);           // Hovers objects in the selection zone
+            bool deselectControls =         mod->getSavedValue<bool>("deselect-controls", false);         // Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
+            bool autoBuildhelper =          mod->getSavedValue<bool>("auto-buildhelper", false);          // Automatically applies Build helper on duplicated objects
+			bool gamewindowStaticRatio =    mod->getSavedValue<bool>("gamewindow-static-ratio", false);   // Game window keeps executable window ratio
+            bool debugShowObjectsBoxes =    mod->getSavedValue<bool>("debug-show-objects-boxes", false);  // Shows hitboxes of all objects
             //bool selectDirectionFromCursor = geode::Mod::get()->getSavedValue<bool>("select-direction-from-cursor");
 
 
             bool isAnyItemClicked = false;
             
             if (ImGui::BeginMenu("Selected Object Info")) {
-                bool soiPosition =      geode::Mod::get()->getSavedValue<bool>("soi-position", true);
-                bool soiRotation =      geode::Mod::get()->getSavedValue<bool>("soi-rotation", true);
-                bool soiScale =         geode::Mod::get()->getSavedValue<bool>("soi-scale", true);
-                bool soiColor =         geode::Mod::get()->getSavedValue<bool>("soi-color", true);
-                bool soiHSV =           geode::Mod::get()->getSavedValue<bool>("soi-hsv", false);
-                bool soiGroups =        geode::Mod::get()->getSavedValue<bool>("soi-groups", true);
-                bool soiZLayer =        geode::Mod::get()->getSavedValue<bool>("soi-zlayer", true);
-                bool soiZOrder =        geode::Mod::get()->getSavedValue<bool>("soi-zorder", true);
-                bool soiObjectID =      geode::Mod::get()->getSavedValue<bool>("soi-objectid", false);
-                bool soiTargetGroup =   geode::Mod::get()->getSavedValue<bool>("soi-targetgroup", true);
-                bool soiItemID =        geode::Mod::get()->getSavedValue<bool>("soi-itemid", false);
-                bool soiBlockID =       geode::Mod::get()->getSavedValue<bool>("soi-blockid", false);
-                bool soiParticles =     geode::Mod::get()->getSavedValue<bool>("soi-particles", true);
-                bool soiHidden =        geode::Mod::get()->getSavedValue<bool>("soi-hidden", true);
-                bool soiNoTouch =       geode::Mod::get()->getSavedValue<bool>("soi-no-touch", true);
-                bool soiHighDetail =    geode::Mod::get()->getSavedValue<bool>("soi-high-detail", false);
-                bool soiObjectCount =   geode::Mod::get()->getSavedValue<bool>("soi-object-count", true);
+                bool soiPosition =      mod->getSavedValue<bool>("soi-position", true);
+                bool soiRotation =      mod->getSavedValue<bool>("soi-rotation", true);
+                bool soiScale =         mod->getSavedValue<bool>("soi-scale", true);
+                bool soiColor =         mod->getSavedValue<bool>("soi-color", true);
+                bool soiHSV =           mod->getSavedValue<bool>("soi-hsv", false);
+                bool soiGroups =        mod->getSavedValue<bool>("soi-groups", true);
+                bool soiZLayer =        mod->getSavedValue<bool>("soi-zlayer", true);
+                bool soiZOrder =        mod->getSavedValue<bool>("soi-zorder", true);
+                bool soiObjectID =      mod->getSavedValue<bool>("soi-objectid", false);
+                bool soiTargetGroup =   mod->getSavedValue<bool>("soi-targetgroup", true);
+                bool soiItemID =        mod->getSavedValue<bool>("soi-itemid", false);
+                bool soiBlockID =       mod->getSavedValue<bool>("soi-blockid", false);
+                bool soiParticles =     mod->getSavedValue<bool>("soi-particles", true);
+                bool soiHidden =        mod->getSavedValue<bool>("soi-hidden", true);
+                bool soiNoTouch =       mod->getSavedValue<bool>("soi-no-touch", true);
+                bool soiHighDetail =    mod->getSavedValue<bool>("soi-high-detail", false);
+                bool soiObjectCount =   mod->getSavedValue<bool>("soi-object-count", true);
 
                 ImGui::MenuItem("Show Position ", NULL, &soiPosition);
                 ImGui::MenuItem("Show Rotation ", NULL, &soiRotation);
@@ -187,23 +189,23 @@ static void renderMenuBar() {
                 ImGui::MenuItem("Show HighDetail ", NULL, &soiHighDetail);
                 ImGui::MenuItem("Show ObjectCount ", NULL, &soiObjectCount);
 
-                geode::Mod::get()->setSavedValue<bool>("soi-position", soiPosition);
-                geode::Mod::get()->setSavedValue<bool>("soi-rotation", soiRotation);
-                geode::Mod::get()->setSavedValue<bool>("soi-scale", soiScale);
-                geode::Mod::get()->setSavedValue<bool>("soi-color", soiColor);
-                geode::Mod::get()->setSavedValue<bool>("soi-hsv", soiHSV);
-                geode::Mod::get()->setSavedValue<bool>("soi-groups", soiGroups);
-                geode::Mod::get()->setSavedValue<bool>("soi-zlayer", soiZLayer);
-                geode::Mod::get()->setSavedValue<bool>("soi-zorder", soiZOrder);
-                geode::Mod::get()->setSavedValue<bool>("soi-objectid", soiObjectID);
-                geode::Mod::get()->setSavedValue<bool>("soi-targetgroup", soiTargetGroup);
-                geode::Mod::get()->setSavedValue<bool>("soi-itemid", soiItemID);
-                geode::Mod::get()->setSavedValue<bool>("soi-blockid", soiBlockID);
-                geode::Mod::get()->setSavedValue<bool>("soi-particles", soiParticles);
-                geode::Mod::get()->setSavedValue<bool>("soi-hidden", soiHidden);
-                geode::Mod::get()->setSavedValue<bool>("soi-no-touch", soiNoTouch);
-                geode::Mod::get()->setSavedValue<bool>("soi-high-detail", soiHighDetail);
-                geode::Mod::get()->setSavedValue<bool>("soi-object-count", soiObjectCount);
+                mod->setSavedValue<bool>("soi-position", soiPosition);
+                mod->setSavedValue<bool>("soi-rotation", soiRotation);
+                mod->setSavedValue<bool>("soi-scale", soiScale);
+                mod->setSavedValue<bool>("soi-color", soiColor);
+                mod->setSavedValue<bool>("soi-hsv", soiHSV);
+                mod->setSavedValue<bool>("soi-groups", soiGroups);
+                mod->setSavedValue<bool>("soi-zlayer", soiZLayer);
+                mod->setSavedValue<bool>("soi-zorder", soiZOrder);
+                mod->setSavedValue<bool>("soi-objectid", soiObjectID);
+                mod->setSavedValue<bool>("soi-targetgroup", soiTargetGroup);
+                mod->setSavedValue<bool>("soi-itemid", soiItemID);
+                mod->setSavedValue<bool>("soi-blockid", soiBlockID);
+                mod->setSavedValue<bool>("soi-particles", soiParticles);
+                mod->setSavedValue<bool>("soi-hidden", soiHidden);
+                mod->setSavedValue<bool>("soi-no-touch", soiNoTouch);
+                mod->setSavedValue<bool>("soi-high-detail", soiHighDetail);
+                mod->setSavedValue<bool>("soi-object-count", soiObjectCount);
 
                 ImGui::EndMenu();
             }
@@ -373,6 +375,14 @@ static void renderMenuBar() {
                 ImGui::SetTooltip("Enables static ratio for game window.");
             }
 
+            ImGui::Dummy({ 5.f, 5.f });
+            if (ImGui::MenuItem("DEBUG: Show Objs Box", NULL, &debugShowObjectsBoxes)) {
+                isAnyItemClicked = true;
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+                ImGui::SetTooltip("Shows objects hitboxes");
+            }
+
 
             // Saving Values
             if (isAnyItemClicked) {
@@ -386,18 +396,19 @@ static void renderMenuBar() {
                 gm->setGameVariable("0013", increaseUndoRedo);
                 gm->setGameVariable("0169", smallWarpBtns);
                 gm->setGameVariable("0009", ignoreDamage);
-                geode::Mod::get()->setSavedValue<bool>("triangle-color-wheel", triangleColorWheel);
-                geode::Mod::get()->setSavedValue<bool>("rotate-color-wheel", rotateColorWheel);
-                geode::Mod::get()->setSavedValue<bool>("hide-object-list-popup", hideObjectListPopup);
-                geode::Mod::get()->setSavedValue<bool>("autoswitch-to-build-mode", autoswitchToBuildMode);
+                mod->setSavedValue<bool>("triangle-color-wheel", triangleColorWheel);
+                mod->setSavedValue<bool>("rotate-color-wheel", rotateColorWheel);
+                mod->setSavedValue<bool>("hide-object-list-popup", hideObjectListPopup);
+                mod->setSavedValue<bool>("autoswitch-to-build-mode", autoswitchToBuildMode);
                 gm->setGameVariable("0097", showLinkControls);
-                geode::Mod::get()->setSavedValue<bool>("show-zoom-controls", showZoomControls);
+                mod->setSavedValue<bool>("show-zoom-controls", showZoomControls);
                 gm->setGameVariable("0041", showObjectInfo);
-                geode::Mod::get()->setSavedValue<bool>("fill-selection-zone", fillSelectionZone);
-                geode::Mod::get()->setSavedValue<bool>("hovering-selects", hoveringSelects);
-                geode::Mod::get()->setSavedValue<bool>("deselect-controls", deselectControls);
-                geode::Mod::get()->setSavedValue<bool>("auto-buildhelper", autoBuildhelper);
-                geode::Mod::get()->setSavedValue<bool>("gamewindow-static-ratio", gamewindowStaticRatio);
+                mod->setSavedValue<bool>("fill-selection-zone", fillSelectionZone);
+                mod->setSavedValue<bool>("hovering-selects", hoveringSelects);
+                mod->setSavedValue<bool>("deselect-controls", deselectControls);
+                mod->setSavedValue<bool>("auto-buildhelper", autoBuildhelper);
+                mod->setSavedValue<bool>("gamewindow-static-ratio", gamewindowStaticRatio);
+                mod->setSavedValue<bool>("debug-show-objects-boxes", debugShowObjectsBoxes);
                 
 
                 lel->updateOptions();

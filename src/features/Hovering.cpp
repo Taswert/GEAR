@@ -49,10 +49,6 @@ namespace ErGui {
 		else {
 			static_cast<GearGameObject*>(obj)->m_fields->m_isHovered = false;
 		}
-
-		// Show Texture Boxes
-		// Don't forget to clear drawNode before cycle
-		//ErGui::touchedDN->drawRect(objRect, { 1.f - 1.f / 1.33f, 1.f - 1.f / 1.33f, 0, 0.1f }, 0.3f, { 1.f, 1.f, 0, 0.33f });
 	}
 
 	void resetHover(GameObject* obj) {

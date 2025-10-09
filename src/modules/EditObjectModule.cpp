@@ -542,9 +542,13 @@ void drawSpawnSettings(GameObject* obj) {
 			}
 		}
 
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+		ImGui::SeparatorText("Remaps");
+		ImGui::PopStyleColor();
+
 		for (int i = 0; i < eObj->m_remapObjects.size(); i++) {
 			auto cObj = eObj->m_remapObjects[i];
-			std::string btnStr = std::to_string(cObj.m_groupID) + " -> " + std::to_string(cObj.m_chance);
+			std::string btnStr = fmt::format("{} -> {}", cObj.m_groupID, cObj.m_chance);
 			if (ImGui::Button(btnStr.c_str())) {
 				eObj->m_remapObjects.erase(eObj->m_remapObjects.begin()+i);
 			}

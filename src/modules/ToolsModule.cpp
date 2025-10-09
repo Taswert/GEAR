@@ -275,7 +275,7 @@ void ErGui::renderToolsModule2() {
 		{
 			int deleteFilterMode = GameManager::sharedState()->getIntGameVariable("0005");
 			GameManager::sharedState()->setIntGameVariable("0006", editorUI->m_selectedObjectIndex);
-			std::string customObjectStr = "Custom-" + std::to_string(GameManager::sharedState()->getIntGameVariable("0006")) + std::string("##RADIO");
+			std::string customObjectStr = fmt::format("Custom-{}##RADIO", GameManager::sharedState()->getIntGameVariable("0006"));
 
 			ImGui::RadioButton("None##RADIO", &deleteFilterMode, 0);
 			ImGui::SameLine();
