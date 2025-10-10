@@ -311,7 +311,7 @@ class $modify(GearEditorUI, EditorUI) {
 			menu_selector(GearEditorUI::onHideUI)
 		);
 		hideUIBtn->setID("hideUIBtn"_spr);
-		hideUIBtn->setVisible(false);
+		hideUIBtn->setVisible(ErGui::hideUI);
 
 		auto hideUIMenu = CCMenu::create();
 		hideUIMenu->addChild(hideUIBtn);

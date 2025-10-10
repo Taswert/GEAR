@@ -26,6 +26,7 @@ namespace ErGui {
 	inline bool filterByDetailColors = false;
 	inline bool filterByGroups = false;
 	inline bool filterByChannel = false;
+	inline bool filterByType = false;
 
 	inline int filterModifier = 0;
 
