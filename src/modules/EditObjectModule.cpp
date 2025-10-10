@@ -844,10 +844,11 @@ void drawTextObjectSettings(GameObject* obj) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
     auto eObj = static_cast<TextGameObject*>(obj);
 
-    if (ImGui::InputText("Text", &eObj->m_text)) {
+    if (ImGui::InputTextMultiline("Text", &eObj->m_text, ImVec2(ErGui::INPUT_ITEM_WIDTH, ImGui::GetFrameHeight() * 2.5f))) {
 		eObj->updateTextObject(eObj->m_text, false);
 	}
 
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragInt("Kerning", &eObj->m_kerning, 1.f, -10, 20, "%d", 0)) {
 		eObj->updateTextKerning(eObj->m_kerning);
 		eObj->updateTextObject(eObj->m_text, false);

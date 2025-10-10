@@ -196,6 +196,8 @@ void ErGui::renderSelectFilter() {
 		ImGui::Checkbox("DetailColor", &filterByDetailColors);
 
 		ImGui::Checkbox("Channel", &filterByChannel);
+		ImGui::SameLine(120.f);
+		ImGui::Checkbox("ObjectType", &filterByType);
 
 		ImGui::Dummy({0.f, 3.f});
 		ImGui::SeparatorText("Modifier");
@@ -413,6 +415,10 @@ void ErGui::renderSelectFilter() {
 			i++;
 		}
 		if (i - 1 % 10 != 0) ImGui::NewLine();
+	}
+
+	if (ImGui::CollapsingHeader("Object Type Filter")) {
+		
 	}
 
 	ImGui::PopStyleColor();
