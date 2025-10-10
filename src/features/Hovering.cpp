@@ -2,6 +2,7 @@
 #include "myUtils.hpp"
 #include "Hovering.hpp"
 //#include <Geode/modify/GameObject.hpp>
+#include "SelectFilterModule.hpp"
 using namespace geode::prelude;
 
 namespace ErGui {
@@ -18,7 +19,8 @@ namespace ErGui {
 
 		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
 		if (ErGui::isPointInPolygon(newPos, ErGui::editorUISwipePoints) &&
-			(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)) {
+			(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)
+			&& selectFilterRealization(obj)) {
 			static_cast<GearGameObject*>(obj)->m_fields->m_isHovered = true;
 		}
 		else {
@@ -27,23 +29,7 @@ namespace ErGui {
 	}
 
 	void hoverObjectSquare(GameObject* obj) {
-		auto objLayer = EditorUI::get()->m_editorLayer->m_objectLayer;
-		auto cameraPos = objLayer->getPosition();
-		auto cameraScale = objLayer->getScale();
-
-
-		auto objRect = obj->m_textureRect;
-
-		objRect.origin = cocos2d::CCPoint(
-			(objRect.origin.x * cameraScale) + cameraPos.x,
-			(objRect.origin.y * cameraScale) + cameraPos.y
-		);
-
-		objRect.size *= cameraScale;
-
-		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
-		if (objRect.intersectsRect(normalizeRect(ErGui::selectRect)) && 
-			(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)) {
+		if (isObjectGonnaBeSelected(obj)) {
 			static_cast<GearGameObject*>(obj)->m_fields->m_isHovered = true;
 		}
 		else {

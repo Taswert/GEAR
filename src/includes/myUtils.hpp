@@ -59,6 +59,14 @@ namespace ErGui {
 
 	void forEachObject(GJBaseGameLayer const* game, std::function<void(GameObject*)> const& callback);
 
+	std::array<CCPoint, 4> getCornersFromRotatedRect(CCPoint center, CCSize size, float rot);
+	CCPoint getAxis(const CCPoint& p1, const CCPoint& p2);
+	void rectProjection(const std::array<CCPoint, 4>& corners, const CCPoint& axis, float& min, float& max);
+	bool overlap(float minA, float maxA, float minB, float maxB);
+	bool checkOBBIntersection(CCPoint posA, CCSize sizeA, float rotA, CCPoint posB, CCSize sizeB, float rotB);
+	bool isObjectGonnaBeSelected(GameObject* obj);
+	void selectEveryObjectInSquare(GameObject* obj);
+
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 72.f;
 	inline CCDrawNode* touchedDN = nullptr;
@@ -80,4 +88,9 @@ namespace ErGui {
 	inline CCRect selectRect;
 
 	inline CCPoint beginBatchLayerPosition;
+
+	inline float moveStep = 30.f;
+	inline float rotationStep = 90.f;
+	inline float scaleStep = 0.5f;
+	inline float skewStep = 15.f;
 };

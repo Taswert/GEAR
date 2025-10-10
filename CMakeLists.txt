@@ -70,6 +70,6 @@ target_include_directories(imgui-cocos INTERFACE ./library/imgui-docking)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/includes)
-
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/modules)
 
 

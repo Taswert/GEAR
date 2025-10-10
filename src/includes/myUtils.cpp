@@ -2,6 +2,7 @@
 #include "myUtils.hpp"
 #include "../modules/ToolsModule.hpp"
 #include <Geode/modify/GameObject.hpp>
+#include "SelectFilterModule.hpp"
 
 namespace ErGui {
 	bool isPointInPolygon(const cocos2d::CCPoint& pt, const std::vector<cocos2d::CCPoint>& polygon) {
@@ -305,6 +306,190 @@ namespace ErGui {
 					if (!obj) continue;
 
 					callback(obj);
+				}
+			}
+		}
+	}
+
+
+	std::array<CCPoint, 4> getCornersFromRotatedRect(CCPoint center, CCSize size, float rot) {
+		float cosR = cosf(rot);
+		float sinR = sinf(rot);
+		float hw = size.width / 2;
+		float hh = size.height / 2;
+
+		std::array<CCPoint, 4> corners = {
+			CCPoint(hw,  hh),
+			CCPoint(hw, -hh),
+			CCPoint(-hw, -hh),
+			CCPoint(-hw,  hh)
+		};
+
+		for (auto& p : corners) {
+			float x = p.x;
+			float y = p.y;
+			p.x = center.x + x * cosR - y * sinR;
+			p.y = center.y + x * sinR + y * cosR;
+		}
+		return corners;
+	}
+
+	CCPoint getAxis(const CCPoint& p1, const CCPoint& p2) {
+		CCPoint edge = ccpSub(p2, p1);
+		float len = sqrtf(edge.x * edge.x + edge.y * edge.y);
+		return CCPoint(edge.x / len, edge.y / len);
+	}
+
+	void rectProjection(const std::array<CCPoint, 4>& corners, const CCPoint& axis, float& min, float& max) {
+		min = max = corners[0].x * axis.x + corners[0].y * axis.y;
+		for (int i = 1; i < 4; ++i) {
+			float proj = corners[i].x * axis.x + corners[i].y * axis.y;
+			if (proj < min) min = proj;
+			if (proj > max) max = proj;
+		}
+	}
+
+	bool overlap(float minA, float maxA, float minB, float maxB) {
+		return !(maxA < minB || maxB < minA);
+	}
+
+	bool checkOBBIntersection(CCPoint posA, CCSize sizeA, float rotA,
+		CCPoint posB, CCSize sizeB, float rotB) {
+		auto cornersA = getCornersFromRotatedRect(posA, sizeA, rotA);
+		auto cornersB = getCornersFromRotatedRect(posB, sizeB, rotB);
+
+		CCPoint axes[4] = {
+			getAxis(cornersA[0], cornersA[1]),
+			getAxis(cornersA[1], cornersA[2]),
+			getAxis(cornersB[0], cornersB[1]),
+			getAxis(cornersB[1], cornersB[2]),
+		};
+
+		for (auto& axis : axes) {
+			float minA, maxA, minB, maxB;
+			rectProjection(cornersA, axis, minA, maxA);
+			rectProjection(cornersB, axis, minB, maxB);
+
+			if (!overlap(minA, maxA, minB, maxB))
+				return false;
+		}
+
+		return true;
+	}
+
+	bool isObjectGonnaBeSelected(GameObject* obj) {
+		auto editorUI = EditorUI::get();
+		if (!editorUI) return false;
+
+		auto objLayer = editorUI->m_editorLayer->m_objectLayer;
+		auto cameraPos = objLayer->getPosition();
+		auto cameraScale = objLayer->getScale();
+
+		if (!obj || !obj->getParent())
+			return false;
+
+		auto box = obj->boundingBox();
+		auto centerPoint = obj->getParent()->convertToWorldSpace({
+			box.getMidX(),
+			box.getMidY()
+			});
+
+		auto contentSize = obj->getScaledContentSize();
+
+		if (auto txtObj = typeinfo_cast<TextGameObject*>(obj)) {
+			auto txtChildren = txtObj->getChildren();
+			if (txtChildren && txtChildren->count() > 0) {
+				auto firstLetter = static_cast<CCFontSprite*>(txtChildren->firstObject());
+				const auto firstBox = firstLetter->boundingBox();
+
+				auto lastLetter = static_cast<CCFontSprite*>(txtChildren->lastObject());
+				const auto lastBox = lastLetter->boundingBox();
+
+				auto firstCenterPoint = firstLetter->getParent()->convertToWorldSpace({
+					firstBox.getMidX(),
+					firstBox.getMidY()
+					});
+
+				auto lastCenterPoint = lastLetter->getParent()->convertToWorldSpace({
+					lastBox.getMidX(),
+					lastBox.getMidY()
+					});
+
+				centerPoint = CCPoint(
+					(firstCenterPoint.x + lastCenterPoint.x) / 2.f,
+					(firstCenterPoint.y + lastCenterPoint.y) / 2.f
+				);
+
+				auto firstPosLocal = firstLetter->getPosition();
+				auto lastPosLocal = lastLetter->getPosition();
+
+				float dx = (lastPosLocal.x - firstPosLocal.x) * obj->m_scaleX;
+				float dy = (lastPosLocal.y - firstPosLocal.y) * obj->m_scaleY;
+				float centerDistLocal = sqrtf(dx * dx + dy * dy);
+
+				auto firstSize = firstLetter->getScaledContentSize() * CCSize(obj->m_scaleX, obj->m_scaleY);
+				auto lastSize = lastLetter->getScaledContentSize() * CCSize(obj->m_scaleX, obj->m_scaleY);
+
+				float widthLocal = centerDistLocal + (firstSize.width + lastSize.width) * 0.5f;
+				float heightLocal = std::max(firstSize.height, lastSize.height);
+
+				contentSize = CCSize(widthLocal, heightLocal);
+
+			}
+		}
+		contentSize *= cameraScale;
+
+
+		CCPoint selectRectCenter = {
+			ErGui::selectRect.origin.x + ErGui::selectRect.size.width / 2,
+			ErGui::selectRect.origin.y + ErGui::selectRect.size.height / 2
+		};
+
+
+		auto isIntersecting = ErGui::checkOBBIntersection(centerPoint, contentSize, -CC_DEGREES_TO_RADIANS(obj->getRotation()), selectRectCenter, ErGui::selectRect.size, 0.f);
+
+		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
+		if (isIntersecting &&
+			(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)
+			&& ErGui::selectFilterRealization(obj)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	void selectEveryObjectInSquare(GameObject* obj) {
+		if (isObjectGonnaBeSelected(obj)) {
+			auto editorUI = EditorUI::get();
+			auto selectedObject = editorUI->m_selectedObject;
+			auto selectedObjects = editorUI->m_selectedObjects;
+			
+			if (!selectedObject && !selectedObjects && !selectedObjects->count()) {
+				editorUI->selectObject(obj, false);
+			}
+			else if (!selectedObjects) {
+				CCArray* newArr = CCArray::create();
+				obj->selectObject({ 0, 255, 0 });
+				obj->m_isSelected = true;
+				editorUI->m_selectedObjects = newArr;
+				editorUI->m_selectedObjects->addObject(obj);
+				editorUI->m_selectedObject = nullptr;
+
+				if (obj->m_linkedGroup) {
+					auto objArr = editorUI->m_editorLayer->getStickyGroup(obj->m_linkedGroup);
+					editorUI->selectObjects(objArr, false);
+				}
+			}
+			else {
+				obj->selectObject({ 0, 255, 0 });
+				obj->m_isSelected = true;
+				editorUI->m_selectedObjects->addObject(obj);
+				editorUI->m_selectedObject = nullptr;
+
+				if (obj->m_linkedGroup) {
+					auto objArr = editorUI->m_editorLayer->getStickyGroup(obj->m_linkedGroup);
+					editorUI->selectObjects(objArr, false);
 				}
 			}
 		}

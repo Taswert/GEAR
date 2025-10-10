@@ -145,7 +145,7 @@ void ErGui::renderGameWindow() {
 		ErGui::nextFreeLayer();
 	}
 
-	ImGui::SetItemTooltip("Next object free Editor Layer");
+	ImGui::SetItemTooltip("Next free Editor Layer");
 	ImGui::SameLine();
 	ImGui::Text("Layer");
 

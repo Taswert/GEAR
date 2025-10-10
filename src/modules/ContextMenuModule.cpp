@@ -8,9 +8,29 @@ void renderContextForSingleObject() {
 	auto selectedObject = editorUI->m_selectedObject;
 	auto selectedObjects = editorUI->m_selectedObjects;
 
+	if ((!selectedObject && !selectedObjects->count()) ||
+		(ErGui::objectUnderCursor != selectedObject && !selectedObjects->count())) {
+		editorUI->createUndoSelectObject(false);
+		editorUI->selectObject(ErGui::objectUnderCursor, false);
+	}
 
 	if (ErGui::objectUnderCursor && (ErGui::objectUnderCursor == selectedObject ||
 		selectedObjects->containsObject(ErGui::objectUnderCursor))) {
+
+		if (!selectedObjects || selectedObjects->count() == 0) {
+
+			if (ImGui::Selectable("Edit Object")) {
+				editorUI->editObject(nullptr);
+			}
+			if (ImGui::Selectable("Edit Group")) {
+				editorUI->editGroup(nullptr);
+			}
+			if (ImGui::Selectable("Edit Special")) {
+				editorUI->editObjectSpecial(0);
+			}
+			ImGui::Dummy({ 5.f, 5.f });
+
+		}
 
 		if (ImGui::Selectable("De-Select##Single")) {
 			editorUI->createUndoSelectObject(false);
@@ -19,6 +39,16 @@ void renderContextForSingleObject() {
 		}
 	}
 	else {
+		if (ImGui::Selectable("Edit Object")) {
+			editorUI->editObject(nullptr);
+		}
+		if (ImGui::Selectable("Edit Group")) {
+			editorUI->editGroup(nullptr);
+		}
+		if (ImGui::Selectable("Edit Special")) {
+			editorUI->editObjectSpecial(0);
+		}
+		ImGui::Dummy({ 5.f, 5.f });
 
 		if (ImGui::Selectable("Select##Single")) {
 			CCArray* toSelect = CCArray::create();
@@ -31,6 +61,7 @@ void renderContextForSingleObject() {
 			ImGui::CloseCurrentPopup();
 		}
 	}
+
 
 	if (ImGui::Selectable("Delete Object##Single")) {
 		editorUI->deleteObject(ErGui::objectUnderCursor, false);
@@ -107,6 +138,19 @@ void renderContextForMultipleObjects() {
 	auto editorUI = EditorUI::get();
 	auto selectedObject = editorUI->m_selectedObject;
 	auto selectedObjects = editorUI->m_selectedObjects;
+
+
+	if (ImGui::Selectable("Edit Object")) {
+		editorUI->editObject(nullptr);
+	}
+	if (ImGui::Selectable("Edit Group")) {
+		editorUI->editGroup(nullptr);
+	}
+	if (ImGui::Selectable("Edit Special")) {
+		editorUI->editObjectSpecial(0);
+	}
+
+	ImGui::Dummy({ 5.f, 5.f });
 
 	if (ImGui::Selectable("De-Select All")) {
 		editorUI->createUndoSelectObject(false);

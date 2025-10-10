@@ -518,7 +518,7 @@ class $modify(GearEditorUI, EditorUI) {
 				this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 
 				CCArray* objArr = CCArray::create();
-				for (auto obj : CCArrayExt<GameObject*>(GameManager::sharedState()->getEditorLayer()->m_objects)) {
+				for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
 
 					if (!(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)) continue;
 
@@ -578,17 +578,22 @@ class $modify(GearEditorUI, EditorUI) {
 				undoObjects->addObjectsFromArray(lelUndoObjects);
 
 
-				EditorUI::ccTouchEnded(touch, event);
-
 				// saving delta objs
 				CCArray* selectedObjsDelta = CCArray::create();
-				selectedObjsDelta->addObjectsFromArray(this->m_selectedObjects);
-				if (this->m_selectedObject) selectedObjsDelta->addObject(this->m_selectedObject);
-				this->deselectAll();
+				for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+					if (ErGui::isObjectGonnaBeSelected(obj)) {
+						selectedObjsDelta->addObject(obj);
+					}
+				}
+
+				//EditorUI::ccTouchEnded(touch, event);
+				CCLayer::ccTouchEnded(touch, event);
+
 
 				// loading selected objects
-				this->selectObjects(selectedObjs, false);
 				if (selectedObj) this->selectObject(selectedObj, false);
+				else this->selectObjects(selectedObjs, false);
+				
 
 				// loading undo list
 				lelUndoObjects->removeAllObjects();

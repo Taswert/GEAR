@@ -157,7 +157,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->activateTransformControl(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Warp Selected");
+		ImGui::SetTooltip("Warp Selected (Ctrl+W)");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_RESIZE, false, 0, BTN_SIZE, selectableRounding)) {

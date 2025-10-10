@@ -303,6 +303,15 @@ if (!eObj->m_isSilent) {
 
 void drawStopSettings(GameObject* obj) {
 	ImGui::Text("Stop");
+	auto eObj = static_cast<EffectGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
 
 	auto tcObj = static_cast<TriggerControlGameObject*>(obj);
 	//tcObj->targetID

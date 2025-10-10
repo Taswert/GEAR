@@ -7,11 +7,6 @@
 using namespace geode::prelude;
 
 namespace ErGui {
-	static float moveStep = 30.f;
-	static float rotationStep = 90.f;
-	static float scaleStep = 0.5f;
-	static float skewStep = 15.f;
-
 	static bool rotLock = true;
 	static bool scaleLock = false;
 

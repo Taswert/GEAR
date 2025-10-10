@@ -27,8 +27,31 @@ class $modify(CCEGLView) {
 	}
 };
 
+void moveObjectsByKey(cocos2d::enumKeyCodes p0, cocos2d::enumKeyCodes key, float x, float y) {
+	if (p0 == key) {
+		EditorUI* editorUI = EditorUI::get();
+		if (auto obj = editorUI->m_selectedObject) {
+			editorUI->m_rotationControl->setPosition({ editorUI->m_rotationControl->getPositionX() + x, editorUI->m_rotationControl->getPositionY() + y });
+			editorUI->moveObject(obj, { x, y });
+		}
+		if (auto objArr = editorUI->m_selectedObjects) {
+			if (objArr->count() > 0) {
+				auto rotControl = editorUI->m_rotationControl;
+				rotControl->setPosition({ rotControl->getPositionX() + x, rotControl->getPositionY() + y });
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					editorUI->moveObject(obj, { x, y });
+				}
+			}
+		}
+	}
+}
+
 class $modify(EditorUI) {
 	virtual void keyDown(cocos2d::enumKeyCodes p0) {
+		//moveObjectsByKey(p0, cocos2d::enumKeyCodes::KEY_W, 0.f, ErGui::moveStep);
+		//moveObjectsByKey(p0, cocos2d::enumKeyCodes::KEY_A, -ErGui::moveStep, 0.f);
+		//moveObjectsByKey(p0, cocos2d::enumKeyCodes::KEY_S, 0.f, -ErGui::moveStep);
+		//moveObjectsByKey(p0, cocos2d::enumKeyCodes::KEY_D, ErGui::moveStep, 0.f);
 
 		// 4 - View Mode
 		if (p0 == cocos2d::enumKeyCodes::KEY_Four) {
@@ -48,6 +71,11 @@ class $modify(EditorUI) {
 		// Ctrl + B - Build Helper
 		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_B) {
 			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+		}
+
+		// Ctrl + W - Warp
+		if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_W) {
+			this->activateTransformControl(nullptr);
 		}
 
 		// todo: select all right / select all left

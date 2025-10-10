@@ -29,17 +29,6 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		lel->m_currentLayer = obj->m_editorLayer;
 	}
 
-	if (ImGui::CollapsingHeader("Object Info")) {
-		ImGui::Text("Object Address: %p", obj);
-		ImGui::SameLine();
-		if (ImGui::Button("Copy")) {
-			clipboard::write(CCString::createWithFormat("%p", obj)->getCString());
-		}
-
-		ImGui::Text("Object ID: %d", obj->m_objectID);
-
-		//ImGui::Text(typeid(obj).name());	
-	}
 	if (ImGui::CollapsingHeader("Groups Settings")) {
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("ID Offset", &groupOffset);
@@ -88,14 +77,35 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##EGM-NEXTFREEGROUP")) {
 			auto groups = lel->m_groups;
+			std::set<int> freeGroups;
 			if (groupOffset < 1) groupOffset = 1;
 			for (int i = groupOffset; i < groups.size(); i++) {
 				int count = groups[i] ? groups[i]->count() : 0;
 				if (count == 0) {
-					chosenGroupEGM = i;
-					break;
+					freeGroups.insert(i);
 				}
 			}
+
+			if (freeGroups.empty()) 
+				chosenGroupEGM = 9999;
+
+			for (const auto& obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+				if (auto eObj = typeinfo_cast<EffectGameObject*>(obj)) {
+					freeGroups.erase(eObj->m_targetGroupID);
+					freeGroups.erase(eObj->m_centerGroupID);
+				}
+				if (auto cObj = typeinfo_cast<ChanceTriggerGameObject*>(obj)) {
+					for (const auto& chance : cObj->m_chanceObjects) {
+						freeGroups.erase(chance.m_groupID);
+						freeGroups.erase(chance.m_oldGroupID);
+					}
+				}
+			}
+
+			if (!freeGroups.empty()) 
+				chosenGroupEGM = *freeGroups.begin();
+			else
+				chosenGroupEGM = 9999;
 		}
 
 		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
@@ -112,7 +122,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.73f, 0.25f, 0.71f, 1.f));
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
 
-				// The Button
+				// Parent Group Button
 				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 					lel->m_parentGroupsDict->removeObjectForKey(groupInt);
 				}
@@ -123,7 +133,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 				ImGui::PopStyleVar();
 			}
 			else {
-				// Parent Group Button
+				// The Button
 				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
 					obj->removeFromGroup(groupInt);
 					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
@@ -326,6 +336,19 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		}
 	}
 
+	// ToDo Debug toggle
+	if (ImGui::CollapsingHeader("Object Info")) {
+		ImGui::Text("Object Address: %p", obj);
+		ImGui::SameLine();
+		if (ImGui::Button("Copy")) {
+			clipboard::write(CCString::createWithFormat("%p", obj)->getCString());
+		}
+
+		ImGui::Text("Object ID: %d", obj->m_objectID);
+
+		//ImGui::Text(typeid(obj).name());	
+	}
+
 	// in an imgui window somewhere...
 	//ImGui::PushFont(iconFont);
 	//ImGui::Text(ICON_MDI_BLACK_MESA "  Paint"); // use string literal concatenation
@@ -472,13 +495,37 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		if (ImGui::Button("Next Free##EGM-NEXTFREEGROUP")) {
 			auto groups = lel->m_groups;
+			std::set<int> freeGroups;
 			if (groupOffset < 1) groupOffset = 1;
 			for (int i = groupOffset; i < groups.size(); i++) {
 				int count = groups[i] ? groups[i]->count() : 0;
 				if (count == 0) {
-					chosenGroupEGM = i;
-					break;
+					freeGroups.insert(i);
 				}
+			}
+
+			if (freeGroups.empty()) {
+				chosenGroupEGM = 9999;
+			}
+
+			for (const auto& obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+				if (auto eObj = typeinfo_cast<EffectGameObject*>(obj)) {
+					freeGroups.erase(eObj->m_targetGroupID);
+					freeGroups.erase(eObj->m_centerGroupID);
+				}
+				if (auto cObj = typeinfo_cast<ChanceTriggerGameObject*>(obj)) {
+					for (const auto& chance : cObj->m_chanceObjects) {
+						freeGroups.erase(chance.m_groupID);
+						freeGroups.erase(chance.m_oldGroupID);
+					}
+				}
+			}
+
+			if (!freeGroups.empty()) {
+				chosenGroupEGM = *freeGroups.begin();
+			}
+			else {
+				chosenGroupEGM = 9999;
 			}
 		}
 		
@@ -501,14 +548,32 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
 			}
 
-			// THE Button
-			if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
-				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-					obj->removeFromGroup(groupInt);
-					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
+			if (objArr->containsObject(lel->m_parentGroupsDict->objectForKey(groupInt))) {
+				// Styling Push
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.48f, 0.12f, 0.46f, 1.f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.73f, 0.25f, 0.71f, 1.f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
+
+				// Parent Group Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
+					lel->m_parentGroupsDict->removeObjectForKey(groupInt);
 				}
-				groupsFromObjArr.erase(std::find(groupsFromObjArr.begin(), groupsFromObjArr.end(), groupsFromObjArr[i]));
-				groupsSize--;
+
+				// Styling Pop
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
+			}
+			else {
+				// THE Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
+					for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+						obj->removeFromGroup(groupInt);
+						static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
+					}
+					groupsFromObjArr.erase(std::find(groupsFromObjArr.begin(), groupsFromObjArr.end(), groupsFromObjArr[i]));
+					groupsSize--;
+				}
 			}
 
 			// Styling Pop
