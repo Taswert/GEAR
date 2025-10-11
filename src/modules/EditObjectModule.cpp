@@ -34,6 +34,14 @@ const char* pulseTargetTypeItems[] = {
 	"Channel", "Group"
 };
 
+const char* gameModesItems[] = {
+	"Cube", "Ship", "Ball", "UFO", "Wave", "Robot", "Spider", "Swing"
+};
+
+const char* speedItems[] = {
+	"Normal", "Slow", "Fast", "Faster", "Very Fast"
+};
+
 int spawnOldGroupID = 0;
 int spawnNewGroupID = 0;
 
@@ -67,16 +75,47 @@ void ErGui::saveHueValues(ccColor3B* color) {
 	ImGui::ColorConvertRGBtoHSV(r, g, b, savedHueEO, savedSaturationEO, savedValueEO);
 }
 
-
-
-
-
 void drawStartPosSettings(GameObject* obj) {
-	ImGui::Text("StartPos");
-
 	auto spObj = static_cast<StartPosObject*>(obj);
+	auto spSettings = spObj->m_startSettings;
 
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::Combo("Mode", &spSettings->m_startMode, gameModesItems, IM_ARRAYSIZE(gameModesItems));
 
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::Combo("Speed", reinterpret_cast<int*>(&spSettings->m_startSpeed), speedItems, IM_ARRAYSIZE(speedItems));
+
+	ImGui::Separator();
+
+	ImGui::Checkbox("Flip", &spSettings->m_isFlipped);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Mini", &spSettings->m_startMini);
+
+	ImGui::Checkbox("Dual", &spSettings->m_startDual);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Mirror", &spSettings->m_mirrorMode);
+
+	ImGui::Checkbox("Rotate", &spSettings->m_rotateGameplay);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Reverse", &spSettings->m_reverseGameplay);
+
+	ImGui::Checkbox("Reset Camera", &spSettings->m_resetCamera);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Disable", &spSettings->m_disableStartPos);
+
+	ImGui::Separator();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Order", &spSettings->m_targetOrder)) {
+		if (spSettings->m_targetOrder < 0) spSettings->m_targetOrder = 0;
+		if (spSettings->m_targetOrder > 999999) spSettings->m_targetOrder = 999999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Channel", &spSettings->m_targetChannel)) {
+		if (spSettings->m_targetChannel < 0) spSettings->m_targetChannel = 0;
+		if (spSettings->m_targetChannel > 999999) spSettings->m_targetChannel = 999999;
+	}
 }
 
 std::set<int> oldColorTriggers = {
