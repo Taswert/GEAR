@@ -14,12 +14,14 @@ namespace ErGui {
 	inline int offsetGroupSFM = 0;
 	inline int chosenChannelSFM = 0;
 	inline int offsetChannelSFM = 0;
+	inline int chosenTypeSFM = 0;
 
 	inline std::unordered_set<int> objectsFilterSet;
 	inline std::unordered_set<int> mainColorsFilterSet;
 	inline std::unordered_set<int> detailColorsFilterSet;
 	inline std::unordered_set<int> groupsFilterSet;
 	inline std::unordered_set<int> channelFilterSet;
+	inline std::unordered_set<int> objectTypeSet;
 
 	inline bool filterByObjects = false;
 	inline bool filterByMainColors = false;

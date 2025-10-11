@@ -1,6 +1,10 @@
 #pragma once
 #include "SelectFilterModule.hpp"
 
+const char* objectTypes[] = {
+	"Solid", "Basic (Unused)", "Hazard", "Inverse Gravity Portal", "Normal Gravity Portal", "Ship Portal", "Cube Portal", "Decoration", "Yellow Jump Pad", "Pink Jump Pad", "Gravity Pad", "Yellow Jump Orb", "Pink Jump Orb", "Gravity Orb", "Inverse Mirror Portal", "Normal Mirror Portal", "Ball Portal", "Regular Size Portal", "Mini Size Portal", "UFO Portal", "Modifier", "Breakable", "Secret Coin", "Dual Portal", "Solo Portal", "Slope", "Wave Portal", "Robot Portal", "Teleport Portal", "Green Orb", "Collectible", "User Coin", "Drop Orb", "Spider Portal", "Red Jump Pad", "Red Jump Orb", "Custom Orb", "Dash Orb", "Gravity Dash Orb", "Collision Object", "Special", "Swing Portal", "Gravity Toggle Portal", "Spider Orb", "Spider Pad", "Enter Effect Object", "Teleport Orb", "Animated Hazard",
+};
+
 bool ErGui::selectFilterRealization(GameObject* obj) {
 	bool isFilterOn = false;
 	bool shouldSelect = false;
@@ -79,6 +83,15 @@ bool ErGui::selectFilterRealization(GameObject* obj) {
 		}
 	}
 
+	if (!ErGui::objectTypeSet.empty() && ErGui::filterByType) {
+		isFilterOn = true;
+		if (ErGui::objectTypeSet.contains((int)obj->m_objectType)) {
+			shouldSelect = true;
+		}
+		else if (ErGui::filterModifier == 1) {
+			return false;
+		}
+	}
 
 	if (!isFilterOn)
 		return true; // EditorUI::selectObject(obj, p1);
@@ -170,6 +183,16 @@ CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
 			}
 		}
 
+		if (!ErGui::objectTypeSet.empty() && ErGui::filterByType) {
+			isFilterOn = true;
+			if (ErGui::objectTypeSet.contains((int)obj->m_objectType)) {
+				shouldSelect = true;
+			}
+			else if (ErGui::filterModifier == 1) {
+				continue;
+			}
+		}
+
 
 		if (!isFilterOn)
 			return objArrInRect;
@@ -237,7 +260,9 @@ void ErGui::renderSelectFilter() {
 				}
 			}
 		}
-
+		if (ImGui::Button("Reset##OBJ")) {
+			objectsFilterSet.clear();
+		}
 
 		ImGui::SeparatorText("Filter");
 		int i = 1;
@@ -278,6 +303,9 @@ void ErGui::renderSelectFilter() {
 		ImGui::SameLine();
 		if (ImGui::Button("Add##MCOL") && chosenMainColorSFM > 0) {
 			mainColorsFilterSet.insert(chosenMainColorSFM);
+		}
+		if (ImGui::Button("Reset##MCOL")) {
+			mainColorsFilterSet.clear();
 		}
 	
 		ImGui::SeparatorText("Filter");
@@ -320,6 +348,9 @@ void ErGui::renderSelectFilter() {
 		if (ImGui::Button("Add##DCOL") && chosenDetailColorSFM > 0) {
 			detailColorsFilterSet.insert(chosenDetailColorSFM);
 		}
+		if (ImGui::Button("Reset##DCOL")) {
+			detailColorsFilterSet.clear();
+		}
 	
 		ImGui::SeparatorText("Filter");
 		int i = 1;
@@ -360,6 +391,9 @@ void ErGui::renderSelectFilter() {
 		ImGui::SameLine();
 		if (ImGui::Button("Add##GROUP") && chosenGroupSFM > 0) {
 			groupsFilterSet.insert(chosenGroupSFM);
+		}
+		if (ImGui::Button("Reset##GROUP")) {
+			groupsFilterSet.clear();
 		}
 
 		ImGui::SeparatorText("Filter");
@@ -402,6 +436,9 @@ void ErGui::renderSelectFilter() {
 		if (ImGui::Button("Add##CHAN") && chosenChannelSFM > -1) {
 			channelFilterSet.insert(chosenChannelSFM);
 		}
+		if (ImGui::Button("Reset##CHAN")) {
+			channelFilterSet.clear();
+		}
 
 		ImGui::SeparatorText("Filter");
 		int i = 1;
@@ -418,7 +455,30 @@ void ErGui::renderSelectFilter() {
 	}
 
 	if (ImGui::CollapsingHeader("Object Type Filter")) {
-		
+		ImGui::Text("Object Type");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::Combo("##OBJECT-TYPE", &chosenTypeSFM, objectTypes, IM_ARRAYSIZE(objectTypes));
+		ImGui::SameLine();
+		if (ImGui::Button("Add##OBJTYPE") && chosenTypeSFM > -1) {
+			objectTypeSet.insert(chosenTypeSFM);
+		}
+		if (ImGui::Button("Reset##OBJTYPE")) {
+			objectTypeSet.clear();
+		}
+
+		ImGui::SeparatorText("Filter");
+		int i = 1;
+		for (auto objType : objectTypeSet) {
+			std::string btnStr = objectTypes[objType];
+			btnStr += "##OBJTYPE-FILTER";
+			if (ImGui::Button(btnStr.c_str())) {
+				objectTypeSet.erase(objType);
+			}
+			if (i % 2 != 0) ImGui::SameLine();
+			i++;
+		}
+		if (i - 1 % 2 != 0) ImGui::NewLine();
 	}
 
 	ImGui::PopStyleColor();
