@@ -113,7 +113,7 @@ namespace {
 } // namespace
 
 
-// возвращает правильно покрашенный GameObject в виде единого квадратного спрайта 60х60
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ GameObject пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ 60пїЅ60
 CCSprite* ErGui::getGameObjectAsSingleSpriteById(uint16_t objId) {
     const float size = defaultObjSprSize;
     auto editor = EditorUI::get();
@@ -127,7 +127,7 @@ CCSprite* ErGui::getGameObjectAsSingleSpriteById(uint16_t objId) {
 	GameObject* obj = static_cast<GameObject*>(buttonSpr->m_subSprite);
 	setColorToGameObjectNew(obj, true);
 
-    auto realSz = recursiveGetRealSize(obj, buttonSpr); // чтобы вписать объект в квадрат
+    auto realSz = recursiveGetRealSize(obj, buttonSpr); // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     auto contSize = CCSize(realSz.r - realSz.l, realSz.t - realSz.b);
     float maxSize = std::max({30.f, contSize.width, contSize.height});
     float scaleFactor = size / maxSize;

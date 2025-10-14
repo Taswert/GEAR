@@ -346,7 +346,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		ImGui::Text("Object ID: %d", obj->m_objectID);
 
-		//ImGui::Text(typeid(obj).name());	
+		ImGui::Text("Class: %s", typeid(*obj).name() + 6);
 	}
 
 	// in an imgui window somewhere...
@@ -1009,7 +1009,7 @@ void ErGui::groupInfoUpdate() {
 	ErGui::maxMaterial = ErGui::firstObj->m_objectMaterial;
 
 
-	// Стоит переработать эту систему.
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 	//---Cosmetic
 	ErGui::cb_NoEffects = false;
 	ErGui::cb_DontFade = false;
