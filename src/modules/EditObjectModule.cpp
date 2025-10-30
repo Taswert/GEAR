@@ -9,7 +9,7 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "CustomImGuiWidgets.hpp"
 
-const std::unordered_set<int> triggerSet = { 29, 30, 31, 105, 744, 900, 915, 899, 901, 914, 1616, 1006, 1007, 1049, 1268, 1346, 2067, 1347, 1520, 1585, 3033, 1814, 3016, 3660, 3661, 3032, 3006, 3007, 3008, 3009, 3010, 3011, 3012, 3013, 3014, 3015, 3024, 3029, 3030, 3031, 1595, 1611, 1811, 1817, 3614, 3615, 3617, 3619, 3620, 3641, 1912, 2068, 3607, 3608, 3618, 1913, 1914, 1916, 2901, 2015, 2062, 2925, 2016, 1917, 2900, 1934, 3605, 3602, 3603, 3604, 1935, 2999, 3606, 3612, 1615, 3613, 3662, 1815, 3609, 3640, 1816, 3643, 1812, 33, 32, 1613, 1612, 1818, 1819, 3600, 1932, 2899, 3642, 2903, 2066, 3022, 2904, 2905, 2907, 2909, 2910, 2911, 2912, 2913, 2914, 2915, 2916, 2917, 2919, 2920, 2921, 2922, 2923, 2924, 22, 24, 23, 25, 26, 27, 28, 55, 56, 57, 58, 59, 1915, 3017, 3018, 3019, 3020, 3021, 3023, 29, 30, 105, 744, 915, 1931, 3655, };
+const std::unordered_set<int> triggerSet = { 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 55, 56, 57, 58, 59, 105, 744, 900, 915, 899, 901, 914, 1616, 1006, 1007, 1049, 1268, 1346, 2067, 1347, 1520, 1585, 1912, 3033, 1814, 1915, 2063, 3016, 3617, 3660, 3661, 3032, 3006, 3007, 3008, 3009, 3010, 3011, 3012, 3013, 3014, 3015, 3024, 3029, 3030, 3031, 1595, 1611, 1811, 1817, 3608, 3614, 3615, 3617, 3619, 3620, 3641, 1912, 2068, 3607, 3608, 3618, 1913, 1914, 1916, 2901, 2015, 2062, 2925, 2016, 1917, 2900, 1934, 3605, 3602, 3603, 3604, 1935, 2999, 3606, 3612, 1615, 3613, 3662, 1815, 3609, 3640, 1816, 3643, 1812, 33, 32, 1613, 1612, 1818, 1819, 3600, 1932, 2899, 3642, 2903, 2066, 3022, 2904, 2905, 2907, 2909, 2910, 2911, 2912, 2913, 2914, 2915, 2916, 2917, 2919, 2920, 2921, 2922, 2923, 2924, 22, 24, 23, 25, 26, 27, 28, 55, 56, 57, 58, 59, 1915, 3017, 3018, 3019, 3020, 3021, 3023, 29, 30, 105, 744, 915, 1931, 3655, 2069, 3645 };
 using ErGuiSettingsDrawer = void (*)(GameObject*);
 std::unordered_map<int, ErGuiSettingsDrawer> triggersMap;
 
@@ -32,6 +32,22 @@ const char* pulseModeItems[] = {
 
 const char* pulseTargetTypeItems[] = {
 	"Channel", "Group"
+};
+
+const char* gameModesItems[] = {
+	"Cube", "Ship", "Ball", "UFO", "Wave", "Robot", "Spider", "Swing"
+};
+
+const char* speedItems[] = {
+	"Slow", "Normal", "Fast", "Faster", "Very Fast"
+};
+
+const int speedValues[] = {
+	1, 0, 2, 3, 4,
+};
+
+const char* enterType[] = {
+	"None", "Enter Only", "Exit Only"
 };
 
 int spawnOldGroupID = 0;
@@ -67,16 +83,57 @@ void ErGui::saveHueValues(ccColor3B* color) {
 	ImGui::ColorConvertRGBtoHSV(r, g, b, savedHueEO, savedSaturationEO, savedValueEO);
 }
 
-
-
-
-
 void drawStartPosSettings(GameObject* obj) {
-	ImGui::Text("StartPos");
-
 	auto spObj = static_cast<StartPosObject*>(obj);
+	auto spSettings = spObj->m_startSettings;
 
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::Combo("Mode", &spSettings->m_startMode, gameModesItems, IM_ARRAYSIZE(gameModesItems));
 
+	int speedIndex = 0;
+	for (int i = 0; i < IM_ARRAYSIZE(speedValues); i++) {
+		if ((int)spSettings->m_startSpeed == speedValues[i]) {
+			speedIndex = i;
+			break;
+		}
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::Combo("Speed", &speedIndex, speedItems, IM_ARRAYSIZE(speedItems))) {
+		(int&)spSettings->m_startSpeed = speedValues[speedIndex];
+	}
+
+	ImGui::Separator();
+
+	ImGui::Checkbox("Flip", &spSettings->m_isFlipped);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Mini", &spSettings->m_startMini);
+
+	ImGui::Checkbox("Dual", &spSettings->m_startDual);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Mirror", &spSettings->m_mirrorMode);
+
+	ImGui::Checkbox("Rotate", &spSettings->m_rotateGameplay);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Reverse", &spSettings->m_reverseGameplay);
+
+	ImGui::Checkbox("Reset Camera", &spSettings->m_resetCamera);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Disable", &spSettings->m_disableStartPos);
+
+	ImGui::Separator();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Order", &spSettings->m_targetOrder)) {
+		if (spSettings->m_targetOrder < 0) spSettings->m_targetOrder = 0;
+		if (spSettings->m_targetOrder > 999999) spSettings->m_targetOrder = 999999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Channel", &spSettings->m_targetChannel)) {
+		if (spSettings->m_targetChannel < 0) spSettings->m_targetChannel = 0;
+		if (spSettings->m_targetChannel > 999999) spSettings->m_targetChannel = 999999;
+	}
 }
 
 std::set<int> oldColorTriggers = {
@@ -388,7 +445,11 @@ void drawPulseSettings(GameObject* obj) {
 		float r, g, b;
 		float hsv[4] = { savedHueEO, savedSaturationEO, savedValueEO, eObj->m_opacity };
 		ImGuiColorEditFlags flags =
-			ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_AlphaBar;
+			ImGuiColorEditFlags_InputHSV | ImGuiColorEditFlags_AlphaBar;
+		if (geode::Mod::get()->getSavedValue<bool>("triangle-color-wheel", true))
+			flags |= ImGuiColorEditFlags_PickerHueWheel;
+		if (!geode::Mod::get()->getSavedValue<bool>("rotate-color-wheel", false))
+			flags |= ImGuiColorEditFlags_DisableWheelRot;
 
 		ImGui::ColorPicker4(std::string("##PULSE-SETTINGS").c_str(), hsv, flags);
 
@@ -769,9 +830,48 @@ void drawAnimateSettings(GameObject* obj) {
 }
 
 void drawTouchSettings(GameObject* obj) {
-	ImGui::Text("Touch");
-
 	auto eObj = static_cast<EffectGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+	}
+
+	bool p1 = (int)eObj->m_touchPlayerMode == 1;
+	bool p2 = (int)eObj->m_touchPlayerMode == 2;
+
+	if (ImGui::Checkbox("P1 Only", &p1)) {
+		p2 = false;
+		if (p1) (int&)eObj->m_touchPlayerMode = 1;
+		else (int&)eObj->m_touchPlayerMode = 0;
+	}
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox("P2 Only", &p2)) {
+		p1 = false;
+		if (p2) (int&)eObj->m_touchPlayerMode = 2;
+		else (int&)eObj->m_touchPlayerMode = 0;
+	}
+
+	bool toggleOn = (int)eObj->m_touchToggleMode == 1;
+	bool toggleOff = (int)eObj->m_touchToggleMode == 2;
+
+	if (ImGui::Checkbox("Toggle On", &toggleOn)) {
+		toggleOff = false;
+		if (toggleOn) (int&)eObj->m_touchToggleMode = 1;
+		else (int&)eObj->m_touchToggleMode = 0;
+	}
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox("Toggle Off", &toggleOff)) {
+		toggleOn = false;
+		if (toggleOff) (int&)eObj->m_touchToggleMode = 2;
+		else (int&)eObj->m_touchToggleMode = 0;
+	}
+
+	ImGui::Checkbox("Hold Mode", &eObj->m_touchHoldMode);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Dual Mode", &eObj->m_isDualMode);
+
 	drawTouchSpawnTriggered(eObj);
 }
 
@@ -868,6 +968,139 @@ void drawTextObjectSettings(GameObject* obj) {
 	}
 }
 
+void drawEnterEffectSettings(GameObject* obj) {
+	auto eObj = static_cast<EnterEffectObject*>(obj);
+
+	bool enterOnly = eObj->m_enterType == 1;
+	bool exitOnly = eObj->m_enterType == 2;
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Target Enter Channel", reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(eObj) + 0x800));
+
+	if (ImGui::Checkbox("Enter Only", &enterOnly)) {
+		exitOnly = false;
+		if (enterOnly) eObj->m_enterType = 1;
+		else eObj->m_enterType = 0;
+	}
+	if (ImGui::Checkbox("Exit Only", &exitOnly)) {
+		enterOnly = false;
+		if (exitOnly) eObj->m_enterType = 2;
+		else eObj->m_enterType = 0;
+	}
+	// ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	// ImGui::Combo("Enter Type", &eObj->m_enterType, enterType, IM_ARRAYSIZE(enterType));
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+void drawRandomSettings(GameObject* obj) {
+	auto lel = GameManager::sharedState()->m_levelEditorLayer;
+	auto eObj = static_cast<EffectGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Group ID 1", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Group ID 2", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::DragFloat("Chance", &eObj->m_duration, 1.f, 0.f, 100.f, "%.0f%%")) {
+		if (eObj->m_duration < 0.f) eObj->m_duration = 0.f;
+		if (eObj->m_duration > 100.f) eObj->m_duration = 100.f;
+	}
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+void drawSpawnParticleSettings(GameObject* obj) {
+	auto eObj = static_cast<SpawnParticleGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Particle Group", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Position Group", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
+	}
+
+	ImGui::Text("Offset X / Y");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::DragFloat("##OFFSETX", &eObj->m_offset.x, 1.f, -100.f, 1.f, "%.0f");
+
+	ImGui::Checkbox("Match Rotation", &eObj->m_matchRotation);
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+void drawTimeControlSettings(GameObject* obj) {
+	auto eObj = static_cast<TimerTriggerGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Item ID", &eObj->m_itemID);
+
+	ImGui::Checkbox("Start / Stop", &eObj->m_stopTimeEnabled);
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+void checkpointSettings(GameObject* obj) {
+	auto cObj = static_cast<CheckpointGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Spawn ID", &cObj->m_targetGroupID)) {
+		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
+		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Pos", &cObj->m_centerGroupID)) {
+		if (cObj->m_centerGroupID < 0) cObj->m_centerGroupID = 0;
+		if (cObj->m_centerGroupID > 9999) cObj->m_centerGroupID = 9999;
+	}
+
+	ImGui::Checkbox("Player Pos", &cObj->m_targetPlayer1);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Respawn ID", &cObj->m_respawnID);
+
+	drawTouchSpawnTriggered(cObj);
+}
+
+void forceBlockSettings(GameObject* obj) {
+	auto fObj = static_cast<ForceBlockGameObject*>(obj);
+
+	if (!fObj->m_forceRange) {
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("Force", &fObj->m_force, .05f, 0.f, 1.f);
+	}
+	else {
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
+		ImGui::DragFloat("##MINFORCE", &fObj->m_minForce, .05f, 0.f, 1.f);
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH / 2.f);
+		ImGui::DragFloat("Min / Max Force", &fObj->m_maxForce, .05f, 0.f, 1.f);
+	}
+
+	ImGui::Checkbox("Relative", &fObj->m_relativeForce);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Range", &fObj->m_forceRange);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Force ID", &fObj->m_forceID);
+}
 
 void renderObjectSettings(GameObject* obj) {
 	int objId = obj->m_objectID;
@@ -949,6 +1182,15 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[3613] = drawUISettings;
 	triggersMap[1935] = drawTimeWarp;
 	triggersMap[1917] = drawReverseSettings;
+	triggersMap[1912] = drawRandomSettings;
+	//triggersMap[3608] = drawSpawnParticleSettings;
+	//triggersMap[3617] = drawTimeControlSettings;
+	triggersMap[2063] = checkpointSettings;
+	
+	// Force Blocks
+	triggersMap[2069] = forceBlockSettings;
+	triggersMap[3645] = forceBlockSettings;
+
 
 	// Old color triggers
 	triggersMap[29] = drawColorSettings;
@@ -957,6 +1199,21 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[744] = drawColorSettings;
 	triggersMap[900] = drawColorSettings;
 	triggersMap[915] = drawColorSettings;
+
+	// Enter Effect Triggers
+	triggersMap[22] = drawEnterEffectSettings;
+	triggersMap[23] = drawEnterEffectSettings;
+	triggersMap[24] = drawEnterEffectSettings;
+	triggersMap[25] = drawEnterEffectSettings;
+	triggersMap[26] = drawEnterEffectSettings;
+	triggersMap[27] = drawEnterEffectSettings;
+	triggersMap[28] = drawEnterEffectSettings;
+	triggersMap[55] = drawEnterEffectSettings;
+	triggersMap[56] = drawEnterEffectSettings;
+	triggersMap[57] = drawEnterEffectSettings;
+	triggersMap[58] = drawEnterEffectSettings;
+	triggersMap[59] = drawEnterEffectSettings;
+	triggersMap[1915] = drawEnterEffectSettings;
 
 }
 

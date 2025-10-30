@@ -170,6 +170,7 @@ static void renderMenuBar() {
                 bool soiNoTouch =       mod->getSavedValue<bool>("soi-no-touch", true);
                 bool soiHighDetail =    mod->getSavedValue<bool>("soi-high-detail", false);
                 bool soiObjectCount =   mod->getSavedValue<bool>("soi-object-count", true);
+                bool soiObjectType =    mod->getSavedValue<bool>("soi-object-type", false);
 
                 ImGui::MenuItem("Show Position ", NULL, &soiPosition);
                 ImGui::MenuItem("Show Rotation ", NULL, &soiRotation);
@@ -188,6 +189,7 @@ static void renderMenuBar() {
                 ImGui::MenuItem("Show NoTouch ", NULL, &soiNoTouch);
                 ImGui::MenuItem("Show HighDetail ", NULL, &soiHighDetail);
                 ImGui::MenuItem("Show ObjectCount ", NULL, &soiObjectCount);
+                ImGui::MenuItem("Show ObjectType", NULL, &soiObjectType);
 
                 mod->setSavedValue<bool>("soi-position", soiPosition);
                 mod->setSavedValue<bool>("soi-rotation", soiRotation);
@@ -206,6 +208,7 @@ static void renderMenuBar() {
                 mod->setSavedValue<bool>("soi-no-touch", soiNoTouch);
                 mod->setSavedValue<bool>("soi-high-detail", soiHighDetail);
                 mod->setSavedValue<bool>("soi-object-count", soiObjectCount);
+                mod->setSavedValue<bool>("soi-object-type", soiObjectType);
 
                 ImGui::EndMenu();
             }
