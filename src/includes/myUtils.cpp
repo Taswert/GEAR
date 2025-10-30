@@ -460,17 +460,17 @@ namespace ErGui {
 
 	bool isObjectGonnaBeSelected(GameObject* obj) {
 		
-		if (!obj || !obj->getParent())
+		if (!obj || !obj->getParent() || !ErGui::selectRect)
 			return false;
 
 		auto hitbox = getObjectHitbox(obj);
 
 		CCPoint selectRectCenter = {
-			ErGui::selectRect.origin.x + ErGui::selectRect.size.width / 2,
-			ErGui::selectRect.origin.y + ErGui::selectRect.size.height / 2
+			ErGui::selectRect.value().origin.x + ErGui::selectRect.value().size.width / 2,
+			ErGui::selectRect.value().origin.y + ErGui::selectRect.value().size.height / 2
 		};
 
-		auto isIntersecting = ErGui::checkOBBIntersection(hitbox.origin, hitbox.size, -CC_DEGREES_TO_RADIANS(obj->getRotation()), selectRectCenter, ErGui::selectRect.size, 0.f);
+		auto isIntersecting = ErGui::checkOBBIntersection(hitbox.origin, hitbox.size, -CC_DEGREES_TO_RADIANS(obj->getRotation()), selectRectCenter, ErGui::selectRect.value().size, 0.f);
 
 		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
 		if (isIntersecting &&

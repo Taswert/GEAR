@@ -410,7 +410,7 @@ class $modify(GearEditorUI, EditorUI) {
 		if (ErGui::rightTouch) return CCLayer::ccTouchBegan (touch, event);
 
 		// Saving Batch Layer Position
-		ErGui::beginBatchLayerPosition = this->m_editorLayer->m_objectLayer->getPosition();
+		ErGui::beginTouchLocation = touch->getLocation();
 
 		// Fix for touch
 		if (m_touchID == 0) m_touchID = -1;
@@ -587,10 +587,11 @@ class $modify(GearEditorUI, EditorUI) {
 		
 		auto currentLayer = lel->m_currentLayer;
 
+		bool swiping = m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed();
+
 		if (!ErGui::isFreeMoveAndObjectTouching && this->m_selectedMode == 3) {
 			//LASSO
-			if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
-				(m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+			if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled && swiping) {
 
 				auto selectedObjects = this->m_selectedObjects;
 				auto selectedObject = this->m_selectedObject;
@@ -642,9 +643,8 @@ class $modify(GearEditorUI, EditorUI) {
 				EditorUI::ccTouchEnded(touch, event);
 				return;
 			}
-			// SWIPE + Swiping Single Touches
-			else if (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed()) {
-
+			// SWIPE
+			else if (swiping && ErGui::selectRect) {
 				auto selectedObjects = this->m_selectedObjects;
 				auto selectedObject = this->m_selectedObject;
 				this->createUndoSelectObject(false);
@@ -656,6 +656,9 @@ class $modify(GearEditorUI, EditorUI) {
 						deltaObjects->addObject(obj);
 					}
 				}
+
+				// Resetting select rect
+				ErGui::selectRect.reset();
 
 				// Was selected before
 				CCArray* accurateSelectedObjects = CCArray::create();
@@ -669,7 +672,7 @@ class $modify(GearEditorUI, EditorUI) {
 					lel->m_undoObjects->removeLastObject();
 					return EditorUI::ccTouchEnded(touch, event);
 				}
-				
+
 				// Basically this would be selected after all calculations
 				CCArray* finalSelectionObjects = selectWithType(accurateSelectedObjects, deltaObjects);
 				rawDeselectAll();
@@ -683,8 +686,8 @@ class $modify(GearEditorUI, EditorUI) {
 
 				return;
 			}
-			// Single Touches without swiping
-			else if (this->m_editorLayer->m_objectLayer->getPosition() == ErGui::beginBatchLayerPosition) {
+			// Single Touches // todo: tracking not by batchlayer position, but by touch position
+			else if (ErGui::beginTouchLocation == touch->getLocation()) {
 				//auto singleSelectedObject = this->m_selectedObject;
 
 				GameObject* objUnderCursor;
@@ -720,26 +723,23 @@ class $modify(GearEditorUI, EditorUI) {
 							auto objHb = ErGui::getObjectHitbox(obj);
 							auto objHbConverted = CCRect({ (objHb.origin.x - cameraPos.x) / cameraScale, (objHb.origin.y - cameraPos.y) / cameraScale }, objHb.size / cameraScale);
 							bool check1 = ErGui::isHitboxAtPoint(touchConverted, objHbConverted);
-							log::info("CHECK: {}", check1);
-							log::info("TOUCH: {}", touchConverted);
-							log::info("HITBOX: {}", objHbConverted);
+							//log::info("CHECK: {}", check1);
+							//log::info("TOUCH: {}", touchConverted);
+							//log::info("HITBOX: {}", objHbConverted);
 							if (check1 && ErGui::selectFilterRealization(obj))
 								objArr->addObject(obj);
 						}
 					}
 				}
 
+
+				// Rolling selections
 				CCArray* lastUnderCursor = m_fields->m_lastUnderCursor;
 				int* lucIndex = &m_fields->m_lastUnderCursorIndex;
 				
-
-				log::info("OBJARR: {}", objArr);
-
 				if (int arrCount = objArr->count()) {
 					if (ErGui::compareCCArrays(objArr, lastUnderCursor)) {
 						*lucIndex = (*lucIndex + 1) % arrCount;
-
-						//log::info("result: {}", (*lucIndex + 1) % arrCount);
 					}
 					else {
 						*lucIndex = 0;
@@ -748,28 +748,35 @@ class $modify(GearEditorUI, EditorUI) {
 					lastUnderCursor->removeAllObjects();
 					lastUnderCursor->addObjectsFromArray(objArr);
 
-					log::info("*lucIndex {}", *lucIndex);
-
 					auto objToSelect = static_cast<GameObject*>(objArr->objectAtIndex(*lucIndex));
-					if (this->m_selectedObject != objToSelect && !this->m_selectedObjects->containsObject(objToSelect)) {
+
+					// if this object is selected, then go to other one
+					if (this->m_selectedObject == objToSelect || this->m_selectedObjects->containsObject(objToSelect)) {
+						int startIndex = *lucIndex;
+						do {
+							*lucIndex = (*lucIndex + 1) % arrCount;
+							objToSelect = static_cast<GameObject*>(objArr->objectAtIndex(*lucIndex));
+						} while ((this->m_selectedObjects->containsObject(objToSelect) || this->m_selectedObject == objToSelect)
+							&& *lucIndex != startIndex);
+					}
+
+					// Clicking with Swipe/Shift or without
+					if (swiping) {
+						if (!this->m_selectedObjects->containsObject(objToSelect)) {
+							this->createUndoSelectObject(false);
+							auto objToSelectArr = CCArray::create();
+							objToSelectArr->addObject(objToSelect);
+							this->selectObjects(objToSelectArr, false);
+						}
+					}
+					else if (this->m_selectedObject != objToSelect || !this->m_selectedObjects->containsObject(objToSelect)) {
 						this->createUndoSelectObject(false);
 						this->selectObject(objToSelect, false);
 					}
 				}
 				else {
-					
 					lastUnderCursor->removeAllObjects();
 				}
-				//log::info("{} {}", lel->m_unk36cc, lel->m_unk36d4);
-				//log::info("{}", lel->m_unk3748);
-
-				//if (singleSelectedObject != this->m_selectedObject && this->m_selectedObject != nullptr) {
-					//singleSelectedObject = this->m_selectedObject;
-					//if (ErGui::selectFilterRealization(singleSelectedObject)) {
-						//EditorUI::get()->selectObject(singleSelectedObject, false);
-					//}
-				//}
-
 			}
 
 			// Disable Rotation/Scale/Transform controls when clicked on empty space
@@ -929,6 +936,8 @@ $on_mod(Loaded) {
 	ErGui::disablSelectObjectInEditorUI2->enable();
 	ErGui::disablSelectObjectInEditorUI3->enable();
 	ErGui::disablSelectObjectInEditorUI4->enable();
+	ErGui::disablSelectObjectInEditorUI5->enable();
+	ErGui::disablSelectObjectInEditorUI6->enable();
 	//ErGui::vanillaGridOpaquePatch->enable();
 	
 	// DEBUG - allows to take a look on fields offsets
@@ -992,6 +1001,10 @@ $on_mod(Loaded) {
 				ErGui::renderLayerModule();
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
+
+				ImGui::Begin("Debug");
+				ImGui::Text("lucIndex: %d", static_cast<GearEditorUI*>(EditorUI::get())->m_fields->m_lastUnderCursorIndex);
+				ImGui::End();
 
 				//ImGui::ShowStyleEditor();
 

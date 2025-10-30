@@ -25,6 +25,8 @@ namespace ErGui {
 	inline auto disablSelectObjectInEditorUI2 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1235f0), { 0x90, 0x90, 0x90, 0x90, 0x90 });
 	inline auto disablSelectObjectInEditorUI3 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123530), { 0x90, 0x90, 0x90, 0x90, 0x90 });
 	inline auto disablSelectObjectInEditorUI4 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123518), { 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto disablSelectObjectInEditorUI5 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12336f), { 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto disablSelectObjectInEditorUI6 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1232bd), { 0x90, 0x90, 0x90, 0x90, 0x90 });
 	
 
 	void drawSpriteInImGui(CCSprite* tempSprite);
@@ -92,9 +94,9 @@ namespace ErGui {
 	inline bool hideUI = false;
 
 	inline std::vector<cocos2d::CCPoint> editorUISwipePoints;
-	inline CCRect selectRect;
+	inline std::optional<CCRect> selectRect;
 
-	inline CCPoint beginBatchLayerPosition;
+	inline CCPoint beginTouchLocation;
 
 	inline float moveStep = 30.f;
 	inline float rotationStep = 90.f;
