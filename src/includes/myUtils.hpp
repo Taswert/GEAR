@@ -21,6 +21,11 @@ namespace ErGui {
 	inline auto lassoPatch =					geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
 	inline auto editorUIbottomConstrainPatch =	geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
 	inline auto vanillaGridOpaquePatch =		geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x2dbe78), { 0x00 });
+	inline auto disablSelectObjectInEditorUI1 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12337d), { 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto disablSelectObjectInEditorUI2 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1235f0), { 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto disablSelectObjectInEditorUI3 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123530), { 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto disablSelectObjectInEditorUI4 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123518), { 0x90, 0x90, 0x90, 0x90, 0x90 });
+	
 
 	void drawSpriteInImGui(CCSprite* tempSprite);
 	void drawFrameInImGui(CCSpriteFrame* frame);
@@ -64,6 +69,8 @@ namespace ErGui {
 	void rectProjection(const std::array<CCPoint, 4>& corners, const CCPoint& axis, float& min, float& max);
 	bool overlap(float minA, float maxA, float minB, float maxB);
 	bool checkOBBIntersection(CCPoint posA, CCSize sizeA, float rotA, CCPoint posB, CCSize sizeB, float rotB);
+	bool isHitboxAtPoint(const CCPoint& touch, const CCRect& hitbox);
+	CCRect getObjectHitbox(GameObject* obj);
 	bool isObjectGonnaBeSelected(GameObject* obj);
 	void selectEveryObjectInSquare(GameObject* obj);
 

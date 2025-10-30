@@ -68,6 +68,75 @@ void selectObjectWithFilter(GameObject* obj, bool p1) {
 	}
 }
 
+CCArray* selectWithType(CCArray* selectedObjects, CCArray* deltaObjects) {
+	int selectMode = Mod::get()->getSavedValue<int>("select-mode", 1);
+	auto editorUI = EditorUI::get();
+	CCArray* returnArr = CCArray::create();
+
+	switch (selectMode) {
+		case 3: { // Intersective
+			if (deltaObjects->count() == 0) return returnArr;
+			for (const auto& obj : CCArrayExt<GameObject*>(deltaObjects)) {
+				if (selectedObjects->containsObject(obj)) {
+					returnArr->addObject(obj);
+				}
+			}
+			break;
+		}
+		case 2: { // Subtractive
+			if (deltaObjects->count() == 0) return selectedObjects;
+			returnArr->addObjectsFromArray(selectedObjects);
+			for (const auto& obj : CCArrayExt<GameObject*>(deltaObjects)) {
+				if (returnArr->containsObject(obj)) {
+					if (int lGroup = obj->m_linkedGroup) {
+						auto linkedArr = editorUI->m_editorLayer->getStickyGroup(lGroup);
+						for (auto lObj : CCArrayExt<GameObject*>(linkedArr)) {
+							returnArr->fastRemoveObject(lObj);
+						}
+					}
+					else {
+						returnArr->fastRemoveObject(obj);
+					}
+				}
+			}
+			break;
+		}
+		case 1: // Additive
+		default: {
+			if (deltaObjects->count() == 0) return selectedObjects;
+			returnArr->addObjectsFromArray(selectedObjects);
+			for (auto obj : CCArrayExt<GameObject*>(deltaObjects)) {
+				if (!returnArr->containsObject(obj)) {
+					returnArr->addObject(obj);
+				}
+			}
+			break;
+		}
+	}
+
+	return returnArr;
+}
+
+void rawDeselectAll() {
+	EditorUI* editorUI = EditorUI::get();
+	if (!editorUI) return;
+
+	auto selectedObject = editorUI->m_selectedObject;
+	auto selectedObjects = editorUI->m_selectedObjects;
+
+	if (selectedObject) {
+		selectedObject->deselectObject();
+		editorUI->m_selectedObject = nullptr;
+	}
+
+	if (selectedObjects && selectedObjects->count() > 0) {
+		for (auto obj : CCArrayExt<GameObject*>(selectedObjects)) {
+			obj->deselectObject();
+			selectedObjects->fastRemoveObject(obj);
+		}
+	}
+}
+
 void manualObjectsSelect(CCArray* objsInShape) {
 	int selectMode = Mod::get()->getSavedValue<int>("select-mode", 1);
 	auto editorUI = EditorUI::get();
@@ -182,9 +251,12 @@ MAKE_TOUCH_FLAG_MODIFY(GearTransformControl, GJTransformControl)
 class $modify(GearEditorUI, EditorUI) {
 
 	struct Fields {
+		CCArray* m_lastUnderCursor = nullptr;
+		int m_lastUnderCursorIndex = 0;
 		int nothing = 0; // trigger lazy m_fields initialization
 		Fields() {}
 		~Fields() {
+			m_lastUnderCursor->release();
 			exitEditor();
 		}
 	};
@@ -217,6 +289,8 @@ class $modify(GearEditorUI, EditorUI) {
 		}
 		return objArr;
 	}
+
+
 
 	// Colored object building
 	GameObject* createObject(int p0, CCPoint p1) {
@@ -253,7 +327,7 @@ class $modify(GearEditorUI, EditorUI) {
 	}
 
 	void selectObjects(CCArray* objArr, bool p1) {
-		auto singleSelectedObject = EditorUI::get()->m_selectedObject;
+		auto singleSelectedObject = this->m_selectedObject;
 		
 		EditorUI::selectObjects(objArr, p1);
 		ErGui::groupInfoUpdate();
@@ -300,6 +374,8 @@ class $modify(GearEditorUI, EditorUI) {
 		auto ret = EditorUI::init(lel);
 
 		m_fields->nothing = 42; // trigger m_fields lazy initialization
+		m_fields->m_lastUnderCursor = CCArray::create();
+		m_fields->m_lastUnderCursor->retain();
 
 		this->setVisible(false);
 
@@ -474,16 +550,15 @@ class $modify(GearEditorUI, EditorUI) {
 	}
 
 	void ccTouchEnded(CCTouch* touch, CCEvent* event) {
+		auto lel = LevelEditorLayer::get();
 		if (ErGui::rightTouch) {
-			auto cameraPos = this->m_editorLayer->m_objectLayer->getPosition();
-			auto cameraScale = this->m_editorLayer->m_objectLayer->getScale();
+			auto cameraPos = lel->m_objectLayer->getPosition();
+			auto cameraScale = lel->m_objectLayer->getScale();
 			CCPoint touchConverted = CCPoint(
 				(touch->getLocation() - cameraPos) / cameraScale
 			);
-			if (auto obj = this->m_editorLayer->objectAtPosition(touchConverted)) {
+			if (auto obj = lel->objectAtPosition(touchConverted)) {
 				ErGui::objectUnderCursor = obj;
-				//obj->setColor({ 255, 50, 190 });
-				//obj->setChildColor({ 190, 40, 140 });
 			}
 
 			ErGui::shouldOpenContextMenu = !ErGui::shouldOpenContextMenu;
@@ -492,7 +567,7 @@ class $modify(GearEditorUI, EditorUI) {
 
 		ErGui::touchedDN->clear();
 		ErGui::editorUIDrawNode->clear();
-		ErGui::forEachObject(this->m_editorLayer, ErGui::resetHover);
+		ErGui::forEachObject(lel, ErGui::resetHover);
 
 		// Getting controls and ending touching if one of these are touched
 		auto rotationControl = this->m_rotationControl;
@@ -509,18 +584,23 @@ class $modify(GearEditorUI, EditorUI) {
 		}
 		
 
-		auto lel = LevelEditorLayer::get();
+		
 		auto currentLayer = lel->m_currentLayer;
 
-		if (!ErGui::isFreeMoveAndObjectTouching) {
+		if (!ErGui::isFreeMoveAndObjectTouching && this->m_selectedMode == 3) {
 			//LASSO
 			if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled &&
-				this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+				(m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
 
-				CCArray* objArr = CCArray::create();
+				auto selectedObjects = this->m_selectedObjects;
+				auto selectedObject = this->m_selectedObject;
+				this->createUndoSelectObject(false);
+
+				// Gonna be selected (or deselected... delta is the best word)
+				CCArray* deltaObjects = CCArray::create();
 				for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
-
-					if (!(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)) continue;
+					if (!(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)
+						|| !ErGui::selectFilterRealization(obj)) continue;
 
 					auto editorLayer = GameManager::sharedState()->getEditorLayer();
 					auto cameraPos = editorLayer->m_objectLayer->getPosition();
@@ -533,100 +613,174 @@ class $modify(GearEditorUI, EditorUI) {
 					);
 
 					if (ErGui::isPointInPolygon(newPos, ErGui::editorUISwipePoints)) {
-						objArr->addObject(obj);
+						deltaObjects->addObject(obj);
 					}
 				}
 
-				// saving selected objects
-				CCArray* selectedObjs = CCArray::create();
-				selectedObjs->addObjectsFromArray(this->m_selectedObjects);
-				GameObject* selectedObj = this->m_selectedObject; // could be nullptr
+				// Was selected before
+				CCArray* accurateSelectedObjects = CCArray::create();
+				if (selectedObject)
+					accurateSelectedObjects->addObject(selectedObject);
+				if (selectedObjects && selectedObjects->count() > 0)
+					accurateSelectedObjects->addObjectsFromArray(selectedObjects);
 
-				CCArray* undoObjects = CCArray::create();
-				auto lelUndoObjects = lel->m_undoObjects;
-				undoObjects->addObjectsFromArray(lelUndoObjects);
-				EditorUI::ccTouchEnded(touch, event);
-				lelUndoObjects->removeAllObjects();
-				lelUndoObjects->addObjectsFromArray(undoObjects);
-				this->deselectAll();
 
-				this->selectObjects(selectedObjs, false);
-				if (selectedObj) this->selectObject(selectedObj, false);
-
-				this->createUndoSelectObject(false);
-				manualObjectsSelect(objArr);
-				ErGui::editorUIDrawNode->clear();
-
-				if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
-					lelUndoObjects->removeLastObject();
+				if (deltaObjects->count() == 0) {
+					lel->m_undoObjects->removeLastObject();
+					return EditorUI::ccTouchEnded(touch, event);
 				}
 
+				// Basically this would be selected after all calculations
+				CCArray* finalSelectionObjects = selectWithType(accurateSelectedObjects, deltaObjects);
+				rawDeselectAll();
+				this->selectObjects(finalSelectionObjects, false);
+
+				if (ErGui::compareCCArrays(finalSelectionObjects, accurateSelectedObjects)) {
+					lel->m_undoObjects->removeLastObject();
+				}
+
+				EditorUI::ccTouchEnded(touch, event);
 				return;
 			}
 			// SWIPE + Swiping Single Touches
-			else if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
-				// saving selected objects
-				CCArray* selectedObjs = CCArray::create();
-				selectedObjs->addObjectsFromArray(this->m_selectedObjects);
-				GameObject* selectedObj = this->m_selectedObject; // could be nullptr
+			else if (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed()) {
 
-				this->deselectAll();
+				auto selectedObjects = this->m_selectedObjects;
+				auto selectedObject = this->m_selectedObject;
+				this->createUndoSelectObject(false);
 
-				// saving undo list
-				CCArray* undoObjects = CCArray::create();
-				auto lelUndoObjects = lel->m_undoObjects;
-				undoObjects->addObjectsFromArray(lelUndoObjects);
-
-
-				// saving delta objs
-				CCArray* selectedObjsDelta = CCArray::create();
+				// Gonna be selected (or deselected... delta is the best word)
+				CCArray* deltaObjects = CCArray::create();
 				for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
 					if (ErGui::isObjectGonnaBeSelected(obj)) {
-						selectedObjsDelta->addObject(obj);
+						deltaObjects->addObject(obj);
 					}
 				}
 
-				//EditorUI::ccTouchEnded(touch, event);
-				CCLayer::ccTouchEnded(touch, event);
+				// Was selected before
+				CCArray* accurateSelectedObjects = CCArray::create();
+				if (selectedObject)
+					accurateSelectedObjects->addObject(selectedObject);
+				if (selectedObjects && selectedObjects->count() > 0)
+					accurateSelectedObjects->addObjectsFromArray(selectedObjects);
 
 
-				// loading selected objects
-				if (selectedObj) this->selectObject(selectedObj, false);
-				else this->selectObjects(selectedObjs, false);
-				
-
-				// loading undo list
-				lelUndoObjects->removeAllObjects();
-				lelUndoObjects->addObjectsFromArray(undoObjects);
-
-				this->createUndoSelectObject(false);
-				manualObjectsSelect(selectedObjsDelta);
-				if (ErGui::compareCCArrays(this->m_selectedObjects, selectedObjs) && this->m_selectedObject == selectedObj) {
-					lelUndoObjects->removeLastObject();
+				if (deltaObjects->count() == 0) {
+					lel->m_undoObjects->removeLastObject();
+					return EditorUI::ccTouchEnded(touch, event);
 				}
+				
+				// Basically this would be selected after all calculations
+				CCArray* finalSelectionObjects = selectWithType(accurateSelectedObjects, deltaObjects);
+				rawDeselectAll();
+				this->selectObjects(finalSelectionObjects, false);
+
+				if (ErGui::compareCCArrays(finalSelectionObjects, accurateSelectedObjects)) {
+					lel->m_undoObjects->removeLastObject();
+				}
+
+				EditorUI::ccTouchEnded(touch, event);
 
 				return;
 			}
 			// Single Touches without swiping
-			else if (this->m_selectedMode == 3) {
-				auto singleSelectedObject = this->m_selectedObject;
-				EditorUI::ccTouchEnded(touch, event);
-				if (singleSelectedObject != this->m_selectedObject && this->m_selectedObject != nullptr) {
-					singleSelectedObject = this->m_selectedObject;
-					if (ErGui::selectFilterRealization(singleSelectedObject)) {
-						EditorUI::get()->selectObject(singleSelectedObject, false);
+			else if (this->m_editorLayer->m_objectLayer->getPosition() == ErGui::beginBatchLayerPosition) {
+				//auto singleSelectedObject = this->m_selectedObject;
+
+				GameObject* objUnderCursor;
+				auto cameraPos = lel->m_objectLayer->getPosition();
+				auto cameraScale = lel->m_objectLayer->getScale();
+				CCPoint touchConverted = CCPoint(
+					(touch->getLocation() - cameraPos) / cameraScale
+				);
+				//auto obj = lel->objectAtPosition(touchConverted);
+
+				//ErGui::forEachObject(lel, );
+
+				//if (obj && ErGui::selectFilterRealization(obj)) {
+				//	EditorUI::get()->selectObject(obj, false);
+				//}
+
+				auto objArr = CCArray::create();
+				int count = lel->m_sections.empty() ? -1 : lel->m_sections.size();
+				for (int i = lel->m_leftSectionIndex; i <= lel->m_rightSectionIndex && i < count; ++i) {
+					auto leftSection = lel->m_sections[i];
+					if (!leftSection) continue;
+
+					auto leftSectionSize = leftSection->size();
+					for (int j = lel->m_bottomSectionIndex; j <= lel->m_topSectionIndex && j < leftSectionSize; ++j) {
+						auto section = leftSection->at(j);
+						if (!section) continue;
+
+						auto sectionSize = lel->m_sectionSizes[i]->at(j);
+						for (int k = 0; k < sectionSize; ++k) {
+							auto obj = section->at(k);
+							if (!obj) continue;
+
+							auto objHb = ErGui::getObjectHitbox(obj);
+							auto objHbConverted = CCRect({ (objHb.origin.x - cameraPos.x) / cameraScale, (objHb.origin.y - cameraPos.y) / cameraScale }, objHb.size / cameraScale);
+							bool check1 = ErGui::isHitboxAtPoint(touchConverted, objHbConverted);
+							log::info("CHECK: {}", check1);
+							log::info("TOUCH: {}", touchConverted);
+							log::info("HITBOX: {}", objHbConverted);
+							if (check1 && ErGui::selectFilterRealization(obj))
+								objArr->addObject(obj);
+						}
 					}
 				}
+
+				CCArray* lastUnderCursor = m_fields->m_lastUnderCursor;
+				int* lucIndex = &m_fields->m_lastUnderCursorIndex;
+				
+
+				log::info("OBJARR: {}", objArr);
+
+				if (int arrCount = objArr->count()) {
+					if (ErGui::compareCCArrays(objArr, lastUnderCursor)) {
+						*lucIndex = (*lucIndex + 1) % arrCount;
+
+						//log::info("result: {}", (*lucIndex + 1) % arrCount);
+					}
+					else {
+						*lucIndex = 0;
+					}
+
+					lastUnderCursor->removeAllObjects();
+					lastUnderCursor->addObjectsFromArray(objArr);
+
+					log::info("*lucIndex {}", *lucIndex);
+
+					auto objToSelect = static_cast<GameObject*>(objArr->objectAtIndex(*lucIndex));
+					if (this->m_selectedObject != objToSelect && !this->m_selectedObjects->containsObject(objToSelect)) {
+						this->createUndoSelectObject(false);
+						this->selectObject(objToSelect, false);
+					}
+				}
+				else {
+					
+					lastUnderCursor->removeAllObjects();
+				}
+				//log::info("{} {}", lel->m_unk36cc, lel->m_unk36d4);
+				//log::info("{}", lel->m_unk3748);
+
+				//if (singleSelectedObject != this->m_selectedObject && this->m_selectedObject != nullptr) {
+					//singleSelectedObject = this->m_selectedObject;
+					//if (ErGui::selectFilterRealization(singleSelectedObject)) {
+						//EditorUI::get()->selectObject(singleSelectedObject, false);
+					//}
+				//}
+
 			}
 
-
 			// Disable Rotation/Scale/Transform controls when clicked on empty space
-			if (this->m_editorLayer->m_objectLayer->getPosition() == ErGui::beginBatchLayerPosition && Mod::get()->getSavedValue<bool>("deselect-controls", false)) {
+			if (Mod::get()->getSavedValue<bool>("deselect-controls", false)) {
 				GameManager::sharedState()->setGameVariable("0007", false);
 				rotationControl->setVisible(false);
 				scaleControl->setVisible(false);
 				transformControl->setVisible(false);
 			}
+
+			return EditorUI::ccTouchEnded(touch, event);
 		}
 		
 
@@ -771,6 +925,10 @@ class $modify(CCTouchDispatcher) {
 
 $on_mod(Loaded) {
 	ErGui::editorUIbottomConstrainPatch->enable();
+	ErGui::disablSelectObjectInEditorUI1->enable();
+	ErGui::disablSelectObjectInEditorUI2->enable();
+	ErGui::disablSelectObjectInEditorUI3->enable();
+	ErGui::disablSelectObjectInEditorUI4->enable();
 	//ErGui::vanillaGridOpaquePatch->enable();
 	
 	// DEBUG - allows to take a look on fields offsets
