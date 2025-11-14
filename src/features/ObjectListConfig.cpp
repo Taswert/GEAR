@@ -41,7 +41,7 @@ struct matjson::Serialize<ErGui::ObjectConfig> {
 
 
 $on_mod(Loaded) {
-	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
+	auto cfgDir = utils::string::pathToString(Mod::get()->getSettingValue<std::filesystem::path>("object-list-config"));
 
 	std::ifstream cfgFile = std::ifstream(cfgDir);
 	geode::Result parsed = matjson::parse(cfgFile);

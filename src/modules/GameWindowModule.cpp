@@ -1,6 +1,7 @@
 #include "Geode/modify/CCEGLView.hpp"
 #include "GameWindowModule.hpp"
 #include "razoomUtils.hpp"
+#include "IconsMaterialDesignIcons.h"
 
 
 namespace ErGui {
@@ -137,15 +138,19 @@ void ErGui::renderGameWindow() {
 			lel->m_currentLayer = -1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("All")) {
+
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(-1, 5));
+	if (ImGui::Button(ICON_MDI_MENU_LEFT_OUTLINE, ImVec2(21, 21))) {
 		lel->m_currentLayer = -1;
 	}
+	ImGui::SetItemTooltip("All Layer");
 	ImGui::SameLine();
-	if (ImGui::Button("NF")) {
+	if (ImGui::Button(ICON_MDI_MENU_RIGHT_OUTLINE, ImVec2(21, 21))) {
 		ErGui::nextFreeLayer();
 	}
-
-	ImGui::SetItemTooltip("Next free Editor Layer");
+	ImGui::SetItemTooltip("Next Free Layer");
+	ImGui::PopStyleVar();
+	
 	ImGui::SameLine();
 	ImGui::Text("Layer");
 

@@ -205,7 +205,7 @@ void manualObjectsSelect(CCArray* objsInShape) {
 
 void exitEditor() { // EditorUI is already destroyed here
 	// Save Object Config
-	auto cfgDir = Mod::get()->getSettingValue<std::filesystem::path>("object-list-config");
+	auto cfgDir = utils::string::pathToString(Mod::get()->getSettingValue<std::filesystem::path>("object-list-config"));
 	matjson::Value j;
 	for (const auto& key : ErGui::keyOrder) {
 		j[key] = ErGui::objectCfg[key];
@@ -246,7 +246,6 @@ class $modify(GearClass, BaseClass) {                           \
 MAKE_TOUCH_FLAG_MODIFY(GearRotationControl, GJRotationControl)
 MAKE_TOUCH_FLAG_MODIFY(GearScaleControl, GJScaleControl)
 MAKE_TOUCH_FLAG_MODIFY(GearTransformControl, GJTransformControl)
-
 
 class $modify(GearEditorUI, EditorUI) {
 
@@ -411,6 +410,7 @@ class $modify(GearEditorUI, EditorUI) {
 
 		// Saving Batch Layer Position
 		ErGui::beginTouchLocation = touch->getLocation();
+		//log::info("Begin: {} / {}", ErGui::beginTouchLocation.x, ErGui::beginTouchLocation.y);
 
 		// Fix for touch
 		if (m_touchID == 0) m_touchID = -1;
@@ -686,8 +686,13 @@ class $modify(GearEditorUI, EditorUI) {
 
 				return;
 			}
-			// Single Touches // todo: tracking not by batchlayer position, but by touch position
-			else if (ErGui::beginTouchLocation == touch->getLocation()) {
+			// Single Touches
+			else if (
+				ErGui::beginTouchLocation.x >= touch->getLocation().x - 20.f &&
+				ErGui::beginTouchLocation.x <= touch->getLocation().x + 20.f &&
+				ErGui::beginTouchLocation.y >= touch->getLocation().y - 20.f &&
+				ErGui::beginTouchLocation.y <= touch->getLocation().y + 20.f
+				) {
 				//auto singleSelectedObject = this->m_selectedObject;
 
 				GameObject* objUnderCursor;
@@ -1002,9 +1007,9 @@ $on_mod(Loaded) {
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
 
-				ImGui::Begin("Debug");
-				ImGui::Text("lucIndex: %d", static_cast<GearEditorUI*>(EditorUI::get())->m_fields->m_lastUnderCursorIndex);
-				ImGui::End();
+				//ImGui::Begin("Debug");
+				//ImGui::Text("lucIndex: %d", static_cast<GearEditorUI*>(EditorUI::get())->m_fields->m_lastUnderCursorIndex);
+				//ImGui::End();
 
 				//ImGui::ShowStyleEditor();
 

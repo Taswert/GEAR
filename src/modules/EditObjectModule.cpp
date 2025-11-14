@@ -302,29 +302,29 @@ void drawMoveSettings(GameObject* obj) {
 		else
 			ImGui::InputFloat("Mod X", &eObj->m_moveModX, 0.1f, 0.5f, "%.3f");
 
-if (!eObj->m_isSilent) {
-	if (ImGui::Checkbox("Player##Lock-X", &eObj->m_lockToPlayerX) && eObj->m_lockToCameraX)
-		eObj->m_lockToCameraX = false;
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Camera##Lock-X", &eObj->m_lockToCameraX) && eObj->m_lockToPlayerX)
-		eObj->m_lockToPlayerX = false;
-}
+		if (!eObj->m_isSilent) {
+			if (ImGui::Checkbox("Player##Lock-X", &eObj->m_lockToPlayerX) && eObj->m_lockToCameraX)
+				eObj->m_lockToCameraX = false;
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Camera##Lock-X", &eObj->m_lockToCameraX) && eObj->m_lockToPlayerX)
+				eObj->m_lockToPlayerX = false;
+		}
 
-ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-if (!eObj->m_lockToCameraY && !eObj->m_lockToPlayerY) {
-	ImGui::InputFloat("Move Y", &yStep, 1.f, 10.f, "%.2f");
-	eObj->m_moveOffset.y = yStep * modStep;
-}
-else
-ImGui::InputFloat("Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f");
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		if (!eObj->m_lockToCameraY && !eObj->m_lockToPlayerY) {
+			ImGui::InputFloat("Move Y", &yStep, 1.f, 10.f, "%.2f");
+			eObj->m_moveOffset.y = yStep * modStep;
+		}
+		else
+		ImGui::InputFloat("Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f");
 
-if (!eObj->m_isSilent) {
-	if (ImGui::Checkbox("Player##Lock-Y", &eObj->m_lockToPlayerY) && eObj->m_lockToCameraY)
-		eObj->m_lockToCameraY = false;
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Camera##Lock-Y", &eObj->m_lockToCameraY) && eObj->m_lockToPlayerY)
-		eObj->m_lockToPlayerY = false;
-}
+		if (!eObj->m_isSilent) {
+			if (ImGui::Checkbox("Player##Lock-Y", &eObj->m_lockToPlayerY) && eObj->m_lockToCameraY)
+				eObj->m_lockToCameraY = false;
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Camera##Lock-Y", &eObj->m_lockToCameraY) && eObj->m_lockToPlayerY)
+				eObj->m_lockToPlayerY = false;
+		}
 
 	}
 	else {
@@ -581,9 +581,7 @@ void drawSpawnSettings(GameObject* obj) {
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputFloat("Delay", &eObj->m_spawnDelay, 0.1f, 0.5f, "%.2f")) {
-		if (eObj->m_spawnDelay < 0.f) eObj->m_spawnDelay = 0.f;
-	}
+	ImGui::InputFloat("Delay", &eObj->m_spawnDelay, 0.1f, 0.5f, "%.2f");
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputFloat("Range##Delay", &eObj->m_delayRange, 0.1f, 0.5f, "%.2f")) {
@@ -1102,6 +1100,46 @@ void forceBlockSettings(GameObject* obj) {
 	ImGui::InputInt("Force ID", &fObj->m_forceID);
 }
 
+
+void drawFollowPlayerY(GameObject* obj) {
+	auto lel = GameManager::sharedState()->m_levelEditorLayer;
+	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
+
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::Separator();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputFloat("Speed", &eObj->m_followYSpeed, 1.f, 10.f, "%.3f");
+	
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputFloat("Delay", &eObj->m_followYDelay, 1.f, 10.f, "%.3f");
+	
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Offset", &eObj->m_followYOffset, 1.f, 10.f);
+	
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputFloat("Max Speed", &eObj->m_followYMaxSpeed, 1.f, 10.f, "%.3f");
+
+	ImGui::Separator();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputFloat("Move Time", &eObj->m_duration, 0.1f, 0.5f, "%.3f")) {
+		if (eObj->m_duration < -1.f) eObj->m_duration = -1.f;
+		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
+		eObj->m_endPosition = *somePoint;
+	}
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+
 void renderObjectSettings(GameObject* obj) {
 	int objId = obj->m_objectID;
 	if (triggerSet.contains(objId)) {
@@ -1215,5 +1253,7 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[59] = drawEnterEffectSettings;
 	triggersMap[1915] = drawEnterEffectSettings;
 
+	// Follow
+	triggersMap[1814] = drawFollowPlayerY; // Player Y
 }
 

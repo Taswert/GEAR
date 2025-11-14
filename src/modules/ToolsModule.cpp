@@ -208,21 +208,33 @@ void ErGui::renderToolsModule1() {
 			ImGui::SetTooltip("Stop");
 	}
 
-	if (GameManager::sharedState()->getGameVariable("0097")) {
-		ImGui::Separator();
+	ImGui::Separator();
 
-		if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE, selectableRounding)) {
-			editorUI->onGroupSticky(nullptr);
-		}
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			ImGui::SetTooltip("Link Selected");
-		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
-		if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE, selectableRounding)) {
-			editorUI->onUngroupSticky(nullptr);
-		}
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			ImGui::SetTooltip("Unlink Selected");
+	bool showLinkControls = gameManager->getGameVariable("0097");
+	if (ImGui::Selectable(ICON_MDI_LINK_LOCK, &showLinkControls, 0, BTN_SIZE, selectableRounding)) {
+		gameManager->setGameVariable("0097", showLinkControls);
+		LevelEditorLayer::get()->updateOptions();
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Enable Link");
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+
+	ImGui::BeginDisabled(!showLinkControls);
+
+	if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE, selectableRounding)) {
+		editorUI->onGroupSticky(nullptr);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Link Selected");
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE, selectableRounding)) {
+		editorUI->onUngroupSticky(nullptr);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Unlink Selected");
+
+	ImGui::EndDisabled();
+
 	//ImGui::Separator();
 	//ImGui::Selectable(ICON_MDI_ALL_INCLUSIVE, &ErGui::dbgTDN, 0, BTN_SIZE);
 	//if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
