@@ -13,6 +13,11 @@ namespace ErGui {
 	static float angleArc = 180.f;
 	static float angleStep = 5.f;
 	static float angleSquish = 0.f;
+
+	static int stackCopies = 1;
+	static float stackXOffset = 0.f;
+	static float stackYOffset = 0.f;
+	static float stackRotate = 0.f;
 	
 	static bool rotateObjectsPositionSnap = false;
 	static bool scaleObjectsPositionSnap = false;
