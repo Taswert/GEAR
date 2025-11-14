@@ -200,6 +200,7 @@ namespace ErGui {
 	}
 
 	bool compareCCArrays(CCArray* arr1, CCArray* arr2) {
+		if (!arr1 || !arr2) return false;
 		if (arr1->count() != arr2->count()) return false;
 		for (int i = 0; i < arr1->count(); i++) {
 			if (!arr1->objectAtIndex(i)->isEqual(arr2->objectAtIndex(i))) 
@@ -377,16 +378,13 @@ namespace ErGui {
 		return true;
 	}
 
-	bool isObjectGonnaBeSelected(GameObject* obj) {
+	CCRect getObjectHitbox(GameObject* obj) {
 		auto editorUI = EditorUI::get();
-		if (!editorUI) return false;
-
+		if (!editorUI) return CCRect();
+		if (!obj || !obj->getParent()) return CCRect();
 		auto objLayer = editorUI->m_editorLayer->m_objectLayer;
 		auto cameraPos = objLayer->getPosition();
 		auto cameraScale = objLayer->getScale();
-
-		if (!obj || !obj->getParent())
-			return false;
 
 		auto box = obj->boundingBox();
 		auto centerPoint = obj->getParent()->convertToWorldSpace({
@@ -439,14 +437,40 @@ namespace ErGui {
 		}
 		contentSize *= cameraScale;
 
+		return CCRect(centerPoint, contentSize);
+	}
+
+	bool isHitboxAtPoint(const CCPoint& touch, const CCRect& hitbox) {
+
+		auto center = hitbox.origin;
+		auto size = hitbox.size;
+		
+		float xMin = center.x - size.width / 2.f;
+		float xMax = xMin + size.width;
+
+		float yMin = center.y - size.height / 2.f;
+		float yMax = yMin + size.height;
+
+		if (touch.x >= xMin && touch.x <= xMax &&
+			touch.y >= yMin && touch.y <= yMax)
+			return true;
+
+		return false;
+	}
+
+	bool isObjectGonnaBeSelected(GameObject* obj) {
+		
+		if (!obj || !obj->getParent() || !ErGui::selectRect)
+			return false;
+
+		auto hitbox = getObjectHitbox(obj);
 
 		CCPoint selectRectCenter = {
-			ErGui::selectRect.origin.x + ErGui::selectRect.size.width / 2,
-			ErGui::selectRect.origin.y + ErGui::selectRect.size.height / 2
+			ErGui::selectRect.value().origin.x + ErGui::selectRect.value().size.width / 2,
+			ErGui::selectRect.value().origin.y + ErGui::selectRect.value().size.height / 2
 		};
 
-
-		auto isIntersecting = ErGui::checkOBBIntersection(centerPoint, contentSize, -CC_DEGREES_TO_RADIANS(obj->getRotation()), selectRectCenter, ErGui::selectRect.size, 0.f);
+		auto isIntersecting = ErGui::checkOBBIntersection(hitbox.origin, hitbox.size, -CC_DEGREES_TO_RADIANS(obj->getRotation()), selectRectCenter, ErGui::selectRect.value().size, 0.f);
 
 		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
 		if (isIntersecting &&

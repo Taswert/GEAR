@@ -7,6 +7,7 @@
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include "IconsMaterialDesignIcons.h"
 #include "myUtils.hpp"
+#include "Geode/modify/EditorUI.hpp"
 
 using namespace geode::prelude;
 
@@ -82,6 +83,64 @@ struct {
 } LAYER_STATE;
 
 
+std::map<int, int> collectKey20Values(const std::string& s) {
+    std::map<int, int> result;
+
+    std::stringstream ss(s);
+    std::string obj;
+
+    while (std::getline(ss, obj, ';')) {
+        if (obj.empty()) continue;
+
+        std::stringstream os(obj);
+        std::string key, value;
+
+        int foundValue = -1;
+
+        while (std::getline(os, key, ',') && std::getline(os, value, ',')) {
+            if (key == "20") {
+                foundValue = std::stoi(value);
+                break;
+            }
+        }
+
+        if (foundValue != -1) {
+            result[foundValue]++;
+        }
+        else {
+            result[0]++;
+        }
+    }
+
+    return result;
+}
+
+
+class $modify(EditorUI) {
+    void onCreateObject(int p0) {
+        auto objString = GameManager::sharedState()->stringForCustomObject(p0);
+        //log::info("{}", objString); // 20 key - editorL1 / 61 key - editorL2
+        auto editorL1s = collectKey20Values(objString);
+        for (auto pair : editorL1s) {
+            log::info("{} - {}", pair.first, pair.second);
+            LAYER_STATE.layers[pair.first].objCount -= pair.second;
+        }
+
+        EditorUI::onCreateObject(p0);
+
+        auto objs = EditorUI::get()->m_selectedObjects;
+        auto obj = EditorUI::get()->m_selectedObject;
+
+        if (obj) {
+            LAYER_STATE.layers[obj->m_editorLayer].objCount++;
+        }
+        else if (objs->count() > 0) {
+            for (auto objInArr : CCArrayExt<GameObject*>(objs)) {
+                LAYER_STATE.layers[objInArr->m_editorLayer].objCount++;
+            }
+        }
+    }
+};
 
 class $modify(LevelEditorLayer) {
     struct Fields {
@@ -98,6 +157,24 @@ class $modify(LevelEditorLayer) {
             // log::debug("layers saved");
         }
     };
+
+    void addSpecial(GameObject* obj) {
+        LAYER_STATE.layers[obj->m_editorLayer].objCount++;
+        if (obj->m_editorLayer2 != obj->m_editorLayer && obj->m_editorLayer2 > 0) {
+            LAYER_STATE.layers[obj->m_editorLayer2].objCount++;
+        }
+
+        LevelEditorLayer::addSpecial(obj);
+    }
+
+    void removeSpecial(GameObject* obj) {
+        LAYER_STATE.layers[obj->m_editorLayer].objCount--;
+        if (obj->m_editorLayer2 != obj->m_editorLayer && obj->m_editorLayer2 > 0) {
+            LAYER_STATE.layers[obj->m_editorLayer2].objCount--;
+        }
+
+        LevelEditorLayer::removeSpecial(obj);
+    }
 
     bool init(GJGameLevel* p0, bool p1) {
         if (!LevelEditorLayer::init(p0, p1)) return false;
@@ -187,44 +264,65 @@ void ErGui::renderLayerModule() {
 
     // --------------------- header --------------------- 
 
-    ImGui::SetNextItemWidth(100);
+    ImGui::SetNextItemWidth(100.f);
     int step = 1;
     if (ImGui::InputScalar("##LayerInput", ImGuiDataType_S16, &lel->m_currentLayer, &step)) {
         if (lel->m_currentLayer < -1) lel->m_currentLayer = -1;
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("All")) {
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(-1,5));
+    if (ImGui::Button(ICON_MDI_MENU_LEFT_OUTLINE, ImVec2(21, 21))) {
         lel->m_currentLayer = -1;
     }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+        ImGui::SetTooltip("All Layer");
     ImGui::SameLine();
 
-    if (ImGui::Button("Next Free")) {
-        std::set<int> layersSet;
-        for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
-            if (obj->m_editorLayer >= 0)
-                layersSet.insert(obj->m_editorLayer);
-            if (obj->m_editorLayer2 > 0)
-                layersSet.insert(obj->m_editorLayer2);
-        }
-        for (int i = 0; i < 10000; i++) {
-            if (!layersSet.contains(i)) {
-                lel->m_currentLayer = i;
-                break;
-            }
-        }
+    if (ImGui::Button(ICON_MDI_MENU_RIGHT_OUTLINE, ImVec2(21, 21))) {
+        ErGui::nextFreeLayer();
     }
-    ImGui::SameLine();
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+        ImGui::SetTooltip("Next Free Layer");
 
-    if (ImGui::Button("Refresh")) {
-        LAYER_STATE.requiresUpdate = true;
-    }
-    ImGui::SameLine();
+    ImGui::PopStyleVar();
+    //ImGui::SameLine();
 
-    if (ImGui::Button("Reset Opacity")) {
+    //if (ImGui::Button("Refresh")) {
+    //    LAYER_STATE.requiresUpdate = true;
+    //}
+    //ImGui::SameLine();
+
+    if (ImGui::Button("Reset Opacity", ImVec2(100.f, 21.f))) {
         for (auto& layer : LAYER_STATE.layers) {
             layer.second.opacity = DEFAULT_OPACITY;
         }
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Delete", ImVec2(42.f + ImGui::GetStyle().ItemSpacing.x, 21.f))) {
+        auto editorLayer = lel->m_currentLayer;
+        CCArray* toSelect = CCArray::create();
+        if (editorLayer != -1) {
+            //LAYER_STATE.layers[obj->m_editorLayer].objCount = 0;
+            for (auto* obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+                auto objectLayer1 = obj->m_editorLayer;
+                auto objectLayer2 = obj->m_editorLayer2;
+                if (objectLayer1 == editorLayer && objectLayer2 != editorLayer && objectLayer2 != 0) {
+                    obj->m_editorLayer = objectLayer2;
+                }
+                else if (objectLayer1 != editorLayer && objectLayer2 == editorLayer) {
+                    obj->m_editorLayer2 = objectLayer1;
+                }
+                else if (objectLayer1 == editorLayer || objectLayer2 == editorLayer) {
+                    toSelect->addObject(obj);
+                }
+            }
+        }
+        lel->m_editorUI->selectObjects(toSelect, false);
+        // linked objects? Now it just deletes every object, with linked ones, but we can disable link controls before deleting...
+        lel->m_editorUI->onDeleteSelected(nullptr);
+        LAYER_STATE.layers[editorLayer].objCount = 0;
     }
 
 
