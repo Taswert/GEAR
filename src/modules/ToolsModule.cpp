@@ -108,7 +108,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->onCopyState(nullptr);
 		//LevelEditorLayer::get()->copyObjectState(selectedObject);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Copy Values");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -120,14 +120,14 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_GEARCPI_PASTE_VALUES, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onPasteState(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Paste State");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_GEARCPI_PASTE_COLOR, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onPasteColor(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Paste Color");
 
 	ImGui::PopStyleVar();
@@ -224,13 +224,13 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onGroupSticky(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Link Selected");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onUngroupSticky(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Unlink Selected");
 
 	ImGui::EndDisabled();

@@ -6,7 +6,7 @@
 	"id": "taswert.gear",
 	"name": "GEAR",
 	"version": "v1.0.0-beta.6",
-	"developers": [ "Taswert", "RainixGD", "RaZooM" ],
+	"developers": [ "Taswert", "RaZooM", "Pololak", "RainixGD" ],
 	"description": "Reimagine your Editor UI with ImGui",
 	"links": {
 		"community": "https://discord.gg/6WGqURwYy4",

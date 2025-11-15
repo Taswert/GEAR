@@ -156,7 +156,7 @@ std::string colorPickerPopup(std::string btnStr, ColorAction* ccMyColor) {
 	return colEditPopupStr;
 }
 
-void customColorButton(int* objColorId, int btnColorId, const char* colorName, bool isEditable, bool* result, bool colorEditRestriction, int* btnCounter, int buttonsInRow = 6, ImVec4* btnColor = nullptr) {
+void customColorButton(int* objColorId, int btnColorId, const char* colorName, bool isEditable, bool* result, bool colorEditRestriction, int* btnCounter, EffectGameObject* objWithLabel = nullptr, int buttonsInRow = 6, ImVec4* btnColor = nullptr) {
 	auto effectManager = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager;
 	auto ccMyColor = effectManager->getColorAction(btnColorId);
 
@@ -179,6 +179,8 @@ void customColorButton(int* objColorId, int btnColorId, const char* colorName, b
 		*objColorId = btnColorId;
 		ImGui::CloseCurrentPopup();
 		*result = true;
+		if (objWithLabel) 
+			LevelEditorLayer::get()->updateObjectLabel(objWithLabel);
 	}
 
 	// Selected color stroke
@@ -219,45 +221,44 @@ void customColorButton(int* objColorId, int btnColorId, const char* colorName, b
 	(*btnCounter)++;
 }
 
-bool ErGui::colorSelectImGuiPopup(int* colorId, std::string popupStr, bool colorEditRestriction) {
+bool ErGui::colorSelectImGuiPopup(int* colorId, std::string popupStr, bool colorEditRestriction, EffectGameObject* objWithLabel) {
 	bool result = false;
 	ImGui::SetNextWindowSizeConstraints(ImVec2(100, 0), ImVec2(FLT_MAX, 350));
 	if (ImGui::BeginPopup(popupStr.c_str())) {
 		int btnCounter = 1;
 
 		auto blackColor = ImVec4(0.f, 0.f, 0.f, 1.f);
-
 		ImGui::SeparatorText("Special Colors");
-		customColorButton(colorId, 1000, "BG",		true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1001, "G1",		true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1009, "G2",		true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1013, "MG",		true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1014, "MG2",		true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1005, "P1",		false,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1006, "P2",		false,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1007, "LBG",		false,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1010, "BLACK",	false,	&result, colorEditRestriction, &btnCounter, 5, &blackColor); // Fuck
-		customColorButton(colorId, 1011, "WHITE",	false,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1002, "LINE",	true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1003, "3DL",		true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1004, "OBJ",		true,	&result, colorEditRestriction, &btnCounter, 5);
-		customColorButton(colorId, 1012, "LIGHT",	true,	&result, colorEditRestriction, &btnCounter, 5);
+		customColorButton(colorId, 1000, "BG",		true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1001, "G1",		true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1009, "G2",		true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1013, "MG",		true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1014, "MG2",		true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1005, "P1",		false,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1006, "P2",		false,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1007, "LBG",		false,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1010, "BLACK",	false,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5, &blackColor); // Fuck
+		customColorButton(colorId, 1011, "WHITE",	false,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1002, "LINE",	true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1003, "3DL",		true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1004, "OBJ",		true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
+		customColorButton(colorId, 1012, "LIGHT",	true,	&result, colorEditRestriction, &btnCounter, objWithLabel, 5);
 
 
 		ImGui::Dummy({ 0.f, 0.f });
 		ImGui::SeparatorText("Default Colors");
 		btnCounter = 1;
 		for (int i = colorEditRestriction ? 0 : 1; i < 1000; i++) {
-			customColorButton(colorId, i, nullptr, true, &result, colorEditRestriction, &btnCounter);
+			customColorButton(colorId, i, nullptr, true, &result, colorEditRestriction, &btnCounter, objWithLabel);
 		}
 
 		ImGui::Dummy({ 0.f, 0.f });
 		ImGui::SeparatorText("Reserved Colors");
 		btnCounter = 1;
 
-		customColorButton(colorId, 1008, nullptr, true, &result, colorEditRestriction, &btnCounter);
+		customColorButton(colorId, 1008, nullptr, true, &result, colorEditRestriction, &btnCounter, objWithLabel);
 		for (int i = 1015; i < 1102; i++) {
-			customColorButton(colorId, i, nullptr, true, &result, colorEditRestriction, &btnCounter);
+			customColorButton(colorId, i, nullptr, true, &result, colorEditRestriction, &btnCounter, objWithLabel);
 		}
 
 		ImGui::EndPopup();

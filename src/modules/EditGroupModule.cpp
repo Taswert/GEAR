@@ -1,6 +1,7 @@
 #include "EditGroupModule.hpp"
 #include "CustomImGuiWidgets.hpp"
 #include "AdvancedUndoRedo.hpp"
+#include "LayerModule.hpp"
 using namespace ErGui;
 
 const char* layerTypeItems[] = {
@@ -187,6 +188,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 
 		int el1 = obj->m_editorLayer;
+		int oldEl1 = el1;
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("##EditorL1", &el1);
 		setMin(el1, 0);
@@ -196,10 +198,13 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		ImGui::Text("EditorL1");
 		if (el1 < 0) el1 = 0;
+		if (oldEl1 != obj->m_editorLayer2)	ErGui::LAYER_STATE.layers[oldEl1].objCount--;
+		if (el1 != obj->m_editorLayer2)		ErGui::LAYER_STATE.layers[el1].objCount++;
 		obj->m_editorLayer = el1;
 		
 
 		int el2 = obj->m_editorLayer2;
+		int oldEl2 = el2;
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt("##EditorL2", &el2);
 		setMin(el2, 0);
@@ -209,6 +214,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SameLine();
 		ImGui::Text("EditorL2");
 		if (el2 < 0) el2 = 0;
+		if (oldEl2 != obj->m_editorLayer && oldEl2 != 0)	ErGui::LAYER_STATE.layers[oldEl2].objCount--;
+		if (el2 != obj->m_editorLayer && el2 != 0)			ErGui::LAYER_STATE.layers[el2].objCount++;
 		obj->m_editorLayer2 = el2;
 
 
@@ -671,18 +678,38 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		auto currentLayer = lel->m_currentLayer;
 		if (int delta = deltaInputIntImproved("EditorL1", maxEl1, minEl1, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer;
+
 				obj->m_editorLayer += delta;
-				if (obj->m_editorLayer < 0) obj->m_editorLayer = 0;
+				int newEl = obj->m_editorLayer;
+				if (newEl < 0) {
+					newEl = 0;
+					obj->m_editorLayer = 0;
+				}
+
+				if (oldEl != newEl) {
+					if (oldEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
 			}
 			groupInfoUpdate();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL1")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer;
+				int newEl = oldEl;
 				if (currentLayer < 0) 
-					obj->m_editorLayer = 0;
+					newEl = 0;
 				else 
-					obj->m_editorLayer = currentLayer;
+					newEl = currentLayer;
+				
+				if (newEl != oldEl) {
+					if (oldEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
+
+				obj->m_editorLayer = newEl;
 			}
 			groupInfoUpdate();
 		}
@@ -690,18 +717,38 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 
 		if (int delta = deltaInputIntImproved("EditorL2", maxEl2, minEl2, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer2;
+
 				obj->m_editorLayer2 += delta;
-				if (obj->m_editorLayer2 < 0) obj->m_editorLayer2 = 0;
+				int newEl = obj->m_editorLayer2;
+				if (newEl < 0) {
+					newEl = 0;
+					obj->m_editorLayer2 = 0;
+				}
+
+				if (oldEl != newEl) {
+					if (oldEl != obj->m_editorLayer && oldEl != 0) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer && newEl != 0) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
 			}
 			groupInfoUpdate();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL2")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer2;
+				int newEl = oldEl;
 				if (currentLayer < 0)
-					obj->m_editorLayer2 = 0;
+					newEl = 0;
 				else
-					obj->m_editorLayer2 = currentLayer;
+					newEl = currentLayer;
+
+				if (newEl != oldEl) {
+					if (oldEl != obj->m_editorLayer && oldEl != 0) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer && newEl != 0) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
+
+				obj->m_editorLayer2 = newEl;
 			}
 			groupInfoUpdate();
 		}

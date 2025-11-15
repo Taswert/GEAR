@@ -62,6 +62,20 @@ void renderContextForSingleObject() {
 		}
 	}
 
+	bool isHidden = ErGui::objectUnderCursor->m_isHide;
+	if (!isHidden) {
+		if (ImGui::Selectable("Hide##Single")) {
+			ErGui::objectUnderCursor->m_isHide = true;
+			ImGui::CloseCurrentPopup();
+		}
+	}
+	else {
+		if (ImGui::Selectable("Show##Single")) {
+			ErGui::objectUnderCursor->m_isHide = false;
+			ImGui::CloseCurrentPopup();
+		}
+	}
+
 
 	if (ImGui::Selectable("Delete Object##Single")) {
 		editorUI->deleteObject(ErGui::objectUnderCursor, false);
@@ -155,6 +169,25 @@ void renderContextForMultipleObjects() {
 	if (ImGui::Selectable("De-Select All")) {
 		editorUI->onDeselectAll(nullptr);
 	}
+
+	bool isHidden = static_cast<GameObject*>(selectedObjects->objectAtIndex(0))->m_isHide;
+	if (!isHidden) {
+		if (ImGui::Selectable("Hide##Multi")) {
+			for (auto obj : CCArrayExt<GameObject*>(selectedObjects)) {
+				obj->m_isHide = true;
+			}
+			ImGui::CloseCurrentPopup();
+		}
+	}
+	else {
+		if (ImGui::Selectable("Show##Multi")) {
+			for (auto obj : CCArrayExt<GameObject*>(selectedObjects)) {
+				obj->m_isHide = false;
+			}
+			ImGui::CloseCurrentPopup();
+		}
+	}
+
 	if (ImGui::Selectable("Delete Selected")) {
 		editorUI->onDeleteSelected(nullptr);
 		// if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
