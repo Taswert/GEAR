@@ -420,7 +420,6 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 					//log::info("{} {}", groupsFromObjArr[i].first, regroupedID);
 					regroupedMap.emplace(groupsFromObjArr[i].first, regroupedID);
 					regroupedID++;
-
 				}
 			}
 			
@@ -446,8 +445,6 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 								if (idToRetarget == 0 && eObj->m_targetGroupID == pair.first)
 									idToRetarget = pair.second;
 							}
-
-							lel->updateObjectLabel(eObj);
 						}
 					}
 
@@ -464,6 +461,8 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 
 					if (idToRetarget != 0 && typeinfo_cast<EffectGameObject*>(obj)) typeinfo_cast<EffectGameObject*>(obj)->m_targetGroupID = idToRetarget;
 					if (idToRecenter != 0 && typeinfo_cast<EffectGameObject*>(obj)) typeinfo_cast<EffectGameObject*>(obj)->m_centerGroupID = idToRecenter;
+
+					lel->updateObjectLabel(obj);
 				}
 				groupInfoUpdate();
 			}

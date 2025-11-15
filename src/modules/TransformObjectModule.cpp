@@ -162,6 +162,61 @@ void renderCircleTool() {
 	}
 }
 
+void renderStackTool() {
+	if (ImGui::CollapsingHeader("Stack Tool")) {
+		ImGui::Text("Copies");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		if (ImGui::DragInt("##Copies", &stackCopies, 1, 1, 999, "%d")) {
+			if (stackCopies < 1) stackCopies = 1;
+		}
+		
+		ImGui::Text("X/Y");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
+		ImGui::DragFloat("##XOffset", &stackXOffset, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
+		ImGui::DragFloat("##YOffset", &stackYOffset, 1.f, 0.f, 0.f, "%.2f");
+
+		ImGui::Text("Rotation");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("##Rotation", &stackRotate, 1.f, 0.f, 0.f, "%.2f");
+
+		
+
+		auto lel = GameManager::sharedState()->getEditorLayer();
+		auto editorUI = lel->m_editorUI;
+
+		if (ImGui::Button("Apply")) {
+			if (editorUI->getSelectedObjects()) {
+				auto* objs = CCArray::create();
+
+				for (int i = 1; i <= stackCopies; ++i) {
+					editorUI->onDuplicate(nullptr);
+					auto selected = editorUI->getSelectedObjects();
+					
+					for (auto obj : CCArrayExt<GameObject*>(selected)) {
+						editorUI->moveObject(obj, ccp(stackXOffset, stackYOffset));
+
+						if (stackRotate && obj->canRotateFree()) {
+							editorUI->rotateObjects(selected, stackRotate, ccp(0.f, 0.f));
+						}
+					}
+
+					lel->m_undoObjects->removeLastObject();
+
+					objs->addObjectsFromArray(selected);
+				}
+				lel->m_undoObjects->addObject(UndoObject::createWithArray(objs, UndoCommand::Paste));
+
+				editorUI->selectObjects(objs, true);
+			}
+		}
+	}
+}
+
 void renderForObject(GameObject* obj) {
 	auto gameManager = GameManager::sharedState();
 	auto editorUI = gameManager->getEditorLayer()->m_editorUI;
@@ -455,6 +510,7 @@ void renderForObject(GameObject* obj) {
 	//maxRect = {ImGui::GetWindowContentRegionMax().x + minRect.x, ImGui::GetItemRectMax().y};
 
 	renderCircleTool();
+	renderStackTool();
 }
 
 void renderForArray(CCArray* objArr) {
@@ -774,6 +830,7 @@ void renderForArray(CCArray* objArr) {
 	}
 
 	renderCircleTool();
+	renderStackTool();
 }
 
 void ErGui::renderTransformation() {
