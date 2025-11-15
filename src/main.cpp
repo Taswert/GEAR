@@ -731,8 +731,10 @@ class $modify(GearEditorUI, EditorUI) {
 							//log::info("CHECK: {}", check1);
 							//log::info("TOUCH: {}", touchConverted);
 							//log::info("HITBOX: {}", objHbConverted);
-							if (check1 && ErGui::selectFilterRealization(obj) && 
-								(lel->m_currentLayer == obj->m_editorLayer || lel->m_currentLayer == obj->m_editorLayer2))
+							auto playbackMode = lel->m_playbackMode;
+							if (check1 && ErGui::selectFilterRealization(obj) && playbackMode != PlaybackMode::Playing &&
+								(obj->m_editorLayer == lel->m_currentLayer || (obj->m_editorLayer2 == lel->m_currentLayer && obj->m_editorLayer2 != 0) || lel->m_currentLayer == -1)
+								)
 								objArr->addObject(obj);
 						}
 					}

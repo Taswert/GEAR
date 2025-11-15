@@ -474,6 +474,7 @@ namespace ErGui {
 
 		auto currentLayer = LevelEditorLayer::get()->m_currentLayer;
 		if (isIntersecting &&
+			LevelEditorLayer::get()->m_playbackMode != PlaybackMode::Playing &&
 			(obj->m_editorLayer == currentLayer || (obj->m_editorLayer2 == currentLayer && obj->m_editorLayer2 != 0) || currentLayer == -1)
 			&& ErGui::selectFilterRealization(obj)) {
 			return true;
