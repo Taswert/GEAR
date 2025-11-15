@@ -56,9 +56,7 @@ int spawnNewGroupID = 0;
 float savedHueEO, savedSaturationEO, savedValueEO;
 
 void drawTouchSpawnTriggered(EffectGameObject* eObj) {
-	if (eObj->m_isSpawnTriggered) eObj->m_isTouchTriggered = false;
 	ImGui::Checkbox("Touch Trigger", &eObj->m_isTouchTriggered);
-	if (eObj->m_isTouchTriggered) eObj->m_isSpawnTriggered = false;
 	ImGui::Checkbox("Spawn Trigger", &eObj->m_isSpawnTriggered);
 	if (eObj->m_isSpawnTriggered || eObj->m_isTouchTriggered)
 		ImGui::Checkbox("Multi Trigger", &eObj->m_isMultiTriggered);
@@ -201,7 +199,7 @@ void drawColorSettings(GameObject* obj) {
 		if (ImGui::ColorButton(btnStr.c_str(), ImVec4(targetColorAction->m_fromColor.r / 255.f, targetColorAction->m_fromColor.g / 255.f, targetColorAction->m_fromColor.b / 255.f, 1.f))) {
 			ImGui::OpenPopup("CSP##TARGET");
 		}
-		ErGui::colorSelectImGuiPopup(&eObj->m_targetColor, "CSP##TARGET", false);
+		ErGui::colorSelectImGuiPopup(&eObj->m_targetColor, "CSP##TARGET", false, eObj);
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(80.f);
 		int targetID = eObj->m_targetColor;
@@ -409,9 +407,9 @@ void drawPulseSettings(GameObject* obj) {
 	if (eObj->m_pulseTargetType == 0) {
 		auto targetColorAction = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager->getColorAction(eObj->m_targetGroupID);
 		if (ImGui::ColorButton("##TARGETCOLOR", ImVec4(targetColorAction->m_fromColor.r / 255.f, targetColorAction->m_fromColor.g / 255.f, targetColorAction->m_fromColor.b / 255.f, 1.f))) {
-			ImGui::OpenPopup("CSP##TARGET");
+			ImGui::OpenPopup("CSP##TARGET"); // openpopup
 		}
-		ErGui::colorSelectImGuiPopup(&eObj->m_targetGroupID, "CSP##TARGET", false);
+		ErGui::colorSelectImGuiPopup(&eObj->m_targetGroupID, "CSP##TARGET", false, eObj);
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(80.f);
 		int targetID = eObj->m_targetGroupID;
@@ -484,7 +482,7 @@ void drawPulseSettings(GameObject* obj) {
 		if (ImGui::ColorButton("##COPYCOLOR", ImVec4(hsvColorAction->m_fromColor.r / 255.f, hsvColorAction->m_fromColor.g / 255.f, hsvColorAction->m_fromColor.b / 255.f, 1.f))) {
 			ImGui::OpenPopup("CSP##COPY");
 		}
-		ErGui::colorSelectImGuiPopup(&eObj->m_copyColorID, "CSP##COPY", false);
+		ErGui::colorSelectImGuiPopup(&eObj->m_copyColorID, "CSP##COPY", false, eObj);
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(80.f);
 		int hsvColorID = eObj->m_copyColorID;

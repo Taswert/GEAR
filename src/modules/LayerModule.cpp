@@ -11,24 +11,28 @@
 
 using namespace geode::prelude;
 
-#define DEFAULT_OPACITY 50
-#define BTN_SIZE ImVec2(16,20)
 
+void ErGui::LayerState::update() {
+    auto lel = LevelEditorLayer::get();
 
-struct LayerInfo {
-    uint16_t saveId;
-    std::string name;
-    int opacity = DEFAULT_OPACITY;
-    bool isHidden = false;
-    bool isLocked = false;
-    bool isEditingName = false;
-    int objCount = 0;
-};
+    for (auto& [id, layer] : layers) {
+        layer.objCount = 0;
+    }
+
+    for (auto* obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+        layers[obj->m_editorLayer].objCount++;
+        if (obj->m_editorLayer2 != obj->m_editorLayer && obj->m_editorLayer2 > 0) {
+            layers[obj->m_editorLayer2].objCount++;
+        }
+    }
+
+    requiresUpdate = false;
+}
 
 template <>
-struct matjson::Serialize<LayerInfo> {
-    static Result<LayerInfo> fromJson(const matjson::Value& value) {
-        LayerInfo ret;
+struct matjson::Serialize<ErGui::LayerInfo> {
+    static Result<ErGui::LayerInfo> fromJson(const matjson::Value& value) {
+        ErGui::LayerInfo ret;
 
         auto id = value["id"];
         if (!id.isExactlyUInt()) return Err("");
@@ -42,7 +46,7 @@ struct matjson::Serialize<LayerInfo> {
         return Ok(ret);
     }
 
-    static matjson::Value toJson(const LayerInfo& layerInfo) {
+    static matjson::Value toJson(const ErGui::LayerInfo& layerInfo) {
         return matjson::makeObject({
             { "id", layerInfo.saveId },
             { "name", layerInfo.name },
@@ -51,36 +55,6 @@ struct matjson::Serialize<LayerInfo> {
         });
     }
 };
-
-struct {
-    std::unordered_map<int, LayerInfo> layers;
-    bool requiresUpdate = false;
-
-    void update() {
-        auto lel = LevelEditorLayer::get();
-        
-        for (auto &[id, layer] : layers) {
-            layer.objCount = 0;
-        }
-
-        for (auto *obj : CCArrayExt<GameObject*>(lel->m_objects)) {
-            layers[obj->m_editorLayer].objCount++;
-            if (obj->m_editorLayer2 != obj->m_editorLayer && obj->m_editorLayer2 > 0) {
-                layers[obj->m_editorLayer2].objCount++;
-            }
-        }
-
-        requiresUpdate = false;
-    }
-
-    void clearUnused() {
-        // for (auto it = layers.begin(); it != layers.end();) {
-        //     if (it->second.name.empty() && it->second.opacity == DEFAULT_OPACITY) {
-        //         it = layers.erase(it);
-        //     } else it++;
-        // }
-    }
-} LAYER_STATE;
 
 
 std::map<int, int> collectKey20Values(const std::string& s) {
@@ -123,7 +97,7 @@ class $modify(EditorUI) {
         auto editorL1s = collectKey20Values(objString);
         for (auto pair : editorL1s) {
             log::info("{} - {}", pair.first, pair.second);
-            LAYER_STATE.layers[pair.first].objCount -= pair.second;
+            ErGui::LAYER_STATE.layers[pair.first].objCount -= pair.second;
         }
 
         EditorUI::onCreateObject(p0);
@@ -132,11 +106,11 @@ class $modify(EditorUI) {
         auto obj = EditorUI::get()->m_selectedObject;
 
         if (obj) {
-            LAYER_STATE.layers[obj->m_editorLayer].objCount++;
+            ErGui::LAYER_STATE.layers[obj->m_editorLayer].objCount++;
         }
         else if (objs->count() > 0) {
             for (auto objInArr : CCArrayExt<GameObject*>(objs)) {
-                LAYER_STATE.layers[objInArr->m_editorLayer].objCount++;
+                ErGui::LAYER_STATE.layers[objInArr->m_editorLayer].objCount++;
             }
         }
     }
@@ -146,31 +120,31 @@ class $modify(LevelEditorLayer) {
     struct Fields {
         int levelId = 0;
         ~Fields() {
-            LAYER_STATE.clearUnused();
-            std::vector<LayerInfo> values;
-            for (auto& kv : LAYER_STATE.layers) {
+            ErGui::LAYER_STATE.clearUnused();
+            std::vector<ErGui::LayerInfo> values;
+            for (auto& kv : ErGui::LAYER_STATE.layers) {
                 kv.second.saveId = kv.first;
                 values.push_back(kv.second);
             }
             Mod::get()->setSavedValue<matjson::Value>(fmt::format("layers_{}", levelId), values);
-            LAYER_STATE.layers.clear();
+            ErGui::LAYER_STATE.layers.clear();
             // log::debug("layers saved");
         }
     };
 
     void addSpecial(GameObject* obj) {
-        LAYER_STATE.layers[obj->m_editorLayer].objCount++;
+        ErGui::LAYER_STATE.layers[obj->m_editorLayer].objCount++;
         if (obj->m_editorLayer2 != obj->m_editorLayer && obj->m_editorLayer2 > 0) {
-            LAYER_STATE.layers[obj->m_editorLayer2].objCount++;
+            ErGui::LAYER_STATE.layers[obj->m_editorLayer2].objCount++;
         }
 
         LevelEditorLayer::addSpecial(obj);
     }
 
     void removeSpecial(GameObject* obj) {
-        LAYER_STATE.layers[obj->m_editorLayer].objCount--;
+        ErGui::LAYER_STATE.layers[obj->m_editorLayer].objCount--;
         if (obj->m_editorLayer2 != obj->m_editorLayer && obj->m_editorLayer2 > 0) {
-            LAYER_STATE.layers[obj->m_editorLayer2].objCount--;
+            ErGui::LAYER_STATE.layers[obj->m_editorLayer2].objCount--;
         }
 
         LevelEditorLayer::removeSpecial(obj);
@@ -179,14 +153,14 @@ class $modify(LevelEditorLayer) {
     bool init(GJGameLevel* p0, bool p1) {
         if (!LevelEditorLayer::init(p0, p1)) return false;
         m_fields->levelId = EditorIDs::getID(p0);
-        LAYER_STATE.layers.clear();
-        LAYER_STATE.requiresUpdate = true;
+        ErGui::LAYER_STATE.layers.clear();
+        ErGui::LAYER_STATE.requiresUpdate = true;
 
         auto value = Mod::get()->getSavedValue<matjson::Value>(fmt::format("layers_{}", m_fields->levelId));
-        auto layers = value.as<std::vector<LayerInfo>>();
+        auto layers = value.as<std::vector<ErGui::LayerInfo>>();
         if (layers.isOk()) {
             for (auto &&layer : *layers) {
-                LAYER_STATE.layers.insert({layer.saveId, layer});
+                ErGui::LAYER_STATE.layers.insert({layer.saveId, layer});
             }
         }
         return true;
@@ -213,7 +187,7 @@ class $modify(LevelEditorLayer) {
 
         for (int i = 0; i < m_activeObjectsCount; i++) {
             GameObject* obj = m_activeObjects[i];
-            if (LAYER_STATE.layers[obj->m_editorLayer].isHidden || (obj->m_isHide && !obj->m_isSelected && GameManager::sharedState()->getGameVariable("0121"))) {
+            if (ErGui::LAYER_STATE.layers[obj->m_editorLayer].isHidden || (obj->m_isHide && !obj->m_isSelected && GameManager::sharedState()->getGameVariable("0121"))) {
                 obj->setOpacity(0);
             } else {
                 bool isOnCurrentLayer = m_currentLayer == -1 || 
@@ -223,7 +197,7 @@ class $modify(LevelEditorLayer) {
                 if (isOnCurrentLayer) {
                     obj->setOpacity(255);
                 } else {
-                    obj->setOpacity(LAYER_STATE.layers[obj->m_editorLayer].opacity);
+                    obj->setOpacity(ErGui::LAYER_STATE.layers[obj->m_editorLayer].opacity);
                 }
             }
 
@@ -300,11 +274,16 @@ void ErGui::renderLayerModule() {
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Delete", ImVec2(42.f + ImGui::GetStyle().ItemSpacing.x, 21.f))) {
-        auto editorLayer = lel->m_currentLayer;
-        CCArray* toSelect = CCArray::create();
-        if (editorLayer != -1) {
-            //LAYER_STATE.layers[obj->m_editorLayer].objCount = 0;
+    auto editorLayer = lel->m_currentLayer;
+    if (ImGui::BeginPopup("Confirm Delete")) {
+        ImGui::Text("Are you sure, you want to \ndelete current layer?");
+        if (ImGui::Button("No")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Yes")) {
+            ImGui::CloseCurrentPopup();
+            CCArray* toSelect = CCArray::create();
             for (auto* obj : CCArrayExt<GameObject*>(lel->m_objects)) {
                 auto objectLayer1 = obj->m_editorLayer;
                 auto objectLayer2 = obj->m_editorLayer2;
@@ -318,12 +297,19 @@ void ErGui::renderLayerModule() {
                     toSelect->addObject(obj);
                 }
             }
+            lel->m_editorUI->deselectAll();
+            lel->m_editorUI->selectObjects(toSelect, false);
+            lel->m_editorUI->onDeleteSelected(nullptr);
+            LAYER_STATE.layers[editorLayer].objCount = 0;
         }
-        lel->m_editorUI->selectObjects(toSelect, false);
-        // linked objects? Now it just deletes every object, with linked ones, but we can disable link controls before deleting...
-        lel->m_editorUI->onDeleteSelected(nullptr);
-        LAYER_STATE.layers[editorLayer].objCount = 0;
+        ImGui::EndPopup();
     }
+
+    ImGui::BeginDisabled(editorLayer == -1);
+    if (ImGui::Button("Delete", ImVec2(42.f + ImGui::GetStyle().ItemSpacing.x, 21.f))) {
+        ImGui::OpenPopup("Confirm Delete");
+    }
+    ImGui::EndDisabled();
 
 
     // --------------------- layers list ---------------------  
@@ -332,7 +318,7 @@ void ErGui::renderLayerModule() {
     ImGui::BeginChild("ScrollList", ImVec2(0, scrollAvail.y), true, 0);
 
     if (lel->m_currentLayer >= 0) {
-        LAYER_STATE.layers.insert({lel->m_currentLayer, LayerInfo()});
+        ErGui::LAYER_STATE.layers.insert({lel->m_currentLayer, LayerInfo()});
     }
     
     //ImGui::GetFont()->Scale = 24.f;

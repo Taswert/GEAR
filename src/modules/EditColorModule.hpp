@@ -7,6 +7,6 @@ using namespace geode::prelude;
 
 namespace ErGui {
 	void clampHSV(ccHSVValue* hsvValue);
-	bool colorSelectImGuiPopup(int* colorId, std::string popupStr, bool colorEditRestriction);
+	bool colorSelectImGuiPopup(int* colorId, std::string popupStr, bool colorEditRestriction, EffectGameObject* objWithLabel = nullptr);
 	void renderEditColor();
 }

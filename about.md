@@ -10,7 +10,7 @@ I mean, I really just don't know what to say here. The mod is so big, you just n
 - Different Selection types
 - Object Search
 - Advanced Layers
-- And something else!!!
+- And much more!!!
 
 ## <c-fdd966>Usage/Documentation</c>
 Sorry, but work in progress!!!
@@ -20,12 +20,13 @@ If you have some questions, feel free to ask in the [Discord server](http://disc
 <c-56b3ff>**Developers**</c>:
 - Taswert
 - RaZooM
+- Pololak
 - RainixGD
 - ...?
 
 <c-56b3ff>**Special Thanks**</c>:
-- HJFod
-- Mat
+- HJFod (Inspiration)
+- Mat ()
 - RaZooM
 - Alphalaneous
 - Partur
@@ -33,6 +34,7 @@ If you have some questions, feel free to ask in the [Discord server](http://disc
 - Lenzy
 - Emiya
 - Shlyapa
+- PepinoCosmico
 - Dobrovich
 - Kisss
 - KiraGDMJ
