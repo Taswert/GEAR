@@ -153,15 +153,15 @@ void renderContextForMultipleObjects() {
 	ImGui::Dummy({ 5.f, 5.f });
 
 	if (ImGui::Selectable("De-Select All")) {
-		editorUI->createUndoSelectObject(false);
-		editorUI->deselectAll();
+		editorUI->onDeselectAll(nullptr);
 	}
 	if (ImGui::Selectable("Delete Selected")) {
-		if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
-		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
+		editorUI->onDeleteSelected(nullptr);
+		// if (editorUI->m_selectedObject) editorUI->deleteObject(editorUI->m_selectedObject, false);
+		// else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
 	if (ImGui::Selectable("Build Helper")) {
-		ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+		editorUI->dynamicGroupUpdate(false);
 	}
 
 	ImGui::Dummy({ 5.f, 5.f });
@@ -202,10 +202,10 @@ void renderContextForMultipleObjects() {
 	ImGui::Dummy({ 5.f, 5.f });
 
 	if (ImGui::Selectable("Align X")) {
-		ErGui::getFakePauseLayer()->onAlignX(nullptr);
+		editorUI->alignObjects(editorUI->getSelectedObjects(), false);
 	}
 	if (ImGui::Selectable("Align Y")) {
-		ErGui::getFakePauseLayer()->onAlignY(nullptr);
+		editorUI->alignObjects(editorUI->getSelectedObjects(), true);
 	}
 }
 

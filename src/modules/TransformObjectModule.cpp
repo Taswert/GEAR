@@ -179,12 +179,37 @@ void renderStackTool() {
 		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
 		ImGui::DragFloat("##YOffset", &stackYOffset, 1.f, 0.f, 0.f, "%.2f");
 
+		// Rotate
+
 		ImGui::Text("Rotation");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::DragFloat("##Rotation", &stackRotate, 1.f, 0.f, 0.f, "%.2f");
 
-		
+		ImGui::Text("X/Y");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
+		ImGui::DragFloat("##XRotation", &stackXRotate, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
+		ImGui::DragFloat("##YRotation", &stackYRotate, 1.f, 0.f, 0.f, "%.2f");
+
+		// Scale
+
+		// ImGui::Text("Scale");
+		// ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		// ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		// ImGui::DragFloat("##Scale", &stackScale, 1.f, 0.f, 0.f, "%.2f");
+
+		// ImGui::Text("X/Y");
+		// ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		// ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
+		// ImGui::DragFloat("##XScale", &stackXScale, 1.f, 0.f, 0.f, "%.2f");
+		// ImGui::SameLine();
+		// ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
+		// ImGui::DragFloat("##YScale", &stackYScale, 1.f, 0.f, 0.f, "%.2f");
+
+		// Perform func
 
 		auto lel = GameManager::sharedState()->getEditorLayer();
 		auto editorUI = lel->m_editorUI;
@@ -203,6 +228,44 @@ void renderStackTool() {
 						if (stackRotate && obj->canRotateFree()) {
 							editorUI->rotateObjects(selected, stackRotate, ccp(0.f, 0.f));
 						}
+
+						if (stackXRotate || stackYRotate && obj->canRotateFree()) {
+							float rotX = obj->getRotationX();
+							float rotY = obj->getRotationY();
+
+							obj->setRotationX(rotX + stackXRotate);
+							obj->setRotationY(rotY + stackYRotate);
+						}
+
+						// if (stackScale) {
+						// 	float oldScale = obj->m_scaleX;
+
+						// 	float scaleMod = obj->m_scaleY / obj->m_scaleX;
+						// 	if (obj->m_scaleX == 0) {
+						// 		scaleMod = 1;
+						// 		obj->m_scaleX = obj->m_scaleY;
+						// 	}
+
+						// 	short flipX = obj->isFlipX() ? -1 : 1;
+						// 	obj->m_scaleX += stackScale - oldScale;
+						// 	obj->setScaleX(obj->m_scaleX * flipX);
+
+						// 	short flipY = obj->isFlipY() ? -1 : 1;
+						// 	obj->m_scaleY += (stackScale - oldScale) * scaleMod;
+						// 	obj->setScaleY(obj->m_scaleY * flipY);
+						// }
+
+						// if (stackXScale || stackYScale) {
+						// 	float scaleX = obj->m_scaleX;
+						// 	float scaleY = obj->m_scaleY;
+
+						// 	short flipX = obj->isFlipX() ? -1 : 1;
+						// 	short flipY = obj->isFlipY() ? -1 : 1;
+						// 	obj->setScaleX(scaleX + stackXScale * flipX);
+						// 	obj->m_scaleX = scaleX + stackXScale;
+						// 	obj->setScaleY(scaleY + stackYScale * flipY);
+						// 	obj->m_scaleY = scaleY + stackYScale;
+						// }
 					}
 
 					lel->m_undoObjects->removeLastObject();

@@ -1100,7 +1100,6 @@ void forceBlockSettings(GameObject* obj) {
 	ImGui::InputInt("Force ID", &fObj->m_forceID);
 }
 
-
 void drawFollowPlayerY(GameObject* obj) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
@@ -1139,6 +1138,71 @@ void drawFollowPlayerY(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
+void drawGravitySettings(GameObject* obj) {
+	auto eObj = static_cast<EffectGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Gravity", &eObj->m_gravityValue, .05f, .1f, 1.f);
+
+	if (ImGui::Checkbox("P1", &eObj->m_targetPlayer1)) {
+		eObj->m_targetPlayer2 = false;
+		eObj->m_followCPP = false;
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("P2", &eObj->m_targetPlayer2)) {
+		eObj->m_targetPlayer1 = false;
+		eObj->m_followCPP = false;
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("PT", &eObj->m_followCPP)) {
+		eObj->m_targetPlayer1 = false;
+		eObj->m_targetPlayer2 = false;
+	}
+	
+	drawTouchSpawnTriggered(eObj);
+}
+
+void gameOptionsCheckbox(GameOptionsSetting &setting, const char* label) {
+	bool off = static_cast<int>(setting == GameOptionsSetting::Off);
+	bool on = static_cast<int>(setting == GameOptionsSetting::On);
+
+	ImGui::Text(label);
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox(std::string("On##" + (std::string)label).c_str(), &on)) {
+		off = false;
+		if (on) setting = GameOptionsSetting::On;
+		else setting = GameOptionsSetting::Disabled;
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox(std::string("Off##" + (std::string)label).c_str(), &off)) {
+		on = false;
+		if (off) setting = GameOptionsSetting::Off;
+		else setting = GameOptionsSetting::Disabled;
+	}
+}
+
+void drawGameOptionsSettings(GameObject* obj) {
+	auto gObj = static_cast<GameOptionsTrigger*>(obj);
+
+	gameOptionsCheckbox(gObj->m_streakAdditive, "Streak Additive");
+	gameOptionsCheckbox(gObj->m_hideGround, "Hide Ground");
+	gameOptionsCheckbox(gObj->m_hideMG, "Hide Middle Ground");
+	gameOptionsCheckbox(gObj->m_hideP1, "Hide Player 1");
+	gameOptionsCheckbox(gObj->m_hideP2, "Hide Player 2");
+	gameOptionsCheckbox(gObj->m_disableP1Controls, "Disable P1 Controls");
+	gameOptionsCheckbox(gObj->m_disableP2Controls, "Disable P2 Controls");
+	gameOptionsCheckbox(gObj->m_unlinkDualGravity, "Unlink Dual Gravity");
+	gameOptionsCheckbox(gObj->m_hideAttempts, "Hide Attempts");
+	gameOptionsCheckbox(gObj->m_audioOnDeath, "Audio on Death");
+	gameOptionsCheckbox(gObj->m_noDeathSFX, "No Death SFX");
+	gameOptionsCheckbox(gObj->m_editRespawnTime, "Edit Respawn Time");
+	gameOptionsCheckbox(gObj->m_boostSlide, "Boost Slide");
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Respawn Time", &gObj->m_respawnTime, .05f, .1f, 10.f);
+
+	drawTouchSpawnTriggered(gObj);
+}
 
 void renderObjectSettings(GameObject* obj) {
 	int objId = obj->m_objectID;
@@ -1224,6 +1288,8 @@ void ErGui::setupTriggersSettings() {
 	//triggersMap[3608] = drawSpawnParticleSettings;
 	//triggersMap[3617] = drawTimeControlSettings;
 	triggersMap[2063] = checkpointSettings;
+	triggersMap[2066] = drawGravitySettings;
+	triggersMap[2899] = drawGameOptionsSettings;
 	
 	// Force Blocks
 	triggersMap[2069] = forceBlockSettings;

@@ -51,12 +51,12 @@ static void renderMenuBar() {
                 objectsSelected = true;
             
 
-            if (ImGui::MenuItem("Align-X", nullptr, false, objectsSelected)) {
-                ErGui::getFakePauseLayer()->onAlignX(nullptr);
+            if (ImGui::MenuItem("Align X", nullptr, false, objectsSelected)) {
+                editorUI->alignObjects(editorUI->getSelectedObjects(), false);
             }
 
-            if (ImGui::MenuItem("Align-Y", nullptr, false, objectsSelected)) {
-                ErGui::getFakePauseLayer()->onAlignY(nullptr);
+            if (ImGui::MenuItem("Align Y", nullptr, false, objectsSelected)) {
+                editorUI->alignObjects(editorUI->getSelectedObjects(), true);
             }
 
             if (ImGui::MenuItem("Create Loop", nullptr, false, objectsSelected)) {
@@ -70,11 +70,11 @@ static void renderMenuBar() {
             ImGui::Dummy({ 5.f, 5.f }); // Group Change
 
             if (ImGui::MenuItem("Build Helper", nullptr, false, objectsSelected)) {
-                ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+                editorUI->dynamicGroupUpdate(false);
             }
 
             if (ImGui::MenuItem("Re-Group", nullptr, false, objectsSelected)) {
-                ErGui::getFakePauseLayer()->onReGroup(nullptr);
+                editorUI->dynamicGroupUpdate(true);
             }
 
             if (ImGui::MenuItem("New Group X", nullptr, false, objectsSelected)) {
