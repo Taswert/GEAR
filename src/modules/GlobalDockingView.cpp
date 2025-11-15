@@ -428,8 +428,10 @@ static void renderMenuBar() {
             for (const auto& child : CCArrayExt<CCNode*>(CCDirector::sharedDirector()->getRunningScene()->getChildren())) {
                 if (typeinfo_cast<LevelSettingsLayer*>(child)) foundSettings = true;
             }
-            if (!foundSettings)
-                lel->m_editorUI->onSettings(nullptr);
+            if (!foundSettings) {
+                LevelSettingsLayer::create(lel->m_levelSettings, lel)->show();
+            }
+                
         }
 
 		ImGui::EndMenuBar();

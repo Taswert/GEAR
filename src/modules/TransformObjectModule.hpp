@@ -25,9 +25,9 @@ namespace ErGui {
 	static float stackXRotate = 0.f;
 	static float stackYRotate = 0.f;
 
-	static float stackScale = 1.f;
-	static float stackXScale = 1.f;
-	static float stackYScale = 1.f;
+	static float stackScale = 0.f;
+	static float stackXScale = 0.f;
+	static float stackYScale = 0.f;
 
 	//
 	

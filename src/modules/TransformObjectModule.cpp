@@ -124,7 +124,7 @@ void renderCircleTool() {
 		const auto amt = static_cast<size_t>(std::ceilf(angleArc / angleStep) - 1.f);
 		const auto objCount = amt * editorUI->getSelectedObjects()->count();
 
-		if (ImGui::Button("Apply") && angleArc > 0.f && angleStep > 0.f) {
+		if (ImGui::Button("Apply##Circle") && angleArc > 0.f && angleStep > 0.f) {
 
 			if (editorUI->m_selectedObjects) {
 				auto* objs = CCArray::create();
@@ -166,106 +166,87 @@ void renderStackTool() {
 	if (ImGui::CollapsingHeader("Stack Tool")) {
 		ImGui::Text("Copies");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-		if (ImGui::DragInt("##Copies", &stackCopies, 1, 1, 999, "%d")) {
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
+		if (ImGui::DragInt("##CopiesStack", &stackCopies, 1, 1, 999, "%d")) {
 			if (stackCopies < 1) stackCopies = 1;
 		}
 		
-		ImGui::Text("X/Y");
+		ImGui::Separator();
+
+		ImGui::Text("Position");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
-		ImGui::DragFloat("##XOffset", &stackXOffset, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##XOffsetStack", &stackXOffset, 1.f, 5.f, "%.2f");
 		ImGui::SameLine();
-		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
-		ImGui::DragFloat("##YOffset", &stackYOffset, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##YOffsetStack", &stackYOffset, 1.f, 5.f, "%.2f");
+
+		ImGui::Separator();
 
 		// Rotate
-
 		ImGui::Text("Rotation");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-		ImGui::DragFloat("##Rotation", &stackRotate, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
+		ErGui::BetterDragFloat("##RotationStack", &stackRotate, 1.f, 5.f, "%.2f");
 
 		ImGui::Text("X/Y");
 		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
-		ImGui::DragFloat("##XRotation", &stackXRotate, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##XRotationStack", &stackXRotate, 1.f, 5.f, "%.2f");
 		ImGui::SameLine();
-		ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
-		ImGui::DragFloat("##YRotation", &stackYRotate, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##YRotationStack", &stackYRotate, 1.f, 5.f, "%.2f");
+
+		ImGui::Separator();
 
 		// Scale
-
-		// ImGui::Text("Scale");
-		// ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		// ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-		// ImGui::DragFloat("##Scale", &stackScale, 1.f, 0.f, 0.f, "%.2f");
-
-		// ImGui::Text("X/Y");
-		// ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-		// ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
-		// ImGui::DragFloat("##XScale", &stackXScale, 1.f, 0.f, 0.f, "%.2f");
-		// ImGui::SameLine();
-		// ImGui::SetNextItemWidth((ErGui::INPUT_ITEM_WIDTH - 10.f) / 2.f);
-		// ImGui::DragFloat("##YScale", &stackYScale, 1.f, 0.f, 0.f, "%.2f");
+		ImGui::Text("Scale");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
+		ErGui::BetterDragFloat("##ScaleStack", &stackScale, 0.1f, 0.5f, "%.2f", 0.1f);
+		
+		ImGui::Text("X/Y");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##XScaleStack", &stackXScale, 0.1f, 0.5f, "%.2f", 0.1f);
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+		ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##YScaleStack", &stackYScale, 0.1f, 0.5f, "%.2f", 0.1f);
 
 		// Perform func
 
 		auto lel = GameManager::sharedState()->getEditorLayer();
 		auto editorUI = lel->m_editorUI;
 
-		if (ImGui::Button("Apply")) {
+		if (ImGui::Button("Apply##Stack")) {
 			if (editorUI->getSelectedObjects()) {
+				lel->m_undoObjects->addObject(UndoObject::createWithArray(editorUI->getSelectedObjects(), UndoCommand::Select));
 				auto* objs = CCArray::create();
 
 				for (int i = 1; i <= stackCopies; ++i) {
 					editorUI->onDuplicate(nullptr);
 					auto selected = editorUI->getSelectedObjects();
-					
+
 					for (auto obj : CCArrayExt<GameObject*>(selected)) {
 						editorUI->moveObject(obj, ccp(stackXOffset, stackYOffset));
 
-						if (stackRotate && obj->canRotateFree()) {
-							editorUI->rotateObjects(selected, stackRotate, ccp(0.f, 0.f));
-						}
-
-						if (stackXRotate || stackYRotate && obj->canRotateFree()) {
+						if ((stackRotate || stackXRotate || stackYRotate) && obj->canRotateFree()) {
 							float rotX = obj->getRotationX();
 							float rotY = obj->getRotationY();
 
-							obj->setRotationX(rotX + stackXRotate);
-							obj->setRotationY(rotY + stackYRotate);
+							obj->setRotationX(rotX + stackXRotate + stackRotate);
+							obj->setRotationY(rotY + stackYRotate + stackRotate);
 						}
 
-						// if (stackScale) {
-						// 	float oldScale = obj->m_scaleX;
+						if (stackScale || stackXScale || stackYScale) {
+							float scaleX = obj->m_scaleX;
+							float scaleY = obj->m_scaleY;
 
-						// 	float scaleMod = obj->m_scaleY / obj->m_scaleX;
-						// 	if (obj->m_scaleX == 0) {
-						// 		scaleMod = 1;
-						// 		obj->m_scaleX = obj->m_scaleY;
-						// 	}
-
-						// 	short flipX = obj->isFlipX() ? -1 : 1;
-						// 	obj->m_scaleX += stackScale - oldScale;
-						// 	obj->setScaleX(obj->m_scaleX * flipX);
-
-						// 	short flipY = obj->isFlipY() ? -1 : 1;
-						// 	obj->m_scaleY += (stackScale - oldScale) * scaleMod;
-						// 	obj->setScaleY(obj->m_scaleY * flipY);
-						// }
-
-						// if (stackXScale || stackYScale) {
-						// 	float scaleX = obj->m_scaleX;
-						// 	float scaleY = obj->m_scaleY;
-
-						// 	short flipX = obj->isFlipX() ? -1 : 1;
-						// 	short flipY = obj->isFlipY() ? -1 : 1;
-						// 	obj->setScaleX(scaleX + stackXScale * flipX);
-						// 	obj->m_scaleX = scaleX + stackXScale;
-						// 	obj->setScaleY(scaleY + stackYScale * flipY);
-						// 	obj->m_scaleY = scaleY + stackYScale;
-						// }
+							obj->setScaleX(scaleX + stackXScale + stackScale);
+							obj->setScaleY(scaleY + stackYScale + stackScale);
+							obj->m_scaleX = scaleX + stackXScale + stackScale;
+							obj->m_scaleY = scaleY + stackYScale + stackScale;
+						}
 					}
 
 					lel->m_undoObjects->removeLastObject();

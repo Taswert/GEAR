@@ -731,7 +731,8 @@ class $modify(GearEditorUI, EditorUI) {
 							//log::info("CHECK: {}", check1);
 							//log::info("TOUCH: {}", touchConverted);
 							//log::info("HITBOX: {}", objHbConverted);
-							if (check1 && ErGui::selectFilterRealization(obj))
+							if (check1 && ErGui::selectFilterRealization(obj) && 
+								(lel->m_currentLayer == obj->m_editorLayer || lel->m_currentLayer == obj->m_editorLayer2))
 								objArr->addObject(obj);
 						}
 					}
