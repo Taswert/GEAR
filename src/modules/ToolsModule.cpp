@@ -182,9 +182,9 @@ void ErGui::renderToolsModule1() {
 
 	ImGui::Separator();
 
-	auto mode = *reinterpret_cast<int*>(reinterpret_cast<long long>(editorUI->m_editorLayer) + 0x878);
+	auto mode = editorUI->m_editorLayer->m_playbackMode;
 	std::string playtestStr = ICON_MDI_PLAY; //ICON_MDI_PLAY
-	if (mode == 1) playtestStr = ICON_MDI_PAUSE; //ICON_MDI_PAUSE
+	if (mode == PlaybackMode::Playing) playtestStr = ICON_MDI_PAUSE; //ICON_MDI_PAUSE
 
 
 	if (ImGui::Selectable(ICON_MDI_MUSIC_NOTE, false, 0, BTN_SIZE, selectableRounding)) {
@@ -197,9 +197,9 @@ void ErGui::renderToolsModule1() {
 		editorUI->onPlaytest(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip(mode == 1 ? "Pause" : "Playtest");
+		ImGui::SetTooltip(mode == PlaybackMode::Playing ? "Pause" : "Playtest");
 
-	if (mode == 1 || mode == 2) {
+	if (mode == PlaybackMode::Playing || mode == PlaybackMode::Paused) {
 		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 		if (ImGui::Selectable(ICON_MDI_STOP, false, 0, BTN_SIZE, selectableRounding)) {
 			editorUI->onStopPlaytest(nullptr);
