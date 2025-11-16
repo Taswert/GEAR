@@ -9,7 +9,7 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "CustomImGuiWidgets.hpp"
 
-const std::unordered_set<int> triggerSet = { 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 55, 56, 57, 58, 59, 105, 744, 900, 915, 899, 901, 914, 1616, 1006, 1007, 1049, 1268, 1346, 2067, 1347, 1520, 1585, 1912, 3033, 1814, 1915, 2063, 3016, 3617, 3660, 3661, 3032, 3006, 3007, 3008, 3009, 3010, 3011, 3012, 3013, 3014, 3015, 3024, 3029, 3030, 3031, 1595, 1611, 1811, 1817, 3608, 3614, 3615, 3617, 3619, 3620, 3641, 1912, 2068, 3607, 3608, 3618, 1913, 1914, 1916, 2901, 2015, 2062, 2925, 2016, 1917, 2900, 1934, 3605, 3602, 3603, 3604, 1935, 2999, 3606, 3612, 1615, 3613, 3662, 1815, 3609, 3640, 1816, 3643, 1812, 33, 32, 1613, 1612, 1818, 1819, 3600, 1932, 2899, 3642, 2903, 2066, 3022, 2904, 2905, 2907, 2909, 2910, 2911, 2912, 2913, 2914, 2915, 2916, 2917, 2919, 2920, 2921, 2922, 2923, 2924, 22, 24, 23, 25, 26, 27, 28, 55, 56, 57, 58, 59, 1915, 3017, 3018, 3019, 3020, 3021, 3023, 29, 30, 105, 744, 915, 1931, 3655, 2069, 3645 };
+const std::unordered_set<int> triggerSet = { 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 55, 56, 57, 58, 59, 105, 744, 900, 915, 899, 901, 914, 1616, 1006, 1007, 1049, 1268, 1346, 2067, 1347, 1520, 1585, 1912, 3033, 1814, 1915, 2063, 3016, 3617, 3660, 3661, 3032, 3006, 3007, 3008, 3009, 3010, 3011, 3012, 3013, 3014, 3015, 3024, 3029, 3030, 3031, 1595, 1611, 1811, 1817, 3608, 3614, 3615, 3617, 3619, 3620, 3641, 1912, 2068, 3607, 3608, 3618, 1913, 1914, 1916, 2901, 2015, 2062, 2925, 2016, 1917, 2900, 1934, 3605, 3602, 3603, 3604, 1935, 2999, 3606, 3612, 1615, 3613, 3662, 1815, 3609, 3640, 1816, 3643, 1812, 33, 32, 1613, 1612, 1818, 1819, 3600, 1932, 2899, 3642, 2903, 2066, 3022, 2904, 2905, 2907, 2909, 2910, 2911, 2912, 2913, 2914, 2915, 2916, 2917, 2919, 2920, 2921, 2922, 2923, 2924, 22, 24, 23, 25, 26, 27, 28, 55, 56, 57, 58, 59, 1915, 3017, 3018, 3019, 3020, 3021, 3023, 29, 30, 105, 744, 915, 1931, 3655, 2069, 3645, 747, 2902 };
 using ErGuiSettingsDrawer = void (*)(GameObject*);
 std::unordered_map<int, ErGuiSettingsDrawer> triggersMap;
 
@@ -827,11 +827,13 @@ void drawAnimateSettings(GameObject* obj) {
 
 void drawTouchSettings(GameObject* obj) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
 	}
 
 	bool p1 = (int)eObj->m_touchPlayerMode == 1;
@@ -1098,6 +1100,39 @@ void forceBlockSettings(GameObject* obj) {
 	ImGui::InputInt("Force ID", &fObj->m_forceID);
 }
 
+void drawFollowSettings(GameObject* obj) {
+	auto eObj = static_cast<EffectGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("X Mod", &eObj->m_followXMod, .05f, 0.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Y Mod", &eObj->m_followYMod, .05f, 0.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputFloat("Move Time", &eObj->m_duration, 0.1f, 0.5f, "%.3f")) {
+		if (eObj->m_duration < -1.f) eObj->m_duration = -1.f;
+		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
+		eObj->m_endPosition = *somePoint;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Group ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Follow Group ID", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
+	}
+
+	drawTouchSpawnTriggered(eObj);
+}
+
 void drawFollowPlayerY(GameObject* obj) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
@@ -1202,6 +1237,477 @@ void drawGameOptionsSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(gObj);
 }
 
+void drawKeyframeAnimationSettings(GameObject* obj) {
+	auto kObj = static_cast<KeyframeAnimTriggerObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Animation Group ID", &kObj->m_animationID);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target ID", &kObj->m_targetGroupID)) {
+		if (kObj->m_targetGroupID < 0) kObj->m_targetGroupID = 0;
+		if (kObj->m_targetGroupID > 9999) kObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Parent ID", &kObj->m_centerGroupID)) {
+		if (kObj->m_centerGroupID < 0) kObj->m_centerGroupID = 0;
+		if (kObj->m_centerGroupID > 9999) kObj->m_centerGroupID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Time Mod", &kObj->m_timeMod, .1f, 0.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Position X Mod", &kObj->m_positionXMod, .1f, -2.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Position Y Mod", &kObj->m_positionYMod, .1f, -2.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Rotation Mod", &kObj->m_rotationMod, .1f, -2.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Scale X Mod", &kObj->m_scaleXMod, .1f, -2.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Scale Y Mod", &kObj->m_scaleYMod, .1f, -2.f, 1.f);
+
+	drawTouchSpawnTriggered(kObj);
+}
+
+void drawObjectControlSettings(GameObject* obj) { // smol
+	auto cObj = static_cast<ObjectControlGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target ID", &cObj->m_targetGroupID)) {
+		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
+		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+	}
+
+	drawTouchSpawnTriggered(cObj);
+}
+
+void drawCollisionTriggerSettings(GameObject* obj) {
+	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::Checkbox("P1", &cObj->m_targetPlayer1);
+	ImGui::SameLine();
+	ImGui::Checkbox("P2", &cObj->m_targetPlayer2);
+	ImGui::SameLine();
+	ImGui::Checkbox("PP", &cObj->m_followCPP);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("BlockA ID", &cObj->m_itemID)) {
+		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
+		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("BlockB ID", &cObj->m_itemID2)) {
+		if (cObj->m_itemID2 < 0) cObj->m_itemID2 = 0;
+		if (cObj->m_itemID2 > 9999) cObj->m_itemID2 = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target ID", &cObj->m_targetGroupID)) {
+		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
+		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::Checkbox("Activate Group", &cObj->m_activateGroup);
+	ImGui::Checkbox("Trigger On Exit", &cObj->m_triggerOnExit);
+
+	drawTouchSpawnTriggered(cObj);
+}
+
+void drawInstantCollisionSettings(GameObject* obj) {
+	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("BlockA ID", &cObj->m_itemID)) {
+		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
+		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("BlockB ID", &cObj->m_itemID2)) {
+		if (cObj->m_itemID2 < 0) cObj->m_itemID2 = 0;
+		if (cObj->m_itemID2 > 9999) cObj->m_itemID2 = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("True ID", &cObj->m_targetGroupID)) {
+		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
+		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("False ID", &cObj->m_centerGroupID)) {
+		if (cObj->m_centerGroupID < 0) cObj->m_centerGroupID = 0;
+		if (cObj->m_centerGroupID > 9999) cObj->m_centerGroupID = 9999;
+	}
+
+	ImGui::Checkbox("P1", &cObj->m_targetPlayer1);
+	ImGui::SameLine();
+	ImGui::Checkbox("P2", &cObj->m_targetPlayer2);
+	ImGui::SameLine();
+	ImGui::Checkbox("PP", &cObj->m_followCPP);
+
+	drawTouchSpawnTriggered(cObj);
+}
+
+void drawCollisionStateSettings(GameObject* obj) {
+	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("State On", &cObj->m_targetGroupID)) {
+		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
+		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("State Off", &cObj->m_centerGroupID)) {
+		if (cObj->m_centerGroupID < 0) cObj->m_centerGroupID = 0;
+		if (cObj->m_centerGroupID > 9999) cObj->m_centerGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+}
+
+void drawCollisionBlockSettings(GameObject* obj) {
+	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Block ID", &cObj->m_itemID)) {
+		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
+		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	if (ImGui::Checkbox("Dynamic Block", &cObj->m_isDynamicBlock)) {
+		lel->updateObjectLabel(obj);
+	}
+}
+
+void drawToggleBlockSettings(GameObject* obj) {
+	auto rObj = static_cast<RingObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Group ID", &rObj->m_targetGroupID)) {
+		if (rObj->m_targetGroupID < 0) rObj->m_targetGroupID = 0;
+		if (rObj->m_targetGroupID > 9999) rObj->m_targetGroupID = 9999;
+	}
+
+	ImGui::Checkbox("Activate Group", &rObj->m_activateGroup);
+	ImGui::Checkbox("Claim Touch", &rObj->m_claimTouch);
+	ImGui::Checkbox("Multi Activate", &rObj->m_isMultiActivate);
+	ImGui::Checkbox("Spawn Only", &rObj->m_isSpawnOnly);
+}
+
+void drawPlayerControlSettings(GameObject* obj) {
+	auto pObj = static_cast<PlayerControlGameObject*>(obj);
+
+	ImGui::Checkbox("P1", &pObj->m_targetPlayer1);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("P2", &pObj->m_targetPlayer2);
+
+	ImGui::Checkbox("Stop Jump", &pObj->m_stopJump);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Stop Move", &pObj->m_stopMove);
+
+	ImGui::Checkbox("Stop Rotation", &pObj->m_stopRotation);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Stop Slide", &pObj->m_stopSlide);
+	
+	drawTouchSpawnTriggered(pObj);
+}
+
+void drawCountSettings(GameObject* obj) {
+	auto cObj = static_cast<CountTriggerGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Item ID", &cObj->m_itemID)) {
+		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
+		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target ID", &cObj->m_targetGroupID)) {
+		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
+		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Target Count", &cObj->m_pickupCount);
+
+	ImGui::Checkbox("Activate Group", &cObj->m_activateGroup);
+	ImGui::Checkbox("Multi Activate", &cObj->m_multiActivate);
+
+	drawTouchSpawnTriggered(cObj);
+}
+
+void drawInstantCountSettings(GameObject* obj) {
+	auto cObj = static_cast<CountTriggerGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Item ID", &cObj->m_itemID)) {
+		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
+		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target ID", &cObj->m_targetGroupID)) {
+		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
+		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::InputInt("Target Count", &cObj->m_pickupCount);
+
+	ImGui::Checkbox("Activate Group", &cObj->m_activateGroup);
+
+	bool equals = cObj->m_pickupTriggerMode == 0;
+	bool larger = cObj->m_pickupTriggerMode == 1;
+	bool smaller = cObj->m_pickupTriggerMode == 2;
+
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Equals", &equals)) {
+		larger = false;
+		smaller = false;
+		cObj->m_pickupTriggerMode = 0;
+	}
+	if (ImGui::Checkbox("Larger", &larger)) {
+		equals = false;
+		smaller = false;
+		cObj->m_pickupTriggerMode = 1;
+	}
+	if (ImGui::Checkbox("Smaller", &smaller)) {
+		equals = false;
+		larger = false;
+		cObj->m_pickupTriggerMode = 2;
+	}
+
+	ImGui::Separator();
+
+	drawTouchSpawnTriggered(cObj);
+}
+
+void drawPickupSettings(GameObject* obj) {
+	auto pObj = static_cast<CountTriggerGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Item ID", &pObj->m_itemID)) {
+		if (pObj->m_itemID < 0) pObj->m_itemID = 0;
+		if (pObj->m_itemID > 9999) pObj->m_itemID = 9999;
+		lel->updateObjectLabel(obj);
+	}
+
+	bool multiply = pObj->m_pickupTriggerMode == 1;
+	bool divide = pObj->m_pickupTriggerMode == 2;
+
+	if (ImGui::Checkbox("Multiply", &multiply)) {
+		divide = false;
+		if (multiply) pObj->m_pickupTriggerMode = 1;
+		else pObj->m_pickupTriggerMode = 0;
+	}
+
+	if (ImGui::Checkbox("Divide", &divide)) {
+		multiply = false;
+		if (divide) pObj->m_pickupTriggerMode = 2;
+		else pObj->m_pickupTriggerMode = 0;
+	}
+
+	ImGui::Separator();
+
+	if (pObj->m_pickupTriggerMode == 0) {
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::InputInt("Count", &pObj->m_pickupCount);
+
+		ImGui::Checkbox("Override", &pObj->m_isOverride);
+	}
+	else {
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("Multiplier", &pObj->m_pickupTriggerMultiplier, .05f, 0.f, 1.f);
+	}
+
+	drawTouchSpawnTriggered(pObj);
+}
+
+void drawCounterLabelSettings(GameObject* obj) {
+	auto cObj = static_cast<LabelGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Item ID", &cObj->m_itemID)) {
+		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
+		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+		cObj->updatePreviewLabel();
+	}
+
+	auto leftAlign = cObj->m_alignment == 1;
+	auto rightAlign = cObj->m_alignment == 2;
+
+	if (ImGui::Checkbox("Left Align", &leftAlign)) {
+		rightAlign = false;
+		if (leftAlign) cObj->m_alignment = 1;
+		else cObj->m_alignment = 0;
+		cObj->updateLabelAlign(cObj->m_alignment);
+	}
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox("Right Align", &rightAlign)) {
+		leftAlign = false;
+		if (rightAlign) cObj->m_alignment = 2;
+		else cObj->m_alignment = 0;
+		cObj->updateLabelAlign(cObj->m_alignment);
+	}
+
+	if (ImGui::Checkbox("Time Counter", &cObj->m_isTimeCounter))
+		cObj->updatePreviewLabel();
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Seconds Only", &cObj->m_showSecondsOnly);
+
+	bool mainTime = cObj->m_shownSpecial == -1;
+	bool points = cObj->m_shownSpecial == -2;
+	bool attempts = cObj->m_shownSpecial == -3;
+
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Main Time", &mainTime)) {
+		points = false;
+		attempts = false;
+		if (mainTime) cObj->m_shownSpecial = -1;
+		else cObj->m_shownSpecial = 0;
+		cObj->updatePreviewLabel();
+	}
+	if (ImGui::Checkbox("Points", &points)) {
+		mainTime = false;
+		attempts = false;
+		if (points) cObj->m_shownSpecial = -2;
+		else cObj->m_shownSpecial = 0;
+		cObj->updatePreviewLabel();
+	}
+	if (ImGui::Checkbox("Attempts", &attempts)) {
+		points = false;
+		mainTime = false;
+		if (attempts) cObj->m_shownSpecial = -3;
+		else cObj->m_shownSpecial = 0;
+		cObj->updatePreviewLabel();
+	}
+}
+
+void drawTeleportSettings(GameObject* obj) {
+	auto tObj = static_cast<TeleportPortalObject*>(obj);
+	
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Group ID", &tObj->m_targetGroupID)) {
+		if (tObj->m_targetGroupID < 0) tObj->m_targetGroupID = 0;
+		if (tObj->m_targetGroupID > 9999) tObj->m_targetGroupID = 9999;
+	}
+
+	bool normal = tObj->m_gravityMode == 1;
+	bool flipped = tObj->m_gravityMode == 2;
+	bool toggle = tObj->m_gravityMode == 3;
+
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Normal Gravity", &normal)) {
+		flipped = false;
+		toggle = false;
+		if (normal) tObj->m_gravityMode = 1;
+		else tObj->m_gravityMode = 0;
+	}
+	if (ImGui::Checkbox("Flipped Gravity", &flipped)) {
+		normal = false;
+		toggle = false;
+		if (normal) tObj->m_gravityMode = 2;
+		else tObj->m_gravityMode = 0;
+	}
+	if (ImGui::Checkbox("Toggle Gravity", &toggle)) {
+		normal = false;
+		flipped = false;
+		if (normal) tObj->m_gravityMode = 3;
+		else tObj->m_gravityMode = 0;
+	}
+
+	ImGui::Separator();
+
+	ImGui::Checkbox("Smooth Ease", &tObj->m_teleportEase);
+	ImGui::Checkbox("Save Offset", &tObj->m_saveOffset);
+
+	ImGui::Checkbox("Ignore X", &tObj->m_ignoreX);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Ignore Y", &tObj->m_ignoreY);
+
+	ImGui::Checkbox("Instant Camera", &tObj->m_instantCamera);
+	ImGui::Checkbox("Snap Ground", &tObj->m_snapGround);
+	ImGui::Checkbox("Redirect Dash", &tObj->m_redirectDash);
+
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Static Force", &tObj->m_staticForceEnabled))
+		tObj->m_redirectForceEnabled = false;
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox("Redirect Force", &tObj->m_redirectForceEnabled))
+		tObj->m_staticForceEnabled = false;
+
+	if (tObj->m_staticForceEnabled) {
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("Force", &tObj->m_staticForce, .05f, 0.f, 1.f);
+
+		ImGui::Checkbox("Additive", &tObj->m_staticForceAdditive);
+	}
+	if (tObj->m_redirectForceEnabled) {
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("Min", &tObj->m_redirectForceMin, .05f, 0.f, 1.f);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("Max", &tObj->m_redirectForceMax, .05f, 0.f, 1.f);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("Mod", &tObj->m_redirectForceMod, .05f, 0.f, 1.f);
+	}
+	
+	if ((obj->m_objectID == 747) || obj->m_objectID == 2902)
+		ImGui::Checkbox("Multi Activate", &tObj->m_isMultiActivate);
+	else 
+		drawTouchSpawnTriggered(tObj);	
+}
+
+void drawEndTriggerSettings(GameObject* obj) {
+	auto eObj = static_cast<EndTriggerGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Spawn ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+	}
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Target Pos", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
+	}
+
+	ImGui::Checkbox("No Effects", &eObj->m_noEffects);
+	ImGui::Checkbox("No SFX", &eObj->m_noSFX);
+	ImGui::Checkbox("Instant", &eObj->m_instant);
+
+	drawTouchSpawnTriggered(eObj);
+}
+
 void renderObjectSettings(GameObject* obj) {
 	int objId = obj->m_objectID;
 	if (triggerSet.contains(objId)) {
@@ -1260,8 +1766,6 @@ void ErGui::renderEditObjectModule() {
 	ImGui::End();
 }
 
-
-
 void ErGui::setupTriggersSettings() {
 	triggersMap[31] = drawStartPosSettings;
 	triggersMap[899] = drawColorSettings;
@@ -1288,6 +1792,28 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[2063] = checkpointSettings;
 	triggersMap[2066] = drawGravitySettings;
 	triggersMap[2899] = drawGameOptionsSettings;
+	triggersMap[3033] = drawKeyframeAnimationSettings;
+	triggersMap[3655] = drawObjectControlSettings;
+	triggersMap[1932] = drawPlayerControlSettings;
+	triggersMap[3600] = drawEndTriggerSettings;
+
+	// Teleport
+	triggersMap[3022] = drawTeleportSettings; // teleport trigger
+	triggersMap[747] = drawTeleportSettings; // linked teleport
+	triggersMap[2902] = drawTeleportSettings; // single teleport
+
+	// Count
+	triggersMap[1611] = drawCountSettings;
+	triggersMap[1811] = drawInstantCountSettings;
+	triggersMap[1817] = drawPickupSettings;
+	triggersMap[1615] = drawCounterLabelSettings;
+
+	// Collision
+	triggersMap[1815] = drawCollisionTriggerSettings;
+	triggersMap[3609] = drawInstantCollisionSettings;
+	triggersMap[3640] = drawCollisionStateSettings;
+	triggersMap[1816] = drawCollisionBlockSettings;
+	triggersMap[3643] = drawToggleBlockSettings;
 	
 	// Force Blocks
 	triggersMap[2069] = forceBlockSettings;
@@ -1318,6 +1844,7 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[1915] = drawEnterEffectSettings;
 
 	// Follow
+	triggersMap[1347] = drawFollowSettings;
 	triggersMap[1814] = drawFollowPlayerY; // Player Y
 }
 
