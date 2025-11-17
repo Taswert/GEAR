@@ -1,0 +1,68 @@
+{
+	"geode": "4.9.0",
+	"gd": {
+		"win": "2.2074"
+	},
+	"id": "taswert.gear",
+	"name": "GEAR",
+	"version": "v1.0.0-beta.7",
+	"developers": [ "Taswert", "RaZooM", "Pololak", "RainixGD" ],
+	"description": "Reimagine your Editor UI with ImGui",
+	"links": {
+		"community": "https://discord.gg/6WGqURwYy4",
+		"source": "https://github.com/Taswert/GEAR"
+	},
+	"resources": {
+		"files": [
+			"resources/imgui-fonts/Inter_18pt-Regular.ttf",
+			"resources/imgui-fonts/materialdesignicons-webfont.ttf",
+			"resources/imgui-fonts/gear-copy-paste-icons.ttf",
+			"resources/default_imgui.ini"
+		]
+	},
+	"settings": {
+		"object-list-config": {
+			"type": "file",
+			"name": "Object List Config",
+			"description": "You can configure here categories and folders of object list module!",
+			"default": "{mod_config_dir}/object_list.json",
+			"control": {
+				"dialog": "open",
+				"filters": [
+					{
+						"files": [ "*.json" ],
+						"description": "JSON file"
+					}
+				]
+			}
+		},
+		"autosave-rate": {
+			"type": "int",
+			"name": "Autosave interval (minutes)",
+			"description": "Make level backup every N minutes so that you don't lose it if your game crashes, \n0 - never do backups",
+			"default": 5,
+			"min": 0,
+			"max": 30,
+			"control": {
+				"arrows": true,
+				"slider": true,
+				"slider-step": 1,
+				"big-arrows": false,
+				"arrow-step": 1
+			}
+		}
+	},
+	"tags": [
+		"editor",
+		"offline",
+		"enhancement",
+		"interface",
+		"bugfix",
+		"utility"
+	],
+	"dependencies": {
+		"geode.node-ids": ">=1.20.1",
+		"alphalaneous.object_popup_api": ">=v1.0.3",
+		"cvolton.level-id-api": ">=v1.2.0"
+	}
+}

@@ -1,0 +1,1177 @@
+#include "EditGroupModule.hpp"
+#include "CustomImGuiWidgets.hpp"
+#include "AdvancedUndoRedo.hpp"
+#include "LayerModule.hpp"
+using namespace ErGui;
+
+const char* layerTypeItems[] = {
+	"B5", "B4", "B3", "B2", "B1",
+	"D",
+	"T1", "T2", "T3", "T4"
+	
+};
+
+const int layerIntItems[] = {
+	-5, -3, -1, 1, 3,
+	0,
+	5, 7, 9, 11,
+};
+
+void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
+	if (ImGui::Button("Copy##COPYSTATE")) {
+		copyStateObject.copyState(obj);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Paste##PASTESTATE")) {
+		copyStateObject.pasteState(obj);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Go To Layer")) {
+		lel->m_currentLayer = obj->m_editorLayer;
+	}
+
+	if (ImGui::CollapsingHeader("Groups Settings")) {
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("ID Offset", &groupOffset);
+		setMaxMin(groupOffset, 9999, 1);
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("GroupID", &chosenGroupEGM);
+		setMaxMin(chosenGroupEGM, 9999, 1);
+
+
+		bool addGroupCheck = true;
+		if (obj->m_groups) {
+			addGroupCheck = std::find(obj->m_groups->begin(), obj->m_groups->end(), 0) != obj->m_groups->end() && 
+				(!static_cast<CCArray*>(lel->m_groups[chosenGroupEGM]) || !static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->containsObject(obj));
+		}
+
+		if (ImGui::Button("Add##EGM-ADDGROUP")) {
+			if (addGroupCheck) {
+				if (!lel->m_groups[chosenGroupEGM]) {
+					CCArray* arr = CCArray::create();
+					arr->retain();
+					lel->m_groups[chosenGroupEGM] = arr;
+				}
+				//addObjectToUndoList(obj, EnhancedUndoCommand::GroupAdd);
+
+				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
+				obj->addToGroup(chosenGroupEGM);
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("AddP##EGM-ADDGROUPPARENT")) {
+			if (addGroupCheck) {
+				if (!lel->m_groups[chosenGroupEGM]) {
+					CCArray* arr = CCArray::create();
+					arr->retain();
+					lel->m_groups[chosenGroupEGM] = arr;
+				}
+				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
+				obj->addToGroup(chosenGroupEGM);
+				lel->setGroupParent(obj, chosenGroupEGM);
+			}
+			else if (std::find(obj->m_groups->begin(), obj->m_groups->end(), 0) != obj->m_groups->end() &&
+				static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->containsObject(obj)) {
+				lel->setGroupParent(obj, chosenGroupEGM);
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Next Free##EGM-NEXTFREEGROUP")) {
+			auto groups = lel->m_groups;
+			std::set<int> freeGroups;
+			if (groupOffset < 1) groupOffset = 1;
+			for (int i = groupOffset; i < groups.size(); i++) {
+				int count = groups[i] ? groups[i]->count() : 0;
+				if (count == 0) {
+					freeGroups.insert(i);
+				}
+			}
+
+			if (freeGroups.empty()) 
+				chosenGroupEGM = 9999;
+
+			for (const auto& obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+				if (auto eObj = typeinfo_cast<EffectGameObject*>(obj)) {
+					freeGroups.erase(eObj->m_targetGroupID);
+					freeGroups.erase(eObj->m_centerGroupID);
+				}
+				if (auto cObj = typeinfo_cast<ChanceTriggerGameObject*>(obj)) {
+					for (const auto& chance : cObj->m_chanceObjects) {
+						freeGroups.erase(chance.m_groupID);
+						freeGroups.erase(chance.m_oldGroupID);
+					}
+				}
+			}
+
+			if (!freeGroups.empty()) 
+				chosenGroupEGM = *freeGroups.begin();
+			else
+				chosenGroupEGM = 9999;
+		}
+
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+		ImGui::SeparatorText("Groups");
+		ImGui::PopStyleColor();
+
+		for (int i = 0; i < obj->m_groupCount; i++) {
+			int groupInt = obj->m_groups->at(i);
+			auto btnStr = fmt::format("{}##RMVGROUP", groupInt);
+
+			if (lel->m_parentGroupsDict->objectForKey(groupInt) == obj) {
+				// Styling Push
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.48f, 0.12f, 0.46f, 1.f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.73f, 0.25f, 0.71f, 1.f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
+
+				// Parent Group Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
+					lel->m_parentGroupsDict->removeObjectForKey(groupInt);
+				}
+
+				// Styling Pop
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
+			}
+			else {
+				// The Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
+					obj->removeFromGroup(groupInt);
+					static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
+				}
+			}
+
+			// Funny button aligning
+			float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			float lastButtonX2 = ImGui::GetItemRectMax().x;
+			float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + ImGui::GetItemRectSize().x;
+
+			if (i+1< obj->m_groupCount && nextButtonX2 < windowVisibleX2) {
+				ImGui::SameLine();
+			}
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Layer & Z-Order")) {
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.f, 3.f });
+		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
+			int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+			bool shouldPopStyle = false;
+
+			//Color for selected object
+			if (*objLayer == layerIntItems[i]) {
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+				ImGui::PushStyleColor(ImGuiCol_Border, { 1.f, 1.f, 0.5f, 1.f });
+				ImGui::PushStyleColor(ImGuiCol_Button, {
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).x + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).y + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).z + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).w + 0.3f });
+				shouldPopStyle = true;
+			}
+
+			if (ImGui::Button(layerTypeItems[i], { 26, 20 })) {
+				*objLayer = layerIntItems[i];
+			}
+
+			//Pop color for selected object
+			if (shouldPopStyle) {
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+			}
+
+			if (i < IM_ARRAYSIZE(layerIntItems) - 1)
+				ImGui::SameLine();
+		}
+		ImGui::PopStyleVar();
+
+
+		int el1 = obj->m_editorLayer;
+		int oldEl1 = el1;
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("##EditorL1", &el1);
+		setMin(el1, 0);
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL1")) el1 = lel->m_currentLayer;
+		ImGui::SetItemTooltip("Set to current Editor Layer");
+		ImGui::SameLine();
+		ImGui::Text("EditorL1");
+		if (el1 < 0) el1 = 0;
+		if (oldEl1 != obj->m_editorLayer2)	ErGui::LAYER_STATE.layers[oldEl1].objCount--;
+		if (el1 != obj->m_editorLayer2)		ErGui::LAYER_STATE.layers[el1].objCount++;
+		obj->m_editorLayer = el1;
+		
+
+		int el2 = obj->m_editorLayer2;
+		int oldEl2 = el2;
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("##EditorL2", &el2);
+		setMin(el2, 0);
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL2")) el2 = lel->m_currentLayer;
+		ImGui::SetItemTooltip("Set to current Editor Layer");
+		ImGui::SameLine();
+		ImGui::Text("EditorL2");
+		if (el2 < 0) el2 = 0;
+		if (oldEl2 != obj->m_editorLayer && oldEl2 != 0)	ErGui::LAYER_STATE.layers[oldEl2].objCount--;
+		if (el2 != obj->m_editorLayer && el2 != 0)			ErGui::LAYER_STATE.layers[el2].objCount++;
+		obj->m_editorLayer2 = el2;
+
+
+		std::string zOrderStr;
+		int zord = obj->m_zOrder;
+		if (zord == 0)
+			zOrderStr = fmt::format("Z-Order ({})", obj->m_defaultZOrder);
+		else
+			zOrderStr = "Z-Order";
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt(zOrderStr.c_str(), &zord);
+		obj->m_zOrder = zord;
+		obj->m_shouldUpdateColorSprite = 1;
+	}
+
+	if (ImGui::CollapsingHeader("Extra")) {
+		int enterChnl = obj->m_enterChannel;
+		ImGui::InputInt("Enter Channel", &enterChnl);
+		obj->m_enterChannel = enterChnl;
+
+		int material = obj->m_objectMaterial;
+		ImGui::InputInt("Material", &material);
+		obj->m_objectMaterial = material;
+
+		//if (typeinfo_cast<EffectGameObject*>(obj)) ImGui::Text("ControlID: %d", static_cast<EffectGameObject*>(obj)->m_controlID);
+		if (typeinfo_cast<EffectGameObject*>(obj)) {
+			auto egObj = static_cast<EffectGameObject*>(obj);
+
+			int ordVal = egObj->m_ordValue;
+			ImGui::InputInt("Order Value", &ordVal);
+			setMin(ordVal, 0);
+			egObj->m_ordValue = ordVal;
+
+			int chnlVal = egObj->m_channelValue;
+			ImGui::InputInt("Channel", &chnlVal);
+			setMin(chnlVal, 0);
+			egObj->m_channelValue = chnlVal;
+
+			int ctrlId = egObj->m_controlID;
+			ImGui::InputInt("ControlID", &ctrlId);
+			egObj->m_controlID = ctrlId;
+		}
+		ImGui::Text("MainColorID: %d", obj->m_activeMainColorID);
+		ImGui::Text("DetailColorID: %d", obj->m_activeDetailColorID);
+		if (ImGui::Button("Anim")) {
+			
+			lel->m_editorUI->createNewKeyframeAnim();
+		}
+	}
+	if (ImGui::CollapsingHeader("Checkboxes")) {
+		ImGui::SeparatorText("Cosmetic");
+
+		ImGui::Checkbox("No Effects", &obj->m_hasNoEffects);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Dont Fade", &obj->m_isDontFade);
+
+		ImGui::Checkbox("No Glow", &obj->m_hasNoGlow);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Dont Enter", &obj->m_isDontEnter);
+
+		ImGui::Checkbox("No Particle", &obj->m_hasNoParticles);
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("High Detail", &obj->m_isHighDetail)) {
+			obj->setVisible(!ErGui::showLdm || !obj->m_isHighDetail);
+		}
+
+		ImGui::Checkbox("No Audio Scale", &obj->m_hasNoAudioScale);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Hide", &obj->m_isHide);
+
+
+		ImGui::SeparatorText("Parent & Physics");
+		ImGui::Checkbox("Group Parent", &obj->m_hasGroupParent);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("No Touch", &obj->m_isNoTouch);
+
+		ImGui::Checkbox("Area Parent", &obj->m_hasAreaParent);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Passable", &obj->m_isPassable);
+
+		ImGui::Checkbox("Dont Boost X", &obj->m_isDontBoostX);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Extended Collision", &obj->m_hasExtendedCollision);
+
+		ImGui::Checkbox("Dont Boost Y", &obj->m_isDontBoostY);
+
+
+		ImGui::SeparatorText("Platformer Only");
+		ImGui::Checkbox("Ice Block", &obj->m_isIceBlock);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Grip Slope", &obj->m_isGripSlope);
+
+		ImGui::Checkbox("Non Stick X", &obj->m_isNonStickX);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Extra Sticky", &obj->m_isExtraSticky);
+
+		ImGui::Checkbox("Non Stick Y", &obj->m_isNonStickY);
+		ImGui::SameLine(160);
+		ImGui::Checkbox("Scale Stick", &obj->m_isScaleStick);
+
+		if (typeinfo_cast<EffectGameObject*>(obj)) {
+			ImGui::SeparatorText("EffectGameObject");
+			auto egObj = static_cast<EffectGameObject*>(obj);
+			ImGui::Checkbox("Single PTouch", &egObj->m_isSinglePTouch);
+			ImGui::SameLine(160);
+			if (ImGui::Checkbox("Preview", &egObj->m_shouldPreview)) {
+				lel->tryUpdateSpeedObject(egObj, false);
+			}
+			ImGui::Checkbox("Center Effect", &egObj->m_hasCenterEffect);
+			ImGui::SameLine(160);
+			bool isPlayBackObject = false;
+			EffectGameObject** playBackObject = reinterpret_cast<EffectGameObject**>(reinterpret_cast<uintptr_t>(lel->get()) + 0x39A0);
+			if (*playBackObject == egObj)
+				isPlayBackObject = true;
+			if (ImGui::Checkbox("Playback", &isPlayBackObject)) {
+				if (!isPlayBackObject)
+					*playBackObject = nullptr;
+				else
+					*playBackObject = egObj;
+			}
+
+			if (ImGui::Checkbox("Reverse", &egObj->m_isReverse)) {
+				lel->tryUpdateSpeedObject(egObj, false);
+			}
+		}
+	}
+
+	// ToDo Debug toggle
+	if (ImGui::CollapsingHeader("Object Info")) {
+		ImGui::Text("Object Address: %p", obj);
+		ImGui::SameLine();
+		if (ImGui::Button("Copy")) {
+			clipboard::write(CCString::createWithFormat("%p", obj)->getCString());
+		}
+
+		ImGui::Text("Object ID: %d", obj->m_objectID);
+
+		ImGui::Text("Class: %s", typeid(*obj).name() + 6);
+	}
+
+	// in an imgui window somewhere...
+	//ImGui::PushFont(iconFont);
+	//ImGui::Text(ICON_MDI_BLACK_MESA "  Paint"); // use string literal concatenation
+	// outputs a paint brush icon and 'Paint' as a string.
+
+
+	//ImGui::Text(ICON_MDI_BLACK_MESA);
+	//ImGui::PopFont();
+
+
+
+	//ImGui::Checkbox("")
+}
+
+void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
+	if (ImGui::Button("Paste##PASTESTATE")) {
+		copyStateObject.pasteState(objArr);
+	}
+
+	if (ImGui::CollapsingHeader("Advanced ReGroup")) {
+		static int regroupStart = 1;	// Initial group (where it starts before regroup)
+		static int regroupEnd = 9999;	// Initial group (where it ends before regroup)
+		static int regroupFrom = 1;		// Regrouped Offset (where it would start after regroup)
+		static bool regroupOnlyFree = false;
+
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("Regroup Start", &regroupStart);
+		setMaxMin(regroupStart, 9999, 1);
+
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("Regroup End", &regroupEnd);
+		setMaxMin(regroupEnd, 9999, 1);
+
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("Regroup From", &regroupFrom);
+		setMaxMin(regroupFrom, 9999, 1);
+
+		ImGui::Checkbox("Only Free Groups", &regroupOnlyFree);
+
+		if (ImGui::Button("Regroup")) {
+			std::map<int, int> regroupedMap;
+			int regroupedID = regroupFrom;
+			bool offlimit = false;
+
+			for (int i = 0; i < groupsFromObjArr.size(); i++) {
+				if (groupsFromObjArr[i].first >= regroupStart && groupsFromObjArr[i].first <= regroupEnd) {
+					
+					if (regroupOnlyFree) {
+						//log::info("{} {}", regroupedID, lel->m_groups[regroupedID]);
+						while (regroupedID <= 9999 && lel->m_groups[regroupedID] && lel->m_groups[regroupedID]->count() > 0) {
+							//log::info("{} - Not Free, adding...", regroupedID);
+							regroupedID++;
+						}
+					}
+					
+					if (regroupedID > 9999) {
+						offlimit = true;
+						//log::info("OFFLIMIT! BREAKING REGROUP!\n");
+						break;
+					}
+
+					//log::info("{} {}", groupsFromObjArr[i].first, regroupedID);
+					regroupedMap.emplace(groupsFromObjArr[i].first, regroupedID);
+					regroupedID++;
+				}
+			}
+			
+			if (!offlimit) {
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					std::unordered_set<int> idsToAdd;
+					int idToRetarget = 0;
+					int idToRecenter = 0;
+
+					// Group Removing and Buffering
+					for (auto pair : regroupedMap) {
+						if (static_cast<CCArray*>(lel->m_groups[pair.first]) && static_cast<CCArray*>(lel->m_groups[pair.first])->containsObject(obj)) {
+							obj->removeFromGroup(pair.first);
+							static_cast<CCArray*>(lel->m_groups[pair.first])->removeObject(obj, false);
+
+							idsToAdd.emplace(pair.second);
+						}
+
+						if (auto eObj = typeinfo_cast<EffectGameObject*>(obj)) {
+							if (eObj->m_objectID != 1006 || eObj->m_pulseTargetType == 1) {
+								if (idToRecenter == 0 && eObj->m_centerGroupID == pair.first)
+									idToRecenter = pair.second;
+								if (idToRetarget == 0 && eObj->m_targetGroupID == pair.first)
+									idToRetarget = pair.second;
+							}
+						}
+					}
+
+					// Actual Group Adding
+					for (const int& i : idsToAdd) {
+						if (!lel->m_groups[i]) {
+							CCArray* arr = CCArray::create();
+							arr->retain();
+							lel->m_groups[i] = arr;
+						}
+						static_cast<CCArray*>(lel->m_groups[i])->addObject(obj);
+						obj->addToGroup(i);
+					}
+
+					if (idToRetarget != 0 && typeinfo_cast<EffectGameObject*>(obj)) typeinfo_cast<EffectGameObject*>(obj)->m_targetGroupID = idToRetarget;
+					if (idToRecenter != 0 && typeinfo_cast<EffectGameObject*>(obj)) typeinfo_cast<EffectGameObject*>(obj)->m_centerGroupID = idToRecenter;
+
+					lel->updateObjectLabel(obj);
+				}
+				groupInfoUpdate();
+			}
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Groups Settings")) {
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("ID Offset", &groupOffset);
+		setMaxMin(groupOffset, 9999, 1);
+		ImGui::PushItemWidth(150.0f);
+		ImGui::InputInt("GroupID", &chosenGroupEGM);
+		setMaxMin(chosenGroupEGM, 9999, 1);
+
+
+		if (ImGui::Button("Add##EGM-ADDGROUP")) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				bool addGroupCheck = true;
+				if (obj->m_groups) {
+					addGroupCheck = std::find(obj->m_groups->begin(), obj->m_groups->end(), 0) != obj->m_groups->end() && (!static_cast<CCArray*>(lel->m_groups[chosenGroupEGM]) || !static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->containsObject(obj));
+				}
+
+				if (addGroupCheck) {
+					if (!lel->m_groups[chosenGroupEGM]) {
+						CCArray* arr = CCArray::create();
+						arr->retain();
+						lel->m_groups[chosenGroupEGM] = arr;
+					}
+					static_cast<CCArray*>(lel->m_groups[chosenGroupEGM])->addObject(obj);
+					obj->addToGroup(chosenGroupEGM);
+					
+					groupInfoUpdate();
+				}
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Next Free##EGM-NEXTFREEGROUP")) {
+			auto groups = lel->m_groups;
+			std::set<int> freeGroups;
+			if (groupOffset < 1) groupOffset = 1;
+			for (int i = groupOffset; i < groups.size(); i++) {
+				int count = groups[i] ? groups[i]->count() : 0;
+				if (count == 0) {
+					freeGroups.insert(i);
+				}
+			}
+
+			if (freeGroups.empty()) {
+				chosenGroupEGM = 9999;
+			}
+
+			for (const auto& obj : CCArrayExt<GameObject*>(lel->m_objects)) {
+				if (auto eObj = typeinfo_cast<EffectGameObject*>(obj)) {
+					freeGroups.erase(eObj->m_targetGroupID);
+					freeGroups.erase(eObj->m_centerGroupID);
+				}
+				if (auto cObj = typeinfo_cast<ChanceTriggerGameObject*>(obj)) {
+					for (const auto& chance : cObj->m_chanceObjects) {
+						freeGroups.erase(chance.m_groupID);
+						freeGroups.erase(chance.m_oldGroupID);
+					}
+				}
+			}
+
+			if (!freeGroups.empty()) {
+				chosenGroupEGM = *freeGroups.begin();
+			}
+			else {
+				chosenGroupEGM = 9999;
+			}
+		}
+		
+		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+		ImGui::SeparatorText("Groups");
+		ImGui::PopStyleColor();
+
+		int groupsSize = groupsFromObjArr.size();
+
+		int sameLineCounter = 0;
+		for (int i = 0; i < groupsSize; i++) {
+			// Init
+			int groupInt = groupsFromObjArr[i].first;
+			auto btnStr = fmt::format("{}##RMVGROUP", groupInt);
+
+			// Styling Push
+			if (groupsFromObjArr[i].second != objArr->count()) {
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.27f, 0.f, 0.52f, 1.f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.40f, 0.f, 0.67f, 1.f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
+			}
+
+			if (objArr->containsObject(lel->m_parentGroupsDict->objectForKey(groupInt))) {
+				// Styling Push
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.48f, 0.12f, 0.46f, 1.f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.73f, 0.25f, 0.71f, 1.f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 3.f, 3.f });
+
+				// Parent Group Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
+					lel->m_parentGroupsDict->removeObjectForKey(groupInt);
+				}
+
+				// Styling Pop
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
+			}
+			else {
+				// THE Button
+				if (ImGui::Button(btnStr.c_str(), { 36.f, 20.f })) {
+					for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+						obj->removeFromGroup(groupInt);
+						static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
+					}
+					groupsFromObjArr.erase(std::find(groupsFromObjArr.begin(), groupsFromObjArr.end(), groupsFromObjArr[i]));
+					groupsSize--;
+				}
+			}
+
+			// Styling Pop
+			if (groupsFromObjArr[i].second != objArr->count()) {
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleVar();
+			}
+
+
+			// Stupid logic for max 10 buttons in a line. Also, prevents from going out of the window.
+			float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			float lastButtonX2 = ImGui::GetItemRectMax().x;
+			float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + ImGui::GetItemRectSize().x;
+
+			if (sameLineCounter == 9) {
+				sameLineCounter = 0;
+				continue;
+			}
+			if (i + 1 < groupsSize && nextButtonX2 < windowVisibleX2) {
+				sameLineCounter++;
+				ImGui::SameLine();
+			}
+			else {
+				sameLineCounter = 0;
+			}
+		}
+
+		//ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
+		//for (int i = 0; i < obj->m_groupCount; i++) {
+		//	int groupInt = obj->m_groups->at(i);
+		//	std::string btnStr = std::to_string(groupInt);
+		//	btnStr += "##RMVGROUP";
+		//
+		//	if (lel->m_parentGroupsDict->objectForKey(groupInt) == obj) {
+		//		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.48f, 0.12f, 0.46f, 1.f));
+		//		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.73f, 0.25f, 0.71f, 1.f));
+		//		if (ImGui::Button(btnStr.c_str())) {
+		//			lel->m_parentGroupsDict->removeObjectForKey(groupInt);
+		//		}
+		//		ImGui::PopStyleColor();
+		//		ImGui::PopStyleColor();
+		//	}
+		//	else {
+		//		if (ImGui::Button(btnStr.c_str())) {
+		//			obj->removeFromGroup(groupInt);
+		//			static_cast<CCArray*>(lel->m_groups[groupInt])->removeObject(obj, false);
+		//		}
+		//	}
+		//	if (i + 1 < obj->m_groupCount)
+		//		ImGui::SameLine();
+		//
+		//}
+		//ImGui::PopStyleVar();
+	}
+	
+
+	if (ImGui::CollapsingHeader("Layer & Z-Order")) {
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.f, 3.f });
+		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
+			bool shouldPopStyle = false;
+			//Color for selected object
+			if (minZLayer == layerIntItems[i] && minZLayer == maxZLayer) {
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
+				ImGui::PushStyleColor(ImGuiCol_Border, { 1.f, 1.f, 0.5f, 1.f });
+				ImGui::PushStyleColor(ImGuiCol_Button, {
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).x + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).y + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).z + 0.3f,
+					ImGui::GetStyleColorVec4(ImGuiCol_Button).w + 0.3f });
+				shouldPopStyle = true;
+			}
+
+			if (ImGui::Button(layerTypeItems[i], { 26, 20 })) {
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+					*objLayer = layerIntItems[i];
+					obj->m_shouldUpdateColorSprite = 1;
+				}
+				groupInfoUpdate();
+			}
+
+			//Pop color for selected object
+			if (shouldPopStyle) {
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+				ImGui::PopStyleColor();
+			}
+
+			if (i < IM_ARRAYSIZE(layerIntItems) - 1)
+				ImGui::SameLine();
+		}
+		ImGui::PopStyleVar();
+
+		auto currentLayer = lel->m_currentLayer;
+		if (int delta = deltaInputIntImproved("EditorL1", maxEl1, minEl1, 1)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer;
+
+				obj->m_editorLayer += delta;
+				int newEl = obj->m_editorLayer;
+				if (newEl < 0) {
+					newEl = 0;
+					obj->m_editorLayer = 0;
+				}
+
+				if (oldEl != newEl) {
+					if (oldEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
+			}
+			groupInfoUpdate();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL1")) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer;
+				int newEl = oldEl;
+				if (currentLayer < 0) 
+					newEl = 0;
+				else 
+					newEl = currentLayer;
+				
+				if (newEl != oldEl) {
+					if (oldEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer2) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
+
+				obj->m_editorLayer = newEl;
+			}
+			groupInfoUpdate();
+		}
+		ImGui::SetItemTooltip("Set to current Editor Layer");
+
+		if (int delta = deltaInputIntImproved("EditorL2", maxEl2, minEl2, 1)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer2;
+
+				obj->m_editorLayer2 += delta;
+				int newEl = obj->m_editorLayer2;
+				if (newEl < 0) {
+					newEl = 0;
+					obj->m_editorLayer2 = 0;
+				}
+
+				if (oldEl != newEl) {
+					if (oldEl != obj->m_editorLayer && oldEl != 0) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer && newEl != 0) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
+			}
+			groupInfoUpdate();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("CL##EditorL2")) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldEl = obj->m_editorLayer2;
+				int newEl = oldEl;
+				if (currentLayer < 0)
+					newEl = 0;
+				else
+					newEl = currentLayer;
+
+				if (newEl != oldEl) {
+					if (oldEl != obj->m_editorLayer && oldEl != 0) ErGui::LAYER_STATE.layers[oldEl].objCount--;
+					if (newEl != obj->m_editorLayer && newEl != 0) ErGui::LAYER_STATE.layers[newEl].objCount++;
+				}
+
+				obj->m_editorLayer2 = newEl;
+			}
+			groupInfoUpdate();
+		}
+		ImGui::SetItemTooltip("Set to current Editor Layer");
+
+
+		if (int delta = deltaInputIntImproved("Z-Order", maxZOrder, minZOrder, 1)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				int oldOrder = obj->m_zOrder;
+				obj->m_zOrder += delta;
+				//stupid default order check
+				if (oldOrder == 1 && delta == -1) obj->m_zOrder = -1;
+				if (oldOrder == -1 && delta == 1) obj->m_zOrder = 1;
+
+				obj->m_shouldUpdateColorSprite = 1;
+			}
+			groupInfoUpdate();
+		}
+
+
+		//if (int delta = deltaInputIntImproved("Z-Layer", maxZLayer, minZLayer, 1)) {
+		//	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		//		int* zLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+		//		*zLayer += delta;
+		//		setMaxMin(*zLayer, 11, -5);
+		//	}
+		//	groupInfoUpdate();
+		//}
+	}
+
+	if (ImGui::CollapsingHeader("Extra")) {
+
+		if (int delta = deltaInputIntImproved("Enter Channel", maxEnterChannel, minEnterChannel, 1)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_enterChannel += delta;
+			}
+			groupInfoUpdate();
+		}
+
+		if (int delta = deltaInputIntImproved("Material", maxMaterial, minMaterial, 1)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_objectMaterial += delta;
+			}
+			groupInfoUpdate();
+		}
+
+		if (firstEgObj) {
+			minOrderValue = firstEgObj->m_ordValue;
+			maxOrderValue = firstEgObj->m_ordValue;
+			minChannel = firstEgObj->m_channelValue;
+			maxChannel = firstEgObj->m_channelValue;
+			minControlID = firstEgObj->m_controlID;
+			maxControlID = firstEgObj->m_controlID;
+
+			if (int delta = deltaInputIntImproved("Order Value", maxOrderValue, minOrderValue, 1)) {
+				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
+					if (egObj) {
+						egObj->m_ordValue += delta;
+						if (egObj->m_ordValue < 0) egObj->m_ordValue = 0;
+					}
+				}
+				groupInfoUpdate();
+			}
+			if (int delta = deltaInputIntImproved("Channel Value", maxChannel, minChannel, 1)) {
+				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
+					if (egObj) {
+						egObj->m_channelValue += delta;
+						if (egObj->m_channelValue < 0) egObj->m_channelValue = 0;
+					}
+				}
+				groupInfoUpdate();
+			}
+			if (int delta = deltaInputIntImproved("ControlID", maxControlID, minControlID, 1)) {
+				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
+					if (egObj) {
+						egObj->m_controlID += delta;
+					}
+				}
+				groupInfoUpdate();
+			}
+		}
+		if (ImGui::Button("Anim")) {
+			lel->m_editorUI->createNewKeyframeAnim();
+		}
+	}
+	
+
+	if (ImGui::CollapsingHeader("Checkboxes")) {
+		ImGui::SeparatorText("Cosmetic");
+		if (ImGui::Checkbox("No Effects", &cb_NoEffects)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_hasNoEffects = cb_NoEffects;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Dont Fade", &cb_DontFade)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isDontFade = cb_DontFade;
+			}
+		}
+	
+		if (ImGui::Checkbox("No Glow", &cb_NoGlow)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_hasNoGlow = cb_NoGlow;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Dont Enter", &cb_DontEnter)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isDontEnter = cb_DontEnter;
+			}
+		}
+	
+		if (ImGui::Checkbox("No Particle", &cb_NoParticle)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_hasNoParticles = cb_NoParticle;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("High Detail", &cb_HighDetail)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isHighDetail = cb_HighDetail;
+				obj->setVisible(!ErGui::showLdm || !obj->m_isHighDetail);
+			}
+		}
+	
+		if (ImGui::Checkbox("No Audio Scale", &cb_NoAudioScale)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_hasNoAudioScale = cb_NoAudioScale;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Hide", &cb_Hide)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isHide = cb_Hide;
+			}
+		}
+
+
+		ImGui::SeparatorText("Parent & Physics");
+		if (ImGui::Checkbox("Group Parent", &cb_GroupParent)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_hasGroupParent = cb_GroupParent;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("No Touch", &cb_NoTouch)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				lel->removeObjectFromSection(obj);
+				obj->m_isNoTouch = cb_NoTouch;
+				obj->setType(obj->m_savedObjectType);
+				obj->saveActiveColors();
+				lel->addToSection(obj);
+			}
+		}
+	
+		if (ImGui::Checkbox("Area Parent", &cb_AreaParent)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_hasAreaParent = cb_AreaParent;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Passable", &cb_Passable)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isPassable = cb_Passable;
+			}
+		}
+	
+		if (ImGui::Checkbox("Dont Boost X", &cb_DontBoostX)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isDontBoostX = cb_DontBoostX;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Extended Collision", &cb_ExtendedCollision)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_hasExtendedCollision = cb_ExtendedCollision;
+			}
+		}
+	
+		if (ImGui::Checkbox("Dont Boost Y", &cb_DontBoostY)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isDontBoostY = cb_DontBoostY;
+			}
+		}
+
+
+		ImGui::SeparatorText("Platformer Only");
+		if (ImGui::Checkbox("Ice Block", &cb_IceBlock)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isIceBlock = cb_IceBlock;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Grip Slope", &cb_GripSlope)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isGripSlope = cb_GripSlope;
+			}
+		}
+	
+		if (ImGui::Checkbox("Non Stick X", &cb_NonStickX)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isNonStickX = cb_NonStickX;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Extra Sticky", &cb_ExtraSticky)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isExtraSticky = cb_ExtraSticky;
+			}
+		}
+	
+		if (ImGui::Checkbox("Non Stick Y", &cb_NonStickY)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isNonStickY = cb_NonStickY;
+			}
+		}
+		ImGui::SameLine(160);
+		if (ImGui::Checkbox("Scale Stick", &cb_ScaleStick)) {
+			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+				obj->m_isScaleStick = cb_ScaleStick;
+			}
+		}
+
+
+		if (firstEgObj) {
+			ImGui::SeparatorText("EffectGameObject");
+			if (ImGui::Checkbox("Single PTouch", &cb_SinglePTouch)) {
+				for (auto obj : CCArrayExt<EffectGameObject*>(objArr)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
+						egObj->m_isSinglePTouch = cb_SinglePTouch;
+					}
+				}
+			}
+			ImGui::SameLine(160);
+			if (ImGui::Checkbox("Preview", &cb_Preview)) {
+				for (auto obj : CCArrayExt<EffectGameObject*>(objArr)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
+						egObj->m_shouldPreview = cb_Preview;
+						lel->tryUpdateSpeedObject(egObj, false);
+					}
+				}
+			}
+
+			if (ImGui::Checkbox("Center Effect", &cb_CenterEffect)) {
+				for (auto obj : CCArrayExt<EffectGameObject*>(objArr)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
+						egObj->m_hasCenterEffect = cb_CenterEffect;
+					}
+				}
+			}
+			ImGui::SameLine(160);
+			if (ImGui::Checkbox("Reverse", &cb_Reverse)) {
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					if (auto egObj = typeinfo_cast<EffectGameObject*>(obj)) {
+						egObj->m_isReverse = cb_Reverse;
+						lel->tryUpdateSpeedObject(egObj, false);
+					}
+				}
+			}
+		}
+	}
+}
+
+void ErGui::renderEditGroupModule() {
+	ImGui::Begin("Group");
+
+	auto lel = LevelEditorLayer::get();
+	auto obj = lel->m_editorUI->m_selectedObject;
+	auto objArr = lel->m_editorUI->m_selectedObjects;
+	if (obj) {
+		renderForObject(obj, lel);
+	}
+	else if (objArr->count() > 0) {
+		renderForArray(objArr, lel);
+	}
+	else {
+		ImGui::Text("Object is not selected...");
+	}
+
+	ImGui::End();
+}
+
+void ErGui::groupInfoUpdate() {
+	auto objArr = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObjects;
+	if (objArr->count() == 0) return;
+
+	ErGui::groupsFromObjArr.clear();
+
+	ErGui::firstObj = static_cast<GameObject*>(objArr->objectAtIndex(0));
+	ErGui::firstEgObj = nullptr;
+
+	ErGui::minEl1 = ErGui::firstObj->m_editorLayer;
+	ErGui::maxEl1 = ErGui::firstObj->m_editorLayer;
+	ErGui::minEl2 = ErGui::firstObj->m_editorLayer2;
+	ErGui::maxEl2 = ErGui::firstObj->m_editorLayer2;
+	ErGui::minZOrder = ErGui::firstObj->m_zOrder;
+	ErGui::maxZOrder = ErGui::firstObj->m_zOrder;
+	ErGui::minZLayer = *reinterpret_cast<int*>(&ErGui::firstObj->m_zLayer);
+	ErGui::maxZLayer = *reinterpret_cast<int*>(&ErGui::firstObj->m_zLayer);
+	ErGui::minEnterChannel = ErGui::firstObj->m_enterChannel;
+	ErGui::maxEnterChannel = ErGui::firstObj->m_enterChannel;
+	ErGui::minMaterial = ErGui::firstObj->m_objectMaterial;
+	ErGui::maxMaterial = ErGui::firstObj->m_objectMaterial;
+
+
+	// ����� ������������ ��� �������.
+	//---Cosmetic
+	ErGui::cb_NoEffects = false;
+	ErGui::cb_DontFade = false;
+	ErGui::cb_NoGlow = false;
+	ErGui::cb_DontEnter = false;
+	ErGui::cb_NoParticle = false;
+	ErGui::cb_HighDetail = false;
+	ErGui::cb_NoAudioScale = false;
+	ErGui::cb_Hide = false;
+
+	//---Parent & Physics
+	ErGui::cb_GroupParent = false;
+	ErGui::cb_NoTouch = false;
+	ErGui::cb_AreaParent = false;
+	ErGui::cb_Passable = false;
+	ErGui::cb_DontBoostX = false;
+	ErGui::cb_ExtendedCollision = false;
+	ErGui::cb_DontBoostY = false;
+
+	//---Platformer Only
+	ErGui::cb_IceBlock = false;
+	ErGui::cb_GripSlope = false;
+	ErGui::cb_NonStickX = false;
+	ErGui::cb_ExtraSticky = false;
+	ErGui::cb_NonStickY = false;
+	ErGui::cb_ScaleStick = false;
+
+	//---Effect Game Object
+	ErGui::cb_SinglePTouch = false;
+	ErGui::cb_Preview = false;
+	ErGui::cb_CenterEffect = false;
+	ErGui::cb_Reverse = false;
+
+	std::map<int, int> groupSet;
+	std::set<int> oldGroupSet;
+
+	for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+		if (obj->m_groups) {
+			for (int i = 0; i < obj->m_groups->size(); i++) {
+				oldGroupSet.insert(obj->m_groups->at(i));
+				groupSet[obj->m_groups->at(i)]++;
+			}
+		}
+
+		int el1 = obj->m_editorLayer;
+		if (el1 < ErGui::minEl1) ErGui::minEl1 = el1;
+		if (el1 > ErGui::maxEl1) ErGui::maxEl1 = el1;
+
+		int el2 = obj->m_editorLayer2;
+		if (el2 < ErGui::minEl2) ErGui::minEl2 = el2;
+		if (el2 > ErGui::maxEl2) ErGui::maxEl2 = el2;
+
+		int zOrder = obj->m_zOrder;
+		if (zOrder < ErGui::minZOrder) ErGui::minZOrder = zOrder;
+		if (zOrder > ErGui::maxZOrder) ErGui::maxZOrder = zOrder;
+
+		int* zLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+		if (*zLayer < ErGui::minZLayer) ErGui::minZLayer = *zLayer;
+		if (*zLayer > ErGui::maxZLayer) ErGui::maxZLayer = *zLayer;
+
+		int enterChannel = obj->m_enterChannel;
+		if (enterChannel < ErGui::minEnterChannel) ErGui::minEnterChannel = enterChannel;
+		if (enterChannel > ErGui::maxEnterChannel) ErGui::maxEnterChannel = enterChannel;
+
+		int objectMaterial = obj->m_objectMaterial;
+		if (objectMaterial < ErGui::minMaterial) ErGui::minMaterial = objectMaterial;
+		if (objectMaterial > ErGui::maxMaterial) ErGui::maxMaterial = objectMaterial;
+
+
+		if (obj->m_hasNoEffects)			ErGui::cb_NoEffects = true;
+		if (obj->m_isDontFade)				ErGui::cb_DontFade = true;
+		if (obj->m_hasNoGlow)				ErGui::cb_NoGlow = true;
+		if (obj->m_isDontEnter)				ErGui::cb_DontEnter = true;
+		if (obj->m_hasNoParticles)			ErGui::cb_NoParticle = true;
+		if (obj->m_isHighDetail)			ErGui::cb_HighDetail = true;
+		if (obj->m_hasNoAudioScale)			ErGui::cb_NoAudioScale = true;
+		if (obj->m_isHide)					ErGui::cb_Hide = true;
+
+		if (obj->m_hasGroupParent)			ErGui::cb_GroupParent = true;
+		if (obj->m_isNoTouch)				ErGui::cb_NoTouch = true;
+		if (obj->m_hasAreaParent)			ErGui::cb_AreaParent = true;
+		if (obj->m_isPassable)				ErGui::cb_Passable = true;
+		if (obj->m_isDontBoostX)			ErGui::cb_DontBoostX = true;
+		if (obj->m_hasExtendedCollision)	ErGui::cb_ExtendedCollision = true;
+		if (obj->m_isDontBoostY)			ErGui::cb_DontBoostY = true;
+
+		if (obj->m_isIceBlock)				ErGui::cb_IceBlock = true;
+		if (obj->m_isGripSlope)				ErGui::cb_GripSlope = true;
+		if (obj->m_isNonStickX)				ErGui::cb_NonStickX = true;
+		if (obj->m_isExtraSticky)			ErGui::cb_ExtraSticky = true;
+		if (obj->m_isNonStickY)				ErGui::cb_NonStickY = true;
+		if (obj->m_isScaleStick)			ErGui::cb_ScaleStick = true;
+
+		if (typeinfo_cast<EffectGameObject*>(obj)) {
+			ErGui::firstEgObj = typeinfo_cast<EffectGameObject*>(obj);
+			if (ErGui::firstEgObj->m_isSinglePTouch)	ErGui::cb_SinglePTouch = true;
+			if (ErGui::firstEgObj->m_shouldPreview)		ErGui::cb_Preview = true;
+			if (ErGui::firstEgObj->m_hasCenterEffect)	ErGui::cb_CenterEffect = true;
+			if (ErGui::firstEgObj->m_isReverse)			ErGui::cb_Reverse = true;
+		}
+	}
+
+
+	if (auto obj = GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedObject) {
+		if (obj->m_groups) {
+			for (int i = 0; i < obj->m_groups->size(); i++) {
+				oldGroupSet.insert(obj->m_groups->at(i));
+				groupSet[obj->m_groups->at(i)]++;
+			}
+		}
+	}
+
+	groupSet.erase(0);
+	for (const auto& obj : groupSet) {
+		ErGui::groupsFromObjArr.push_back(obj);
+	}
+
+	std::sort(ErGui::groupsFromObjArr.begin(), ErGui::groupsFromObjArr.end());
+}
