@@ -249,7 +249,8 @@ void renderStackTool() {
 						}
 					}
 
-					lel->m_undoObjects->removeLastObject();
+					if (lel->m_undoObjects->count() > 0)
+						lel->m_undoObjects->removeLastObject();
 
 					objs->addObjectsFromArray(selected);
 				}

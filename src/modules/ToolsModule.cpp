@@ -5,6 +5,8 @@
 #include "ObjectListModule.hpp"
 #include "EditGroupModule.hpp"
 
+#include "../features/Hovering.hpp"
+
 void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 	float lastButtonX2 = ImGui::GetItemRectMax().x;

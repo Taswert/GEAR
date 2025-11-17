@@ -32,54 +32,6 @@ namespace ErGui {
 		if (value < min) value = min;
 	}
 
-	// To Do: Отказаться от этой функции.
-	void drawSpriteInImGui(CCSprite* tempSprite) {
-		auto quad = tempSprite->getQuad();
-
-		float u_min = std::min({ quad.bl.texCoords.u, quad.br.texCoords.u, quad.tl.texCoords.u, quad.tr.texCoords.u });
-		float u_max = std::max({ quad.bl.texCoords.u, quad.br.texCoords.u, quad.tl.texCoords.u, quad.tr.texCoords.u });
-		float v_min = std::min({ quad.bl.texCoords.v, quad.br.texCoords.v, quad.tl.texCoords.v, quad.tr.texCoords.v });
-		float v_max = std::max({ quad.bl.texCoords.v, quad.br.texCoords.v, quad.tl.texCoords.v, quad.tr.texCoords.v });
-
-		auto texture = tempSprite->getTexture();
-		GLuint textureID = texture->getName();
-		ImTextureID imguiTexture = (ImTextureID)(intptr_t)textureID;
-
-
-		auto drawList = ImGui::GetWindowDrawList();
-
-		if (tempSprite->getContentWidth() > tempSprite->getContentHeight()) {
-			float ratio = tempSprite->getContentWidth() / (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x);
-			float newY = tempSprite->getContentHeight() / ratio;
-			float centerY = (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y) / 2.f;
-
-			drawList->AddImageQuad(
-				textureID,
-				ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y + (newY / 2) - centerY), ImVec2(ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y + (newY / 2) - centerY),
-				ImVec2(ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y - (newY / 2) - centerY), ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y - (newY / 2) - centerY),
-				ImVec2(quad.bl.texCoords.u, quad.bl.texCoords.v), ImVec2(quad.br.texCoords.u, quad.br.texCoords.v),
-				ImVec2(quad.tr.texCoords.u, quad.tr.texCoords.v), ImVec2(quad.tl.texCoords.u, quad.tl.texCoords.v)
-			);
-		}
-		else {
-			float ratio = tempSprite->getContentHeight() / (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y);
-			float newX = tempSprite->getContentWidth() / ratio;
-			float centerX = (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x) / 2.f;
-
-			drawList->AddImageQuad(
-				textureID,
-				ImVec2(ImGui::GetItemRectMin().x - (newX / 2) + centerX, ImGui::GetItemRectMax().y), ImVec2(ImGui::GetItemRectMin().x + (newX / 2) + centerX, ImGui::GetItemRectMax().y),
-				ImVec2(ImGui::GetItemRectMin().x + (newX / 2) + centerX, ImGui::GetItemRectMin().y), ImVec2(ImGui::GetItemRectMin().x - (newX / 2) + centerX, ImGui::GetItemRectMin().y),
-				ImVec2(quad.bl.texCoords.u, quad.bl.texCoords.v), ImVec2(quad.br.texCoords.u, quad.br.texCoords.v),
-				ImVec2(quad.tr.texCoords.u, quad.tr.texCoords.v), ImVec2(quad.tl.texCoords.u, quad.tl.texCoords.v)
-			);
-		}
-	}
-
-	void drawFrameInImGui(CCSpriteFrame* frame) {
-		CCSprite* tempSprite = CCSprite::createWithSpriteFrame(frame);
-		drawSpriteInImGui(tempSprite);
-	}
 	
 	void initImGuiStyling() {
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -440,6 +392,7 @@ namespace ErGui {
 		return CCRect(centerPoint, contentSize);
 	}
 
+	// Tells if there is a hitbox at certain CCPoint
 	bool isHitboxAtPoint(const CCPoint& touch, const CCRect& hitbox) {
 
 		auto center = hitbox.origin;
@@ -458,8 +411,8 @@ namespace ErGui {
 		return false;
 	}
 
+	// Tells if object is in Rectangle Selection zone 
 	bool isObjectGonnaBeSelected(GameObject* obj) {
-		
 		if (!obj || !obj->getParent() || !ErGui::selectRect)
 			return false;
 
@@ -484,39 +437,40 @@ namespace ErGui {
 		}
 	}
 
-	void selectEveryObjectInSquare(GameObject* obj) {
-		if (isObjectGonnaBeSelected(obj)) {
-			auto editorUI = EditorUI::get();
-			auto selectedObject = editorUI->m_selectedObject;
-			auto selectedObjects = editorUI->m_selectedObjects;
-			
-			if (!selectedObject && !selectedObjects && !selectedObjects->count()) {
-				editorUI->selectObject(obj, false);
-			}
-			else if (!selectedObjects) {
-				CCArray* newArr = CCArray::create();
-				obj->selectObject({ 0, 255, 0 });
-				obj->m_isSelected = true;
-				editorUI->m_selectedObjects = newArr;
-				editorUI->m_selectedObjects->addObject(obj);
-				editorUI->m_selectedObject = nullptr;
+	//// wtf is this
+	//void selectEveryObjectInSquare(GameObject* obj) {
+	//	if (isObjectGonnaBeSelected(obj)) {
+	//		auto editorUI = EditorUI::get();
+	//		auto selectedObject = editorUI->m_selectedObject;
+	//		auto selectedObjects = editorUI->m_selectedObjects;
+	//		
+	//		if (!selectedObject && !selectedObjects && !selectedObjects->count()) {
+	//			editorUI->selectObject(obj, false);
+	//		}
+	//		else if (!selectedObjects) {
+	//			CCArray* newArr = CCArray::create();
+	//			obj->selectObject({ 0, 255, 0 });
+	//			obj->m_isSelected = true;
+	//			editorUI->m_selectedObjects = newArr;
+	//			editorUI->m_selectedObjects->addObject(obj);
+	//			editorUI->m_selectedObject = nullptr;
 
-				if (obj->m_linkedGroup) {
-					auto objArr = editorUI->m_editorLayer->getStickyGroup(obj->m_linkedGroup);
-					editorUI->selectObjects(objArr, false);
-				}
-			}
-			else {
-				obj->selectObject({ 0, 255, 0 });
-				obj->m_isSelected = true;
-				editorUI->m_selectedObjects->addObject(obj);
-				editorUI->m_selectedObject = nullptr;
+	//			if (obj->m_linkedGroup) {
+	//				auto objArr = editorUI->m_editorLayer->getStickyGroup(obj->m_linkedGroup);
+	//				editorUI->selectObjects(objArr, false);
+	//			}
+	//		}
+	//		else {
+	//			obj->selectObject({ 0, 255, 0 });
+	//			obj->m_isSelected = true;
+	//			editorUI->m_selectedObjects->addObject(obj);
+	//			editorUI->m_selectedObject = nullptr;
 
-				if (obj->m_linkedGroup) {
-					auto objArr = editorUI->m_editorLayer->getStickyGroup(obj->m_linkedGroup);
-					editorUI->selectObjects(objArr, false);
-				}
-			}
-		}
-	}
+	//			if (obj->m_linkedGroup) {
+	//				auto objArr = editorUI->m_editorLayer->getStickyGroup(obj->m_linkedGroup);
+	//				editorUI->selectObjects(objArr, false);
+	//			}
+	//		}
+	//	}
+	//}
 }

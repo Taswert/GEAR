@@ -9,4 +9,7 @@ namespace ErGui {
 	void hoverObjectLasso(GameObject* obj);
 	void hoverObjectSquare(GameObject* obj);
 	void resetHover(GameObject* obj);
+
+	inline bool isLassoEnabled = false;
+	inline cocos2d::CCDrawNode* editorUIDrawNode = nullptr;
 }

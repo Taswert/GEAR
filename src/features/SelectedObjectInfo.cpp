@@ -4,6 +4,7 @@
 #include <Geode/modify/EditorUI.hpp>
 
 #include "SelectedObjectInfo.hpp"
+#include "SelectFilter.hpp"
 
 using namespace geode::prelude;
 
@@ -33,9 +34,9 @@ std::unordered_set<int> objsWithBlockIDs = {
 	1816, 1815, 3609,
 };
 
-std::string objectTypes[] = {
-	"Solid", "Basic (Unused)", "Hazard", "Inverse Gravity Portal", "Normal Gravity Portal", "Ship Portal", "Cube Portal", "Decoration", "Yellow Jump Pad", "Pink Jump Pad", "Gravity Pad", "Yellow Jump Orb", "Pink Jump Orb", "Gravity Orb", "Inverse Mirror Portal", "Normal Mirror Portal", "Ball Portal", "Regular Size Portal", "Mini Size Portal", "UFO Portal", "Modifier", "Breakable", "Secret Coin", "Dual Portal", "Solo Portal", "Slope", "Wave Portal", "Robot Portal", "Teleport Portal", "Green Orb", "Collectible", "User Coin", "Drop Orb", "Spider Portal", "Red Jump Pad", "Red Jump Orb", "Custom Orb", "Dash Orb", "Gravity Dash Orb", "Collision Object", "Special", "Swing Portal", "Gravity Toggle Portal", "Spider Orb", "Spider Pad", "Enter Effect Object", "Teleport Orb", "Animated Hazard",
-};
+//std::string objectTypes[] = {
+	//"Solid", "Basic (Unused)", "Hazard", "Inverse Gravity Portal", "Normal Gravity Portal", "Ship Portal", "Cube Portal", "Decoration", "Yellow Jump Pad", "Pink Jump Pad", "Gravity Pad", "Yellow Jump Orb", "Pink Jump Orb", "Gravity Orb", "Inverse Mirror Portal", "Normal Mirror Portal", "Ball Portal", "Regular Size Portal", "Mini Size Portal", "UFO Portal", "Modifier", "Breakable", "Secret Coin", "Dual Portal", "Solo Portal", "Slope", "Wave Portal", "Robot Portal", "Teleport Portal", "Green Orb", "Collectible", "User Coin", "Drop Orb", "Spider Portal", "Red Jump Pad", "Red Jump Orb", "Custom Orb", "Dash Orb", "Gravity Dash Orb", "Collision Object", "Special", "Swing Portal", "Gravity Toggle Portal", "Spider Orb", "Spider Pad", "Enter Effect Object", "Teleport Orb", "Animated Hazard",
+//};
 
 void makeLabelFromSet(std::string& selectedInfoString, std::set<int> mySet, const char* nameSingle, const char* nameMult) {
 	if (mySet.size() > 4) {
@@ -187,7 +188,8 @@ void soiLabelUpdate() {
 			if (soiObjectID) selectedInfoString += "Object ID: " + std::to_string(obj->m_objectID) + "\n";
 
 			// Object Type
-			if (soiObjectType) selectedInfoString += "Type: " + objectTypes[(int)obj->m_objectType] + "\n";
+			std::string typeStr = ErGui::objectTypes[(int)obj->m_objectType];
+			if (soiObjectType) selectedInfoString += "Type: " + typeStr + "\n";
 
 			// Target Group ID
 			if (eObj && soiTargetGroup) {

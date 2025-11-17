@@ -3,6 +3,7 @@
 #include <Geode/Geode.hpp>
 #include <imgui-cocos.hpp>
 #include "myUtils.hpp"
+#include "../features/Selection.hpp"
 using namespace geode::prelude;
 
 namespace ErGui {
