@@ -33,6 +33,7 @@
 #include "modules/SettingsModule.hpp"
 #include "modules/ContextMenuModule.hpp"
 #include "modules/EditorUtilsModule.hpp"
+#include "modules/DebugModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
@@ -1009,6 +1010,8 @@ $on_mod(Loaded) {
 				ErGui::renderLayerModule();
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
+
+				ErGui::renderDebugModule();
 
 				//ImGui::Begin("Debug");
 				//ImGui::Text("lucIndex: %d", static_cast<GearEditorUI*>(EditorUI::get())->m_fields->m_lastUnderCursorIndex);

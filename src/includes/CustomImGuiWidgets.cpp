@@ -55,7 +55,7 @@ namespace ErGui {
 		ImGui::BeginGroup();
 		ImGui::PushID(label);
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
-		if (ImGui::DragFloat(label, v, v_speed, v_min, v_max, format, flags)) {
+    if (ImGui::DragFloat("##DragFloat", v, v_speed, v_min, v_max, format, flags)) {
 			value_changed = true;
 		}
 
@@ -73,6 +73,17 @@ namespace ErGui {
 			value_changed = true;
 		}
 		ImGui::PopItemFlag();
+
+    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+    const char* labelEnd = ImGui::FindRenderedTextEnd(label);
+    if (labelEnd > label) {
+      ImVec2 pos = ImGui::GetCursorScreenPos();
+      ImVec2 textSize = ImGui::CalcTextSize(label, labelEnd);
+      ImGui::ItemSize(textSize);
+      ImGui::RenderText(pos, label, labelEnd);
+    }
+
 		ImGui::PopID();
 		ImGui::EndGroup();
 
@@ -91,7 +102,7 @@ namespace ErGui {
 		ImGui::BeginGroup();
 		ImGui::PushID(label);
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
-		if (ImGui::DragFloat(label, v, v_speed, v_min, v_max, format, flags)) {
+    if (ImGui::DragFloat("##DragFloat", v, v_speed, v_min, v_max, format, flags)) {
 			value_changed = true;
 		}
 
@@ -122,6 +133,17 @@ namespace ErGui {
 			value_changed = true;
 		}
 		ImGui::PopItemFlag();
+
+    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+    
+    const char* labelEnd = ImGui::FindRenderedTextEnd(label);
+    if (labelEnd > label) {
+      ImVec2 pos = ImGui::GetCursorScreenPos();
+      ImVec2 textSize = ImGui::CalcTextSize(label, labelEnd);
+      ImGui::ItemSize(textSize);
+      ImGui::RenderText(pos, label, labelEnd);
+    }
+
 		ImGui::PopID();
 		ImGui::EndGroup();
 

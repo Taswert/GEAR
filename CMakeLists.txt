@@ -38,7 +38,7 @@ add_library(${PROJECT_NAME} SHARED
     src/features/Hovering.cpp
     src/includes/CustomImGuiWidgets.cpp
     #"src/includes/AdvancedUndoRedo.cpp" 
-    "src/includes/CopyEGMState.cpp" "src/features/Debug.cpp")
+    "src/includes/CopyEGMState.cpp" "src/features/Debug.cpp" "src/modules/DebugModule.cpp")
 
 
 

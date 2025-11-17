@@ -248,7 +248,7 @@ void renderStackTool() {
 							obj->m_scaleY = scaleY + stackYScale + stackScale;
 						}
 					}
-
+					if (lel->m_undoObjects->count() > 0)
 					lel->m_undoObjects->removeLastObject();
 
 					objs->addObjectsFromArray(selected);

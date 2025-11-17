@@ -64,6 +64,7 @@ void drawTouchSpawnTriggered(EffectGameObject* eObj) {
 	ImGui::Checkbox("Spawn Trigger", &eObj->m_isSpawnTriggered);
 	if (eObj->m_isSpawnTriggered || eObj->m_isTouchTriggered)
 		ImGui::Checkbox("Multi Trigger", &eObj->m_isMultiTriggered);
+	ImGui::EndDisabled();
 }
 
 void drawEasingSettings(EffectGameObject* eObj, float itemsWidth = 0.f) {
@@ -249,6 +250,95 @@ void drawColorSettings(GameObject* obj) {
 	if (eObj->m_objectID == 29) {
 		ImGui::Checkbox("Tint Ground", &eObj->m_tintGround);
 	}
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+	
+ImVec2 dummy = ImVec2(5.f, 0.f);
+
+void SeparatopPlus(const char* txt) {
+	ImGui::Dummy(ImVec2(0.f, dummy.x));
+	ImGui::SeparatorText(txt);
+	ImGui::Dummy(ImVec2(0.f, dummy.y));
+
+	if (dummy.x < 0.f) dummy.x = 0.f;
+	if (dummy.y < 0.f) dummy.y = 0.f;
+}
+
+void drawSpawnParticleSettings(GameObject* obj) {
+
+	auto lel = LevelEditorLayer::get();
+	auto eObj = static_cast<SpawnParticleGameObject*>(obj);
+
+	//ImGui::DragFloat("Top", &dummy.x);
+	//ImGui::DragFloat("Down", &dummy.y);
+
+	ImGui::Text("Particle group");
+	ImGui::SameLine(100.f);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 5.25f);
+	if (ImGui::InputInt("##Particle group", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+	}
+
+	ImGui::Text("Position group");
+	ImGui::SameLine(100.f);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 5.25f);
+	if (ImGui::InputInt("##Position group", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
+	}
+
+	SeparatopPlus("Position");
+
+	ImGui::Text("Offset");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##Offset X", &eObj->m_offset.x);
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##Offset Y", &eObj->m_offset.y);
+
+	ImGui::Text("OffVar");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat(ImVec4(175, 50, 50, 255), "##OffVar X", &eObj->m_offsetVariance.x);
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat(ImVec4(50, 74, 178, 255), "##OffVar Y", &eObj->m_offsetVariance.y);
+
+	SeparatopPlus("Rotatation");
+	
+	ImGui::Text("RotateDir");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat("##RotatateDir", &eObj->m_rotation);
+
+
+	ImGui::Text("RotateVar");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat("##RotationVar", &eObj->m_rotationVariance);
+
+	ImGui::Checkbox("Match Rot", &eObj->m_matchRotation);
+
+	SeparatopPlus("Scale");
+
+	ImGui::Text("Scale");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat("##Scale", &eObj->m_scale, 1.0f, 5.0f, "%.2f", 0.1f);
+	
+	ImGui::Text("ScaleVar");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ErGui::BetterDragFloat("##ScaleVar", &eObj->m_scaleVariance, 1.0f, 5.0f, "%.2f", 0.1f);
+
+	SeparatopPlus("");
+
 
 	drawTouchSpawnTriggered(eObj);
 }
@@ -938,6 +1028,7 @@ void drawTimeWarp(GameObject* obj) {
 	if (ImGui::DragFloat("Time Modifier", &eObj->m_timeWarpTimeMod, 0.05f, .1f, 2.f)) {
 		if (eObj->m_timeWarpTimeMod < 0.1f) eObj->m_timeWarpTimeMod = 0.1f;
 		if (eObj->m_timeWarpTimeMod > 2.f) eObj->m_timeWarpTimeMod = 2.f;
+
 		auto dgl = GameManager::sharedState()->m_levelEditorLayer->m_drawGridLayer;
 		dgl->loadTimeMarkers(dgl->m_timeMarkerString);
 	}
@@ -2199,6 +2290,8 @@ void ErGui::renderEditObjectModule() {
 	}
 	ImGui::End();
 }
+
+
 
 void ErGui::setupTriggersSettings() {
 	triggersMap[31] = drawStartPosSettings;
