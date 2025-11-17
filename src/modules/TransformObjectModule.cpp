@@ -249,9 +249,9 @@ void renderStackTool() {
 						}
 					}
 					if (lel->m_undoObjects->count() > 0)
-						lel->m_undoObjects->removeLastObject();
+					lel->m_undoObjects->removeLastObject();
 
-						objs->addObjectsFromArray(selected);
+					objs->addObjectsFromArray(selected);
 				}
 				lel->m_undoObjects->addObject(UndoObject::createWithArray(objs, UndoCommand::Paste));
 
