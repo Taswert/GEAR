@@ -64,7 +64,6 @@ void drawTouchSpawnTriggered(EffectGameObject* eObj) {
 	ImGui::Checkbox("Spawn Trigger", &eObj->m_isSpawnTriggered);
 	if (eObj->m_isSpawnTriggered || eObj->m_isTouchTriggered)
 		ImGui::Checkbox("Multi Trigger", &eObj->m_isMultiTriggered);
-	ImGui::EndDisabled();
 }
 
 void drawEasingSettings(EffectGameObject* eObj, float itemsWidth = 0.f) {
@@ -1114,44 +1113,19 @@ void drawRandomSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawSpawnParticleSettings(GameObject* obj) {
-	auto eObj = static_cast<SpawnParticleGameObject*>(obj);
+// void drawTimeControlSettings(GameObject* obj) {
+// 	auto eObj = static_cast<TimerTriggerGameObject*>(obj);
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Particle Group", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-	}
+// 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+// 	if (ImGui::InputInt("Item ID", &eObj->m_itemID)) {
+// 		if (eObj->m_itemID < 0) eObj->m_itemID = 0;
+// 		if (eObj->m_itemID > 9999) eObj->m_itemID = 9999;
+// 	}
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Position Group", &eObj->m_centerGroupID)) {
-		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
-		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
-	}
+// 	ImGui::Checkbox("Start / Stop", &eObj->m_stopTimeEnabled);
 
-	ImGui::Text("Offset X / Y");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ImGui::DragFloat("##OFFSETX", &eObj->m_offset.x, 1.f, -100.f, 1.f, "%.0f");
-
-	ImGui::Checkbox("Match Rotation", &eObj->m_matchRotation);
-
-	drawTouchSpawnTriggered(eObj);
-}
-
-void drawTimeControlSettings(GameObject* obj) {
-	auto eObj = static_cast<TimerTriggerGameObject*>(obj);
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Item ID", &eObj->m_itemID)) {
-		if (eObj->m_itemID < 0) eObj->m_itemID = 0;
-		if (eObj->m_itemID > 9999) eObj->m_itemID = 9999;
-	}
-
-	ImGui::Checkbox("Start / Stop", &eObj->m_stopTimeEnabled);
-
-	drawTouchSpawnTriggered(eObj);
-}
+// 	drawTouchSpawnTriggered(eObj);
+// }
 
 void checkpointSettings(GameObject* obj) {
 	auto cObj = static_cast<CheckpointGameObject*>(obj);
@@ -2074,7 +2048,7 @@ void drawCameraStaticSettings(GameObject* obj) {
 	}
 
 	ImGui::Checkbox("Smooth Velocity", &cObj->m_smoothVelocity);
-	if (&cObj->m_smoothVelocity) {
+	if (cObj->m_smoothVelocity) {
 		ImGui::SameLine(150.f);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::DragFloat("Modifier", &cObj->m_velocityModifier, .05f, 0.f, 1.f);
@@ -2094,8 +2068,11 @@ void drawCameraStaticSettings(GameObject* obj) {
 void drawCameraOffsetSettings(GameObject* obj) {
 	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
 
+	float xOffset = cObj->m_moveOffset.x / 3.f;
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ImGui::DragFloat("Offset X", &cObj->m_moveOffset.x, 1.f, -100.f, 100.f, "%.0f");
+	if (ImGui::DragFloat("Offset X", &xOffset, 1.f, -100.f, 100.f, "%.0f")) {
+		cObj->m_moveOffset.x = xOffset * 3.f;
+	}
 	
 	bool xOnly = cObj->m_moveTargetMode == MoveTargetType::XOnly; 
 	if (ImGui::Checkbox("X Only", &xOnly)) {
@@ -2103,8 +2080,11 @@ void drawCameraOffsetSettings(GameObject* obj) {
 		else cObj->m_moveTargetMode = MoveTargetType::Both;
 	}
 
+	float yOffset = cObj->m_moveOffset.y / 3.f;
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ImGui::DragFloat("Offset Y", &cObj->m_moveOffset.y, 1.f, -100.f, 100.f, "%.0f");
+	if (ImGui::DragFloat("Offset Y", &yOffset, 1.f, -100.f, 100.f, "%.0f")) {
+		cObj->m_moveOffset.y = yOffset * 3.f;
+	}
 
 	bool yOnly = cObj->m_moveTargetMode == MoveTargetType::YOnly; 
 	if (ImGui::Checkbox("Y Only", &yOnly)) {
@@ -2130,8 +2110,11 @@ void drawCameraGameplaySettings(GameObject* obj) {
 		eObj->m_moveOffset = ccp(75.f, 75.f);
 	}
 
+	float xOffset = eObj->m_moveOffset.x / 3.f;
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ImGui::DragFloat("Offset X", &eObj->m_moveOffset.x, 1.f, -100.f, 100.f, "%.0f");
+	if (ImGui::DragFloat("Offset X", &xOffset, 1.f, -100.f, 100.f, "%.0f")) {
+		eObj->m_moveOffset.x = xOffset * 3.f;
+	}
 	
 	bool xOnly = eObj->m_moveTargetMode == MoveTargetType::XOnly; 
 	if (ImGui::Checkbox("X Only", &xOnly)) {
@@ -2141,8 +2124,11 @@ void drawCameraGameplaySettings(GameObject* obj) {
 	ImGui::SameLine(150.f);
 	ImGui::Checkbox("Don't Zoom##X", &eObj->m_lockToPlayerX);
 
+	float yOffset = eObj->m_moveOffset.y / 3.f;
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ImGui::DragFloat("Offset Y", &eObj->m_moveOffset.y, 1.f, -100.f, 100.f, "%.0f");
+	if (ImGui::DragFloat("Offset Y", &yOffset, 1.f, -100.f, 100.f, "%.0f")) {
+		eObj->m_moveOffset.y = yOffset * 3.f;
+	}
 
 	bool yOnly = eObj->m_moveTargetMode == MoveTargetType::YOnly; 
 	if (ImGui::Checkbox("Y Only", &yOnly)) {
@@ -2291,8 +2277,6 @@ void ErGui::renderEditObjectModule() {
 	ImGui::End();
 }
 
-
-
 void ErGui::setupTriggersSettings() {
 	triggersMap[31] = drawStartPosSettings;
 	triggersMap[899] = drawColorSettings;
@@ -2314,7 +2298,6 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[1935] = drawTimeWarp;
 	triggersMap[1917] = drawReverseSettings;
 	triggersMap[1912] = drawRandomSettings;
-	//triggersMap[3608] = drawSpawnParticleSettings;
 	//triggersMap[3617] = drawTimeControlSettings;
 	triggersMap[2063] = checkpointSettings;
 	triggersMap[2066] = drawGravitySettings;
