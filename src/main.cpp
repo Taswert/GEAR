@@ -24,6 +24,7 @@
 #include "modules/SettingsModule.hpp"
 #include "modules/ContextMenuModule.hpp"
 #include "modules/EditorUtilsModule.hpp"
+#include "modules/DebugModule.hpp"
 
 #include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>

@@ -8,7 +8,6 @@ project(GEAR VERSION 1.0.0)
 
 add_library(${PROJECT_NAME} SHARED 
     src/main.cpp 
-    
     src/modules/FooterModule.cpp
     src/modules/TransformObjectModule.cpp
     src/modules/EditGroupModule.cpp
@@ -38,7 +37,7 @@ add_library(${PROJECT_NAME} SHARED
     src/features/Hovering.cpp
     src/includes/CustomImGuiWidgets.cpp
     #"src/includes/AdvancedUndoRedo.cpp" 
-    "src/includes/CopyEGMState.cpp" "src/features/Debug.cpp" "src/features/Selection.cpp" "src/classes/GearEditorUI.cpp" "src/classes/GearControls.cpp" "src/features/SelectFilter.cpp")
+    "src/includes/CopyEGMState.cpp" "src/features/Debug.cpp" "src/modules/DebugModule.cpp" "src/features/Selection.cpp" "src/classes/GearEditorUI.cpp" "src/classes/GearControls.cpp" "src/features/SelectFilter.cpp")
 
 
 
