@@ -18,7 +18,7 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/ObjectListModule.cpp
     src/includes/ObjectCategories.cpp
     src/modules/LayerModule.cpp
-    src/modules/EditObjectModule.cpp
+    src/modules/EditObject/EditObjectModule.cpp
     src/modules/ActionHistoryModule.cpp
     src/modules/EditColorModule.cpp
     src/modules/GameWindowModule.cpp
@@ -37,7 +37,25 @@ add_library(${PROJECT_NAME} SHARED
     src/features/Hovering.cpp
     src/includes/CustomImGuiWidgets.cpp
     #"src/includes/AdvancedUndoRedo.cpp" 
-    "src/includes/CopyEGMState.cpp" "src/features/Debug.cpp" "src/modules/DebugModule.cpp" "src/features/Selection.cpp" "src/classes/GearEditorUI.cpp" "src/classes/GearControls.cpp" "src/features/SelectFilter.cpp")
+    src/includes/CopyEGMState.cpp 
+    src/features/Debug.cpp 
+    src/modules/DebugModule.cpp
+    src/features/Selection.cpp
+    src/classes/GearEditorUI.cpp
+    src/classes/GearControls.cpp
+    src/features/SelectFilter.cpp
+    src/modules/EditObject/StandardTriggers.cpp
+    src/modules/EditObject/OtherObjects.cpp
+    src/modules/EditObject/AreaTriggers.cpp
+    src/modules/EditObject/CameraTriggers.cpp
+    src/modules/EditObject/ShaderTriggers.cpp
+    src/modules/EditObject/EnterTriggers.cpp
+    src/modules/EditObject/GroundTriggers.cpp
+    src/modules/EditObject/SongTriggers.cpp
+    src/modules/EditObject/FollowTriggers.cpp
+    src/modules/EditObject/TimeAndKeyframeTriggers.cpp
+    src/modules/EditObject/CountAndItemTriggers.cpp
+ "src/modules/EditObject/CollisionTriggers.cpp")
 
 
 

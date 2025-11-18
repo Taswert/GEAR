@@ -16,7 +16,7 @@
 #include "modules/ToolsModule.hpp"
 #include "modules/ObjectListModule.hpp"
 #include "modules/LayerModule.hpp"
-#include "modules/EditObjectModule.hpp"
+#include "modules/EditObject/EditObjectModule.hpp"
 #include "modules/ActionHistoryModule.hpp"
 #include "modules/EditColorModule.hpp"
 #include "modules/GameWindowModule.hpp"

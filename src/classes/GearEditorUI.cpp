@@ -5,7 +5,7 @@
 
 #include "ObjectListModule.hpp"
 #include "EditGroupModule.hpp"
-#include "EditObjectModule.hpp"
+#include "EditObject/EditObjectModule.hpp"
 #include "SelectFilterModule.hpp"
 #include "ContextMenuModule.hpp"
 #include "../features/Hovering.hpp"
