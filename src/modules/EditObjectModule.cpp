@@ -1841,7 +1841,7 @@ void drawEndTriggerSettings(GameObject* obj, CCArray* objArr) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawItemPersSettings(GameObject* obj) {
+void drawItemPersSettings(GameObject* obj, CCArray* objArr) {
 	auto iObj = static_cast<ItemTriggerGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1858,7 +1858,7 @@ void drawItemPersSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(iObj);
 }
 
-void drawShakeSettings(GameObject* obj) {
+void drawShakeSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1883,7 +1883,7 @@ void gameEventCheckbox(EventLinkTrigger* &eventObject, const char* name, GJGameE
 	}
 }
 
-void drawEventSettings(GameObject* obj) {
+void drawEventSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EventLinkTrigger*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -2057,7 +2057,7 @@ void drawEventSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawCameraZoomSettings(GameObject* obj) {
+void drawCameraZoomSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -2074,7 +2074,7 @@ void drawCameraZoomSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawCameraStaticSettings(GameObject* obj) {
+void drawCameraStaticSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -2125,7 +2125,7 @@ void drawCameraStaticSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawCameraOffsetSettings(GameObject* obj) {
+void drawCameraOffsetSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
 
 	float xOffset = cObj->m_moveOffset.x / 3.f;
@@ -2163,7 +2163,7 @@ void drawCameraOffsetSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawCameraGameplaySettings(GameObject* obj) {
+void drawCameraGameplaySettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	if (ImGui::Button("Default")) {
@@ -2201,7 +2201,7 @@ void drawCameraGameplaySettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawCameraRotateSettings(GameObject* obj) {
+void drawCameraRotateSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -2222,7 +2222,7 @@ void drawCameraRotateSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawCameraEdgeSettings(GameObject* obj) {
+void drawCameraEdgeSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -2244,7 +2244,7 @@ void drawCameraEdgeSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawCameraModeSettings(GameObject* obj) {
+void drawCameraModeSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
 
 	ImGui::Checkbox("Free Mode", &cObj->m_cameraIsFreeMode);
@@ -2263,7 +2263,7 @@ void drawCameraModeSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawCameraGuideSettings(GameObject* obj) {
+void drawCameraGuideSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
