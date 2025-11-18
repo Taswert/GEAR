@@ -100,7 +100,7 @@ void ErGui::saveHueValues(ccColor3B* color) {
 	ImGui::ColorConvertRGBtoHSV(r, g, b, savedHueEO, savedSaturationEO, savedValueEO);
 }
 
-void drawStartPosSettings(GameObject* obj) {
+void drawStartPosSettings(GameObject* obj, CCArray* objArr) {
 	auto spObj = static_cast<StartPosObject*>(obj);
 	auto spSettings = spObj->m_startSettings;
 
@@ -162,7 +162,7 @@ inline bool isOldColorTrigger(GameObject* obj) {
 	else return false;
 }
 
-void drawColorSettings(GameObject* obj) {
+void drawColorSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	std::string btnStr = "##";
@@ -280,7 +280,7 @@ void SeparatopPlus(const char* txt) {
 	if (dummy.y < 0.f) dummy.y = 0.f;
 }
 
-void drawSpawnParticleSettings(GameObject* obj) {
+void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 
 	auto lel = LevelEditorLayer::get();
 	auto eObj = static_cast<SpawnParticleGameObject*>(obj);
@@ -381,8 +381,8 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 	}
 	if (ImGui::Checkbox("Use Direction", &eObj->m_isDirectionFollowSnap360) && eObj->m_useMoveTarget) {
 		eObj->m_useMoveTarget = false;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, EnhancedTriggerObject);
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, EnhancedTriggerObject);
+		//APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, EnhancedTriggerObject);
+		//APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, EnhancedTriggerObject);
 	}
 	ImGui::SameLine(150.f);
 	if (ImGui::Checkbox("Small Step", &eObj->m_smallStep)) {
@@ -525,7 +525,7 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawStopSettings(GameObject* obj) {
+void drawStopSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Text("Stop");
 	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
@@ -544,7 +544,7 @@ void drawStopSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(tcObj);
 }
 
-void drawPulseSettings(GameObject* obj) {
+void drawPulseSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 	
@@ -671,7 +671,7 @@ void drawPulseSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawAlphaSettings(GameObject* obj) {
+void drawAlphaSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
@@ -696,7 +696,7 @@ void drawAlphaSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawToggleSettings(GameObject* obj) {
+void drawToggleSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
@@ -718,7 +718,7 @@ void drawToggleSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawSpawnSettings(GameObject* obj) {
+void drawSpawnSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<SpawnTriggerGameObject*>(obj);
 
@@ -794,7 +794,7 @@ void drawSpawnSettings(GameObject* obj) {
 	
 }
 
-void drawRotateSettings(GameObject* obj) {
+void drawRotateSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
 
@@ -900,7 +900,7 @@ void drawRotateSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawScaleSettings(GameObject* obj) {
+void drawScaleSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<TransformTriggerGameObject*>(obj);
 
@@ -945,7 +945,7 @@ void drawScaleSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawAnimateSettings(GameObject* obj) {
+void drawAnimateSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
@@ -976,7 +976,7 @@ void drawAnimateSettings(GameObject* obj) {
 	}
 }
 
-void drawTouchSettings(GameObject* obj) {
+void drawTouchSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1024,7 +1024,7 @@ void drawTouchSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawVisibilityLink(GameObject* obj) {
+void drawVisibilityLink(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
@@ -1032,7 +1032,7 @@ void drawVisibilityLink(GameObject* obj) {
 	}
 }
 
-void drawReset(GameObject* obj) {
+void drawReset(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
@@ -1041,7 +1041,7 @@ void drawReset(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawUISettings(GameObject* obj) {
+void drawUISettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<UISettingsGameObject*>(obj);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
@@ -1078,7 +1078,7 @@ void drawUISettings(GameObject* obj) {
 	//ImGui::Text(std::to_string(eObj->m_yRef).c_str());
 }
 
-void drawTimeWarp(GameObject* obj) {
+void drawTimeWarp(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	if (ImGui::InputFloat("Time Modifier", &eObj->m_timeWarpTimeMod, 0.f, 0.f, "%.2f")) {
@@ -1091,7 +1091,7 @@ void drawTimeWarp(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawReverseSettings(GameObject* obj) {
+void drawReverseSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Text("Reverse Settings");
 
 	auto eObj = static_cast<UISettingsGameObject*>(obj);
@@ -1099,7 +1099,7 @@ void drawReverseSettings(GameObject* obj) {
 }
 
 
-void drawTextObjectSettings(GameObject* obj) {
+void drawTextObjectSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
     auto eObj = static_cast<TextGameObject*>(obj);
 
@@ -1118,7 +1118,7 @@ void drawTextObjectSettings(GameObject* obj) {
 	}
 }
 
-void drawEnterEffectSettings(GameObject* obj) {
+void drawEnterEffectSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EnterEffectObject*>(obj);
 
 	bool enterOnly = eObj->m_enterType == 1;
@@ -1143,7 +1143,7 @@ void drawEnterEffectSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawRandomSettings(GameObject* obj) {
+void drawRandomSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
@@ -1170,32 +1170,7 @@ void drawRandomSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawSpawnParticleSettings(GameObject* obj) {
-	auto eObj = static_cast<SpawnParticleGameObject*>(obj);
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Particle Group", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-	}
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Position Group", &eObj->m_centerGroupID)) {
-		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
-		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
-	}
-
-	ImGui::Text("Offset X / Y");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ImGui::DragFloat("##OFFSETX", &eObj->m_offset.x, 1.f, -100.f, 1.f, "%.0f");
-
-	ImGui::Checkbox("Match Rotation", &eObj->m_matchRotation);
-
-	drawTouchSpawnTriggered(eObj);
-}
-
-void drawTimeControlSettings(GameObject* obj) {
+void drawTimeControlSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<TimerTriggerGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1206,7 +1181,7 @@ void drawTimeControlSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void checkpointSettings(GameObject* obj) {
+void checkpointSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CheckpointGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1229,7 +1204,7 @@ void checkpointSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void forceBlockSettings(GameObject* obj) {
+void forceBlockSettings(GameObject* obj, CCArray* objArr) {
 	auto fObj = static_cast<ForceBlockGameObject*>(obj);
 
 	if (!fObj->m_forceRange) {
@@ -1252,7 +1227,7 @@ void forceBlockSettings(GameObject* obj) {
 	ImGui::InputInt("Force ID", &fObj->m_forceID);
 }
 
-void drawFollowSettings(GameObject* obj) {
+void drawFollowSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1285,7 +1260,7 @@ void drawFollowSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawFollowPlayerY(GameObject* obj) {
+void drawFollowPlayerY(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
 
@@ -1323,7 +1298,7 @@ void drawFollowPlayerY(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-void drawGravitySettings(GameObject* obj) {
+void drawGravitySettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1366,7 +1341,7 @@ void gameOptionsCheckbox(GameOptionsSetting &setting, const char* label) {
 	}
 }
 
-void drawGameOptionsSettings(GameObject* obj) {
+void drawGameOptionsSettings(GameObject* obj, CCArray* objArr) {
 	auto gObj = static_cast<GameOptionsTrigger*>(obj);
 
 	gameOptionsCheckbox(gObj->m_streakAdditive, "Streak Additive");
@@ -1389,7 +1364,7 @@ void drawGameOptionsSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(gObj);
 }
 
-void drawKeyframeAnimationSettings(GameObject* obj) {
+void drawKeyframeAnimationSettings(GameObject* obj, CCArray* objArr) {
 	auto kObj = static_cast<KeyframeAnimTriggerObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1430,7 +1405,7 @@ void drawKeyframeAnimationSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(kObj);
 }
 
-void drawObjectControlSettings(GameObject* obj) { // smol
+void drawObjectControlSettings(GameObject* obj, CCArray* objArr) { // smol
 	auto cObj = static_cast<ObjectControlGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1442,7 +1417,7 @@ void drawObjectControlSettings(GameObject* obj) { // smol
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawCollisionTriggerSettings(GameObject* obj) {
+void drawCollisionTriggerSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1477,7 +1452,7 @@ void drawCollisionTriggerSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawInstantCollisionSettings(GameObject* obj) {
+void drawInstantCollisionSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1515,7 +1490,7 @@ void drawInstantCollisionSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawCollisionStateSettings(GameObject* obj) {
+void drawCollisionStateSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1534,7 +1509,7 @@ void drawCollisionStateSettings(GameObject* obj) {
 	}
 }
 
-void drawCollisionBlockSettings(GameObject* obj) {
+void drawCollisionBlockSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1550,7 +1525,7 @@ void drawCollisionBlockSettings(GameObject* obj) {
 	}
 }
 
-void drawToggleBlockSettings(GameObject* obj) {
+void drawToggleBlockSettings(GameObject* obj, CCArray* objArr) {
 	auto rObj = static_cast<RingObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1565,7 +1540,7 @@ void drawToggleBlockSettings(GameObject* obj) {
 	ImGui::Checkbox("Spawn Only", &rObj->m_isSpawnOnly);
 }
 
-void drawPlayerControlSettings(GameObject* obj) {
+void drawPlayerControlSettings(GameObject* obj, CCArray* objArr) {
 	auto pObj = static_cast<PlayerControlGameObject*>(obj);
 
 	ImGui::Checkbox("P1", &pObj->m_targetPlayer1);
@@ -1583,7 +1558,7 @@ void drawPlayerControlSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(pObj);
 }
 
-void drawCountSettings(GameObject* obj) {
+void drawCountSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CountTriggerGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1609,7 +1584,7 @@ void drawCountSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawInstantCountSettings(GameObject* obj) {
+void drawInstantCountSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<CountTriggerGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1658,7 +1633,7 @@ void drawInstantCountSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(cObj);
 }
 
-void drawPickupSettings(GameObject* obj) {
+void drawPickupSettings(GameObject* obj, CCArray* objArr) {
 	auto pObj = static_cast<CountTriggerGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1700,7 +1675,7 @@ void drawPickupSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(pObj);
 }
 
-void drawCounterLabelSettings(GameObject* obj) {
+void drawCounterLabelSettings(GameObject* obj, CCArray* objArr) {
 	auto cObj = static_cast<LabelGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
@@ -1762,7 +1737,7 @@ void drawCounterLabelSettings(GameObject* obj) {
 	}
 }
 
-void drawTeleportSettings(GameObject* obj) {
+void drawTeleportSettings(GameObject* obj, CCArray* objArr) {
 	auto tObj = static_cast<TeleportPortalObject*>(obj);
 	
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1838,7 +1813,7 @@ void drawTeleportSettings(GameObject* obj) {
 		drawTouchSpawnTriggered(tObj);	
 }
 
-void drawEndTriggerSettings(GameObject* obj) {
+void drawEndTriggerSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EndTriggerGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
@@ -1895,7 +1870,7 @@ void renderMultiObjectSettings(CCArray* objArr) {
 		localSelectVersion = ErGui::g_selectVersion;
 		objId = static_cast<GameObject*>(objArr->objectAtIndex(0))->m_objectID;
 		if (!triggerSet.contains(objId)) {
-			ImGui::Text("Not a trigger...");
+			objId = 0;
 		}
 		else {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -1906,12 +1881,13 @@ void renderMultiObjectSettings(CCArray* objArr) {
 			}
 		}
 	}
-	else if (objId != 0) {
+	
+	if (objId != 0) {
 		ErGuiSettingsDrawer drawTriggerSettings = triggersMap[objId];
 		(*drawTriggerSettings)(static_cast<GameObject*>(objArr->objectAtIndex(0)), objArr);
 	}
 	else {
-		ImGui::Text("Multi Edit not Compatible...");
+		ImGui::Text("Not Compatible...");
 		ImGui::Text("%d, %d", localSelectVersion, objId);
 	}
 
@@ -1977,6 +1953,7 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[3655] = drawObjectControlSettings;
 	triggersMap[1932] = drawPlayerControlSettings;
 	triggersMap[3600] = drawEndTriggerSettings;
+	triggersMap[3608] = drawSpawnParticleSettings;
 
 	// Teleport
 	triggersMap[3022] = drawTeleportSettings; // teleport trigger

@@ -243,6 +243,7 @@ $on_mod(Loaded) {
 				ErGui::renderLayerModule();
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
+				ErGui::renderDebugModule();
 
 				ImGui::Begin("Debug");
 				ImGui::Text("g_selectionVersion: % d", ErGui::g_selectVersion);
