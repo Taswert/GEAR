@@ -1113,19 +1113,30 @@ void drawRandomSettings(GameObject* obj) {
 	drawTouchSpawnTriggered(eObj);
 }
 
-// void drawTimeControlSettings(GameObject* obj) {
-// 	auto eObj = static_cast<TimerTriggerGameObject*>(obj);
+void drawTimeControlSettings(GameObject* obj) {
+	auto eObj = static_cast<TimerTriggerGameObject*>(obj);
 
-// 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-// 	if (ImGui::InputInt("Item ID", &eObj->m_itemID)) {
-// 		if (eObj->m_itemID < 0) eObj->m_itemID = 0;
-// 		if (eObj->m_itemID > 9999) eObj->m_itemID = 9999;
-// 	}
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::InputInt("Item ID", &eObj->m_itemID)) {
+		if (eObj->m_itemID < 0) eObj->m_itemID = 0;
+		if (eObj->m_itemID > 9999) eObj->m_itemID = 9999;
+	}
 
-// 	ImGui::Checkbox("Start / Stop", &eObj->m_stopTimeEnabled);
+	bool start = eObj->m_controlType == 0;
+	bool stop = eObj->m_controlType == 1;
 
-// 	drawTouchSpawnTriggered(eObj);
-// }
+	if (ImGui::Checkbox("Start", &start)) {
+		stop = false;
+		eObj->m_controlType = 0;
+	}
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox("Stop", &stop)) {
+		start = false;
+		eObj->m_controlType = 1;
+	}
+
+	drawTouchSpawnTriggered(eObj);
+}
 
 void checkpointSettings(GameObject* obj) {
 	auto cObj = static_cast<CheckpointGameObject*>(obj);
@@ -2219,6 +2230,70 @@ void drawCameraGuideSettings(GameObject* obj) {
 	ImGui::DragFloat("Preview Opacity", &cObj->m_previewOpacity, .05f, .0f, 1.f);
 }
 
+void drawSetupMGSettings(GameObject* obj) {
+	auto eObj = static_cast<EffectGameObject*>(obj);
+
+	float yOffset = eObj->m_moveOffset.y / 3.f;
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::DragFloat("Offset Y", &yOffset, 1.f, -100.f, 100.f, "%.0f")) {
+		eObj->m_moveOffset.y = yOffset * 3.f;
+	}
+
+	drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ImGui::DragFloat("Move Time", &eObj->m_duration, .05f, 0.f, 10.f)) {
+		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
+		eObj->m_endPosition = *somePoint;
+	}
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+void drawBGMGSpeedSettings(GameObject* obj) {
+	auto eObj = static_cast<EffectGameObject*>(obj);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Mod X", &eObj->m_moveModX, .05f, 0.f, 1.f);
+
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	ImGui::DragFloat("Mod Y", &eObj->m_moveModY, .05f, 0.f, 1.f);
+
+	drawTouchSpawnTriggered(eObj);
+}
+
+void drawRotateGameplaySettings(GameObject* obj) {
+	auto rObj = static_cast<RotateGameplayGameObject*>(obj);
+
+	ImGui::Checkbox("Edit Velocity", &rObj->m_editVelocity);
+
+	if (rObj->m_editVelocity) {
+		ImGui::SameLine(150.f);
+		ImGui::Checkbox("Override Velocity", &rObj->m_overrideVelocity);
+
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("VelMod X", &rObj->m_velocityModX, .05f, -1.f, 1.f);
+
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		ImGui::DragFloat("VelMod Y", &rObj->m_velocityModY, .05f, -1.f, 1.f);
+	}
+
+	ImGui::Checkbox("Change Channel", &rObj->m_changeChannel);
+
+	if (rObj->m_changeChannel) {
+		ImGui::SameLine(150.f);
+		ImGui::Checkbox("Channel Only", &rObj->m_channelOnly);
+
+		ImGui::InputInt("Target Channel", &rObj->m_targetChannelID);
+	}
+
+	ImGui::Checkbox("Don't Slide", &rObj->m_dontSlide);
+	ImGui::SameLine(150.f);
+	ImGui::Checkbox("Instant Offset", &rObj->m_instantOffset);
+
+	drawTouchSpawnTriggered(rObj);
+}
+
 void renderObjectSettings(GameObject* obj) {
 	int objId = obj->m_objectID;
 	if (triggerSet.contains(objId)) {
@@ -2298,7 +2373,6 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[1935] = drawTimeWarp;
 	triggersMap[1917] = drawReverseSettings;
 	triggersMap[1912] = drawRandomSettings;
-	//triggersMap[3617] = drawTimeControlSettings;
 	triggersMap[2063] = checkpointSettings;
 	triggersMap[2066] = drawGravitySettings;
 	triggersMap[2899] = drawGameOptionsSettings;
@@ -2308,6 +2382,15 @@ void ErGui::setupTriggersSettings() {
 	triggersMap[3600] = drawEndTriggerSettings;
 	triggersMap[1520] = drawShakeSettings;
 	triggersMap[3604] = drawEventSettings;
+	triggersMap[2900] = drawRotateGameplaySettings;
+
+	// Time
+	triggersMap[3617] = drawTimeControlSettings;
+
+	// Background, Ground, Middleground
+	triggersMap[2999] = drawSetupMGSettings;
+	triggersMap[3606] = drawBGMGSpeedSettings;
+	triggersMap[3612] = drawBGMGSpeedSettings;
 
 	// Camera Controls
 	triggersMap[1913] = drawCameraZoomSettings;
