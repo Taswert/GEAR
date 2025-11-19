@@ -23,7 +23,7 @@ void drawEnterEffectSettings(GameObject* obj, CCArray* objArr) {
 	// ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	// ImGui::Combo("Enter Type", &eObj->m_enterType, enterType, IM_ARRAYSIZE(enterType));
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void ErGui::mapEnterTriggers() {

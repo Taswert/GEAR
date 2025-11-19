@@ -1,4 +1,4 @@
-#include "SettingsModule.hpp"
+#include "ViewModule.hpp"
 #include "myUtils.hpp"
 #include "razoomUtils.hpp"
 #include <Geode/modify/EditorUI.hpp>
@@ -28,7 +28,7 @@ bool showCenter;
 bool showDashOrbs;
 bool showMG;
 
-void ErGui::renderSettingsModule() {
+void ErGui::renderViewModule() {
     if (!ImGui::Begin("View")) {
         ImGui::End();
         return;

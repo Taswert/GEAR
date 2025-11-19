@@ -7,4 +7,6 @@ using namespace geode::prelude;
 
 namespace ErGui {
 	void renderDebugModule();
+	
+	inline bool g_showDebugModule = false;
 }

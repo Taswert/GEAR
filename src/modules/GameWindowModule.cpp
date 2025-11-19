@@ -28,18 +28,15 @@ void updateMousePos(ImVec2 drawSize) {
 	ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom = CCPoint(ErGui::gameWindowTouchCoordinatesConvertedToWorld.x, winSize.height - ErGui::gameWindowTouchCoordinatesConvertedToWorld.y);
 }
 
-// Íàïèñàíî íåéðîíêîé, ò.ê. ÿ ïðîñòî óñòàíó ðàçáèðàòüñÿ â ýòîì ñåé÷àñ. Îñíîâà îò DevTools'îâ.
 static GLuint captureScreenToGLTexture() {
-	static GLuint captureTexId = 0;    // õðàíèò ID òåêñòóðû, êóäà ìû êîïèðóåì êàäð
-	static int lastW = 0, lastH = 0;   // ÷òîáû ïåðåñîçäàâàòü òåêñòóðó, åñëè ðàçìåð èçìåíèëñÿ
+	static GLuint captureTexId = 0;
+	static int lastW = 0, lastH = 0;
 
-	// 1) Óçíà¸ì, ñêîëüêî ïèêñåëåé ðåàëüíî ñåé÷àñ íà ýêðàíå (viewport):
 	GLint vp[4];
 	glGetIntegerv(GL_VIEWPORT, vp);
 	int screenW = vp[2];
 	int screenH = vp[3];
 
-	// 2) Åñëè ðàçìåð èçìåíèëñÿ (íàïðèìåð, èãðîê ïîìåíÿë îêíî), ïåðåñîçäà¸ì òåêñòóðó:
 	if (!captureTexId || lastW != screenW || lastH != screenH) {
 		if (captureTexId) {
 			glDeleteTextures(1, &captureTexId);
@@ -48,20 +45,18 @@ static GLuint captureScreenToGLTexture() {
 		glGenTextures(1, &captureTexId);
 		glBindTexture(GL_TEXTURE_2D, captureTexId);
 
-		// Íàñòðàèâàåì ôèëüòðàöèþ — îáû÷íî LINEAR, ÷òîáû ïðåâüþ ïðè ìàñøòàáèðîâàíèè áûëî áûñòðåå «ðàçìûòî»
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		// Ðåçåðâèðóåì ïàìÿòü ïîä áóäóùóþ êîïèþ ýêðàíà
 		glTexImage2D(
-			GL_TEXTURE_2D,		// òàðãåò
-			0,					// LOD
-			GL_RGBA,			// âíóòðåííèé ôîðìàò (RGBA8)
-			screenW, screenH,	// øèðèíà, âûñîòà
-			0,					 // border
-			GL_RGBA,			// ôîðìàò ïîñòóïàþùèõ äàííûõ
-			GL_UNSIGNED_BYTE,	// òèï äàííûõ
-			nullptr				// ïîêà íåò äàííûõ (áóäåò çàïîëíåíî glCopyTexSubImage2D)
+			GL_TEXTURE_2D,
+			0,
+			GL_RGBA,
+			screenW, screenH,
+			0,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			nullptr
 		);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -69,21 +64,16 @@ static GLuint captureScreenToGLTexture() {
 		lastH = screenH;
 	}
 
-	// 3) Ïðèâÿçûâàåì íàøó òåêñòóðó è êîïèðóåì òåêóùèé back-buffer (FBO = 0) â íå¸:
 	glBindTexture(GL_TEXTURE_2D, captureTexId);
-
-	// Êîïèðóåì öåëèêîì ýêðàí (âíèç/âëåâî îò 0,0) â òåêñòóðó, íà÷èíàÿ ñ 0,0
 	glCopyTexSubImage2D(
-		GL_TEXTURE_2D, 0,    // êîòîðûé óðîâåíü mipmap (0) è òàðãåò
-		0, 0,                // ñìåùåíèå (xOffset, yOffset) â òåêñòóðå
-		0, 0,                // êàêàÿ òî÷êà back-buffer áåð¸òñÿ (x, y)
-		screenW, screenH     // ñêîëüêî ïèêñåëåé êîïèðîâàòü
+		GL_TEXTURE_2D, 0,
+		0, 0,
+		0, 0,
+		screenW, screenH
 	);
 
-	// 4) Áèíä ñíîâà î÷èùàåì (íå îáÿçàòåëüíî, íî ïðèíÿòî)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// 5) Âîçâðàùàåì ID òåêñòóðû, êóäà ìû ñêîïèðîâàëè ýêðàí
 	return captureTexId;
 }
 
@@ -111,9 +101,9 @@ void ErGui::renderGameWindow() {
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObjectX ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
 
-	float maxWidth = INPUT_ITEM_WIDTH * 3.5f; // ïðåäåë øèðèíû ñëàéäåðà
-	float minWidth = INPUT_ITEM_WIDTH * 0.5f; // ïðåäåë øèðèíû ñëàéäåðà
-	// Áåð¸ì äîñòóïíóþ øèðèíó è îãðàíè÷èâàåì å¸ maxWidth
+	float maxWidth = INPUT_ITEM_WIDTH * 3.5f;
+	float minWidth = INPUT_ITEM_WIDTH * 0.5f;
+
 	float avail = ImGui::GetContentRegionAvail().x - maxWidth * 0.55f;
 	float sliderWidth = (avail > maxWidth) ? maxWidth : avail;
 	if (sliderWidth < minWidth)
@@ -169,7 +159,7 @@ void ErGui::renderGameWindow() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Constrain By Last Object Y");
 
-	// DEBUG - Ñîõðàíåíèå âüþïîðòà â ïíã, â êîðíå èãðû.
+	// DEBUG
 	//ImGui::SameLine();
 	//if (ImGui::Button("Save Game Viewport Screenshot")) {
 	//	ScreenRenderer::getCCRenderTexture()->saveToFile("viewport.png");
@@ -267,7 +257,7 @@ void ErGui::renderGameWindow() {
 	}
 	else {
 		ErGui::isGameWindowHovered = false;
-		if (ErGui::isGameWindowTouching) { // Íóæíî äëÿ âû÷èñëåíèÿ ïîçèöèè ìûøè, êîãäà îíà íå ïåðåêðûâàåò Image, íî åù¸ íå îòïóùåíî
+		if (ErGui::isGameWindowTouching) {
 			updateMousePos(drawSize);
 		}
 	}

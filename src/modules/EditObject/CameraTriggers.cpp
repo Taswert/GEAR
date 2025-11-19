@@ -7,7 +7,7 @@ void drawCameraZoomSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::DragFloat("Zoom", &eObj->m_zoomValue, .05f, .4f, 3.f);
 
-	drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragFloat("Move Time", &eObj->m_duration, .05f, 0.f, 10.f)) {
@@ -15,58 +15,58 @@ void drawCameraZoomSettings(GameObject* obj, CCArray* objArr) {
 		eObj->m_endPosition = *somePoint;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawCameraStaticSettings(GameObject* obj, CCArray* objArr) {
-	auto cObj = static_cast<CameraTriggerGameObject*>(obj);
+	auto eObj = static_cast<CameraTriggerGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Target Group ID", &cObj->m_centerGroupID)) {
-		if (cObj->m_centerGroupID < 0) cObj->m_centerGroupID = 0;
-		if (cObj->m_centerGroupID > 9999) cObj->m_centerGroupID = 9;
+	if (ImGui::InputInt("Target Group ID", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9;
 	}
 
-	ImGui::Checkbox("Exit Static", &cObj->m_exitStatic);
+	ImGui::Checkbox("Exit Static", &eObj->m_exitStatic);
 	ImGui::SameLine(150.f);
-	ImGui::Checkbox("Exit Instant", &cObj->m_exitInstant);
+	ImGui::Checkbox("Exit Instant", &eObj->m_exitInstant);
 
-	bool xOnly = cObj->m_moveTargetMode == MoveTargetType::XOnly;
-	bool yOnly = cObj->m_moveTargetMode == MoveTargetType::YOnly;
+	bool xOnly = eObj->m_moveTargetMode == MoveTargetType::XOnly;
+	bool yOnly = eObj->m_moveTargetMode == MoveTargetType::YOnly;
 
 	if (ImGui::Checkbox("X Only", &xOnly)) {
-		if (xOnly) cObj->m_moveTargetMode = MoveTargetType::XOnly;
-		else cObj->m_moveTargetMode = MoveTargetType::Both;
+		if (xOnly) eObj->m_moveTargetMode = MoveTargetType::XOnly;
+		else eObj->m_moveTargetMode = MoveTargetType::Both;
 	}
 	ImGui::SameLine(150.f);
 	if (ImGui::Checkbox("Y Only", &yOnly)) {
-		if (yOnly) cObj->m_moveTargetMode = MoveTargetType::YOnly;
-		else cObj->m_moveTargetMode = MoveTargetType::Both;
+		if (yOnly) eObj->m_moveTargetMode = MoveTargetType::YOnly;
+		else eObj->m_moveTargetMode = MoveTargetType::Both;
 	}
 
-	ImGui::Checkbox("Follow", &cObj->m_followObject);
-	if (cObj->m_followObject) {
+	ImGui::Checkbox("Follow", &eObj->m_followObject);
+	if (eObj->m_followObject) {
 		ImGui::SameLine(150.f);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-		ImGui::DragFloat("Easing", &cObj->m_followEasing, .5f, 0.f, 50.f);
+		ImGui::DragFloat("Easing", &eObj->m_followEasing, .5f, 0.f, 50.f);
 	}
 
-	ImGui::Checkbox("Smooth Velocity", &cObj->m_smoothVelocity);
-	if (cObj->m_smoothVelocity) {
+	ImGui::Checkbox("Smooth Velocity", &eObj->m_smoothVelocity);
+	if (eObj->m_smoothVelocity) {
 		ImGui::SameLine(150.f);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-		ImGui::DragFloat("Modifier", &cObj->m_velocityModifier, .05f, 0.f, 1.f);
+		ImGui::DragFloat("Modifier", &eObj->m_velocityModifier, .05f, 0.f, 1.f);
 	}
 
-	drawEasingSettings(cObj, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::DragFloat("Move Time", &cObj->m_duration, .05f, 0.f, 10.f)) {
+	if (ImGui::DragFloat("Move Time", &eObj->m_duration, .05f, 0.f, 10.f)) {
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
-		cObj->m_endPosition = *somePoint;
+		eObj->m_endPosition = *somePoint;
 	}
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawCameraOffsetSettings(GameObject* obj, CCArray* objArr) {
@@ -96,7 +96,7 @@ void drawCameraOffsetSettings(GameObject* obj, CCArray* objArr) {
 		else cObj->m_moveTargetMode = MoveTargetType::Both;
 	}
 
-	drawEasingSettings(cObj, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(cObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragFloat("Move Time", &cObj->m_duration, .05f, 0.f, 10.f)) {
@@ -104,7 +104,7 @@ void drawCameraOffsetSettings(GameObject* obj, CCArray* objArr) {
 		cObj->m_endPosition = *somePoint;
 	}
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawCameraGameplaySettings(GameObject* obj, CCArray* objArr) {
@@ -142,7 +142,7 @@ void drawCameraGameplaySettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SameLine(150.f);
 	ImGui::Checkbox("Don't Zoom##Y", &eObj->m_lockToPlayerY);
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawCameraRotateSettings(GameObject* obj, CCArray* objArr) {
@@ -161,9 +161,9 @@ void drawCameraRotateSettings(GameObject* obj, CCArray* objArr) {
 		cObj->m_endPosition = *somePoint;
 	}
 
-	drawEasingSettings(cObj, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(cObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawCameraEdgeSettings(GameObject* obj, CCArray* objArr) {
@@ -185,7 +185,7 @@ void drawCameraEdgeSettings(GameObject* obj, CCArray* objArr) {
 		lel->updateObjectLabel(obj);
 	}
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawCameraModeSettings(GameObject* obj, CCArray* objArr) {
@@ -204,7 +204,7 @@ void drawCameraModeSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::Checkbox("Disable Grid Snap", &cObj->m_cameraDisableGridSnap);
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawCameraGuideSettings(GameObject* obj, CCArray* objArr) {

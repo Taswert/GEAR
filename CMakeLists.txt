@@ -22,7 +22,7 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/ActionHistoryModule.cpp
     src/modules/EditColorModule.cpp
     src/modules/GameWindowModule.cpp
-    src/modules/SettingsModule.cpp
+    src/modules/ViewModule.cpp
     src/modules/EditorUtilsModule.cpp
     src/includes/razoomUtils.cpp
     src/modules/GlobalDockingView.cpp
@@ -55,7 +55,9 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/EditObject/FollowTriggers.cpp
     src/modules/EditObject/TimeAndKeyframeTriggers.cpp
     src/modules/EditObject/CountAndItemTriggers.cpp
- "src/modules/EditObject/CollisionTriggers.cpp")
+    src/modules/EditObject/CollisionTriggers.cpp 
+    src/modules/PropertiesModule.cpp
+)
 
 
 

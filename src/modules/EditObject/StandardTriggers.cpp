@@ -159,7 +159,7 @@ void drawColorSettings(GameObject* obj, CCArray* objArr) {
 		ImGui::Checkbox("Tint Ground", &eObj->m_tintGround);
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawMoveSettings(GameObject* obj, CCArray* objArr) {
@@ -169,33 +169,44 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS_AND_UPDATE(m_targetGroupID, EnhancedTriggerObject);
+		auto targetGroup = eObj->m_targetGroupID;
+		if (targetGroup < 0)	eObj->m_targetGroupID = 0;
+		if (targetGroup > 9999) eObj->m_targetGroupID = 9999;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS_AND_UPDATE(m_targetGroupID, targetGroup, EnhancedTriggerObject);
 	}
 
 	ImGui::Separator();
 
-	if (ImGui::Checkbox("Use Target", &eObj->m_useMoveTarget) && eObj->m_isDirectionFollowSnap360) {
-		eObj->m_isDirectionFollowSnap360 = false;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, EnhancedTriggerObject);
+	if (ImGui::Checkbox("Use Target", &eObj->m_useMoveTarget)) {
+		auto field = eObj->m_useMoveTarget;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, field, EnhancedTriggerObject);
+		if (eObj->m_isDirectionFollowSnap360) {
+			eObj->m_isDirectionFollowSnap360 = false;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, false, EnhancedTriggerObject);
+		}
 	}
 	ImGui::SameLine(150.f);
 	if (ImGui::Checkbox("Dynamic Mode", &eObj->m_isDynamicMode)) {
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDynamicMode, EnhancedTriggerObject);
+		auto field = eObj->m_isDynamicMode;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDynamicMode, field, EnhancedTriggerObject);
 	}
-	if (ImGui::Checkbox("Use Direction", &eObj->m_isDirectionFollowSnap360) && eObj->m_useMoveTarget) {
-		eObj->m_useMoveTarget = false;
-		//APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, EnhancedTriggerObject);
-		//APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, EnhancedTriggerObject);
+	if (ImGui::Checkbox("Use Direction", &eObj->m_isDirectionFollowSnap360)) {
+		auto field = eObj->m_isDirectionFollowSnap360;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, field, EnhancedTriggerObject);
+		if (eObj->m_useMoveTarget) {
+			eObj->m_useMoveTarget = false;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, false, EnhancedTriggerObject);
+		}
 	}
 	ImGui::SameLine(150.f);
 	if (ImGui::Checkbox("Small Step", &eObj->m_smallStep)) {
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_smallStep, EnhancedTriggerObject);
+		auto field = eObj->m_smallStep;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_smallStep, field, EnhancedTriggerObject);
 	}
 
 	if (ImGui::Checkbox("Silent", &eObj->m_isSilent)) {
-		if (eObj->m_isSilent) {
+		auto field = eObj->m_isSilent;
+		if (field) {
 			eObj->m_lockToCameraX = false;
 			eObj->m_lockToPlayerX = false;
 			eObj->m_lockToCameraY = false;
@@ -209,7 +220,7 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 			}
 		}
 
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isSilent, EnhancedTriggerObject);
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isSilent, field, EnhancedTriggerObject);
 	}
 
 	ImGui::Separator();
@@ -225,23 +236,33 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		if (!eObj->m_lockToCameraX && !eObj->m_lockToPlayerX) {
 			ImGui::InputFloat("Move X", &xStep, 1.f, 10.f, "%.2f");
 			eObj->m_moveOffset.x = xStep * modStep;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.x, EnhancedTriggerObject);
+			auto field = eObj->m_moveOffset.x;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.x, field, EnhancedTriggerObject);
 		}
 		else {
 			if (ImGui::InputFloat("Mod X", &eObj->m_moveModX, 0.1f, 0.5f, "%.3f")) {
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModX, EnhancedTriggerObject);
+				auto field = eObj->m_moveModX;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModX, field, EnhancedTriggerObject);
 			}
 		}
 
 		if (!eObj->m_isSilent) {
-			if (ImGui::Checkbox("Player##Lock-X", &eObj->m_lockToPlayerX) && eObj->m_lockToCameraX) {
-				eObj->m_lockToCameraX = false;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraX, EnhancedTriggerObject);
+			if (ImGui::Checkbox("Player##Lock-X", &eObj->m_lockToPlayerX)) {
+				auto field = eObj->m_lockToPlayerX;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerX, field, EnhancedTriggerObject);
+				if (eObj->m_lockToCameraX) {
+					eObj->m_lockToCameraX = false;
+					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraX, false, EnhancedTriggerObject);
+				}
 			}
 			ImGui::SameLine();
-			if (ImGui::Checkbox("Camera##Lock-X", &eObj->m_lockToCameraX) && eObj->m_lockToPlayerX) {
-				eObj->m_lockToPlayerX = false;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerX, EnhancedTriggerObject);
+			if (ImGui::Checkbox("Camera##Lock-X", &eObj->m_lockToCameraX)) {
+				auto field = eObj->m_lockToCameraX;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraX, field, EnhancedTriggerObject);
+				if (eObj->m_lockToPlayerX) {
+					eObj->m_lockToPlayerX = false;
+					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerX, false, EnhancedTriggerObject);
+				}
 			}
 		}
 
@@ -249,24 +270,34 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		if (!eObj->m_lockToCameraY && !eObj->m_lockToPlayerY) {
 			ImGui::InputFloat("Move Y", &yStep, 1.f, 10.f, "%.2f");
 			eObj->m_moveOffset.y = yStep * modStep;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.y, EnhancedTriggerObject);
+			auto field = eObj->m_moveOffset.y;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.y, field, EnhancedTriggerObject);
 		}
 		else {
 			if (ImGui::InputFloat("Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f")) {
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModY, EnhancedTriggerObject);
+				auto field = eObj->m_moveModY;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModY, field, EnhancedTriggerObject);
 			}
 
 		}
 
 		if (!eObj->m_isSilent) {
-			if (ImGui::Checkbox("Player##Lock-Y", &eObj->m_lockToPlayerY) && eObj->m_lockToCameraY) {
-				eObj->m_lockToCameraY = false;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraY, EnhancedTriggerObject);
+			if (ImGui::Checkbox("Player##Lock-Y", &eObj->m_lockToPlayerY)) {
+				auto field = eObj->m_lockToPlayerY;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerY, field, EnhancedTriggerObject);
+				if (eObj->m_lockToCameraY) {
+					eObj->m_lockToCameraY = false;
+					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraY, false, EnhancedTriggerObject);
+				}
 			}
 			ImGui::SameLine();
-			if (ImGui::Checkbox("Camera##Lock-Y", &eObj->m_lockToCameraY) && eObj->m_lockToPlayerY) {
-				eObj->m_lockToPlayerY = false;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerY, EnhancedTriggerObject);
+			if (ImGui::Checkbox("Camera##Lock-Y", &eObj->m_lockToCameraY)) {
+				auto field = eObj->m_lockToCameraY;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraY, field, EnhancedTriggerObject);
+				if (eObj->m_lockToPlayerY) {
+					eObj->m_lockToPlayerY = false;
+					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerY, false, EnhancedTriggerObject);
+				}
 			}
 		}
 
@@ -274,15 +305,17 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 	else {
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("Center Group ID", &eObj->m_targetModCenterID)) {
+			auto targetModCenter = eObj->m_targetModCenterID;
 			if (eObj->m_targetModCenterID < 0)		eObj->m_targetModCenterID = 0;
 			if (eObj->m_targetModCenterID > 9999)	eObj->m_targetModCenterID = 9999;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_targetModCenterID, EnhancedTriggerObject);
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_targetModCenterID, targetModCenter, EnhancedTriggerObject);
 		}
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputInt("Target Pos ID", &eObj->m_centerGroupID)) {
+			auto centerGroup = eObj->m_centerGroupID;
 			if (eObj->m_centerGroupID < 0)		eObj->m_centerGroupID = 0;
 			if (eObj->m_centerGroupID > 9999)	eObj->m_centerGroupID = 9999;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_centerGroupID, EnhancedTriggerObject);
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_centerGroupID, centerGroup, EnhancedTriggerObject);
 		}
 
 		if (ImGui::Checkbox("P1", &eObj->m_targetPlayer1) && eObj->m_targetPlayer2) {
@@ -306,11 +339,16 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 			float moveDistance = eObj->m_directionModeDistance / modStep;
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			ImGui::InputFloat("Distance", &moveDistance, 1.f, 10.f, "%.2f");
-			eObj->m_directionModeDistance = moveDistance * modStep;
+			auto field = moveDistance * modStep;
+			eObj->m_directionModeDistance = field;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_directionModeDistance, field, EnhancedTriggerObject);
 		}
 		else {
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-			ImGui::Combo("Target Mode", reinterpret_cast<int*>(&eObj->m_moveTargetMode), moveTargetModeItems, IM_ARRAYSIZE(moveTargetModeItems));
+			if (ImGui::Combo("Target Mode", reinterpret_cast<int*>(&eObj->m_moveTargetMode), moveTargetModeItems, IM_ARRAYSIZE(moveTargetModeItems))) {
+				auto field = eObj->m_moveTargetMode;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveTargetMode, field, EnhancedTriggerObject);
+			}
 		}
 	}
 
@@ -320,14 +358,20 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (ImGui::InputFloat("Move Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
 			if (eObj->m_duration < -1.f) eObj->m_duration = -1.f;
+			auto duration = eObj->m_duration;
 			auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
 			eObj->m_endPosition = *somePoint;
+
+			for (auto objInArr : CCArrayExt<EnhancedTriggerObject*>(objArr)) {
+				objInArr->m_duration = duration;
+				objInArr->m_endPosition = *somePoint;
+			}
 		}
 
-		drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
+		drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawStopSettings(GameObject* obj, CCArray* objArr) {
@@ -346,7 +390,7 @@ void drawStopSettings(GameObject* obj, CCArray* objArr) {
 	//tcObj->targetID
 
 
-	drawTouchSpawnTriggered(tcObj);
+	drawTouchSpawnTriggered(tcObj, objArr);
 }
 
 void drawPulseSettings(GameObject* obj, CCArray* objArr) {
@@ -473,7 +517,7 @@ void drawPulseSettings(GameObject* obj, CCArray* objArr) {
 		eObj->m_endPosition = *somePoint;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawAlphaSettings(GameObject* obj, CCArray* objArr) {
@@ -498,7 +542,7 @@ void drawAlphaSettings(GameObject* obj, CCArray* objArr) {
 		if (eObj->m_opacity > 1.f) eObj->m_opacity = 1.f;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawToggleSettings(GameObject* obj, CCArray* objArr) {
@@ -520,7 +564,7 @@ void drawToggleSettings(GameObject* obj, CCArray* objArr) {
 		}
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawSpawnSettings(GameObject* obj, CCArray* objArr) {
@@ -546,7 +590,7 @@ void drawSpawnSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Checkbox("Spawn Ordered", &eObj->m_spawnOrdered);
 	ImGui::Checkbox("Reset Remap", &eObj->m_resetRemap);
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 
 	if (ImGui::CollapsingHeader("Remap Settings")) {
 
@@ -699,10 +743,10 @@ void drawRotateSettings(GameObject* obj, CCArray* objArr) {
 		//ImGui::Text(std::to_string(static_cast<int>(eObj->m_dynamicModeEasing)).c_str());
 	}
 	else {
-		drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
+		drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawScaleSettings(GameObject* obj, CCArray* objArr) {
@@ -745,9 +789,9 @@ void drawScaleSettings(GameObject* obj, CCArray* objArr) {
 		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
 		eObj->m_endPosition = *somePoint;
 	}
-	drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawAnimateSettings(GameObject* obj, CCArray* objArr) {
@@ -765,7 +809,7 @@ void drawAnimateSettings(GameObject* obj, CCArray* objArr) {
 		if (eObj->m_animationID > 9) eObj->m_animationID = 9;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 
 	if (ImGui::CollapsingHeader("-----| Animation IDs hint |-----")) {
 		ImGui::TextWrapped("Big Beast");
@@ -826,7 +870,7 @@ void drawTouchSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SameLine(150.f);
 	ImGui::Checkbox("Dual Mode", &eObj->m_isDualMode);
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawRandomSettings(GameObject* obj, CCArray* objArr) {
@@ -853,7 +897,7 @@ void drawRandomSettings(GameObject* obj, CCArray* objArr) {
 		if (eObj->m_duration > 100.f) eObj->m_duration = 100.f;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
@@ -930,7 +974,7 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	SeparatorPlus("");
 
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawReset(GameObject* obj, CCArray* objArr) {
@@ -939,14 +983,14 @@ void drawReset(GameObject* obj, CCArray* objArr) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 	}
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawReverseSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Text("Reverse Settings");
 
 	auto eObj = static_cast<UISettingsGameObject*>(obj);
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawTimeWarp(GameObject* obj, CCArray* objArr) {
@@ -961,7 +1005,7 @@ void drawTimeWarp(GameObject* obj, CCArray* objArr) {
 		dgl->loadTimeMarkers(dgl->m_timeMarkerString);
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawUISettings(GameObject* obj, CCArray* objArr) {

@@ -5,7 +5,7 @@
 #include "myUtils.hpp"
 #include "CopyEGMState.hpp"
 
-#include "SettingsModule.hpp"
+#include "ViewModule.hpp"
 using namespace geode::prelude;
 
 namespace ErGui {

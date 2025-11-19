@@ -10,7 +10,7 @@ void drawSetupMGSettings(GameObject* obj, CCArray* objArr) {
 		eObj->m_moveOffset.y = yOffset * 3.f;
 	}
 
-	drawEasingSettings(eObj, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragFloat("Move Time", &eObj->m_duration, .05f, 0.f, 10.f)) {
@@ -18,7 +18,7 @@ void drawSetupMGSettings(GameObject* obj, CCArray* objArr) {
 		eObj->m_endPosition = *somePoint;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawBGMGSpeedSettings(GameObject* obj, CCArray* objArr) {
@@ -30,7 +30,7 @@ void drawBGMGSpeedSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::DragFloat("Mod Y", &eObj->m_moveModY, .05f, 0.f, 1.f);
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void ErGui::mapGroundTriggers() {

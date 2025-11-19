@@ -23,7 +23,7 @@ void drawTimeControlSettings(GameObject* obj, CCArray* objArr) {
 		eObj->m_controlType = 1;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawKeyframeAnimationSettings(GameObject* obj, CCArray* objArr) {
@@ -64,7 +64,7 @@ void drawKeyframeAnimationSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::DragFloat("Scale Y Mod", &kObj->m_scaleYMod, .1f, -2.f, 2.f);
 
-	drawTouchSpawnTriggered(kObj);
+	drawTouchSpawnTriggered(kObj, objArr);
 }
 
 void ErGui::mapTimeAndKeyframeTriggers() {

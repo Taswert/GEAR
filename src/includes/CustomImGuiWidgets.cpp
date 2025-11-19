@@ -147,4 +147,13 @@ namespace ErGui {
 
 		return value_changed;
 	}
+
+	void SeparatorPlus(const char* txt) {
+		//const ImVec2 dummy = ImVec2(5.f, 0.f);
+		ImGui::Dummy(ImVec2(0.f, 5.f));
+		ImGui::SeparatorText(txt);
+
+		//if (dummy.x < 0.f) dummy.x = 0.f;
+		//if (dummy.y < 0.f) dummy.y = 0.f;
+	}
 }

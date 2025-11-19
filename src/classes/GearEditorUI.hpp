@@ -40,4 +40,5 @@ public:
 	void ccTouchMoved(CCTouch* touch, CCEvent* event);
 	void ccTouchEnded(CCTouch* touch, CCEvent* event);
 	void deselectAll();
+	void deselectObject(GameObject* obj);
 };

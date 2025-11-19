@@ -24,7 +24,7 @@ void drawCountSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Checkbox("Activate Group", &cObj->m_activateGroup);
 	ImGui::Checkbox("Multi Activate", &cObj->m_multiActivate);
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawInstantCountSettings(GameObject* obj, CCArray* objArr) {
@@ -73,7 +73,7 @@ void drawInstantCountSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::Separator();
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawPickupSettings(GameObject* obj, CCArray* objArr) {
@@ -115,7 +115,7 @@ void drawPickupSettings(GameObject* obj, CCArray* objArr) {
 		ImGui::DragFloat("Multiplier", &pObj->m_pickupTriggerMultiplier, .05f, 0.f, 10.f);
 	}
 
-	drawTouchSpawnTriggered(pObj);
+	drawTouchSpawnTriggered(pObj, objArr);
 }
 
 void drawCounterLabelSettings(GameObject* obj, CCArray* objArr) {
@@ -194,7 +194,7 @@ void drawItemPersSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Checkbox("Target All", &iObj->m_targetAll);
 	ImGui::Checkbox("Reset", &iObj->m_reset);
 
-	drawTouchSpawnTriggered(iObj);
+	drawTouchSpawnTriggered(iObj, objArr);
 }
 
 void ErGui::mapCountAndItemTriggers() {
