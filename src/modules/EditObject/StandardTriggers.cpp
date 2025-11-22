@@ -914,6 +914,9 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	if (ImGui::InputInt("##Particle group", &eObj->m_targetGroupID)) {
 		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
 		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
+
+		int targetGroup = eObj->m_targetGroupID;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_targetGroupID, targetGroup, SpawnParticleGameObject);
 	}
 
 	ImGui::Text("Position group");
@@ -922,6 +925,9 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	if (ImGui::InputInt("##Position group", &eObj->m_centerGroupID)) {
 		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
 		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
+
+		int centerGroup = eObj->m_centerGroupID;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_centerGroupID, centerGroup, SpawnParticleGameObject);
 	}
 
 	SeparatorPlus("Position");
@@ -930,49 +936,77 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##Offset X", &eObj->m_offset.x);
+	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##Offset X", &eObj->m_offset.x)) {
+		float offsetX = eObj->m_offset.x;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.x, offsetX, SpawnParticleGameObject);
+	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##Offset Y", &eObj->m_offset.y);
+	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##Offset Y", &eObj->m_offset.y)) {
+		float offsetY = eObj->m_offset.y;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.y, offsetY, SpawnParticleGameObject);
+	}
 
 	ImGui::Text("OffVar");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat(ImVec4(175, 50, 50, 255), "##OffVar X", &eObj->m_offsetVariance.x);
+	if (ErGui::BetterDragFloat(ImVec4(175, 50, 50, 255), "##OffVar X", &eObj->m_offsetVariance.x)) {
+		float offVarX = eObj->m_offsetVariance.x;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.x, offVarX, SpawnParticleGameObject);
+	}
+	
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat(ImVec4(50, 74, 178, 255), "##OffVar Y", &eObj->m_offsetVariance.y);
+	if (ErGui::BetterDragFloat(ImVec4(50, 74, 178, 255), "##OffVar Y", &eObj->m_offsetVariance.y)) {
+		float offVarY = eObj->m_offsetVariance.y;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.y, offVarY, SpawnParticleGameObject);
+	}
 
 	SeparatorPlus("Rotatation");
 
 	ImGui::Text("RotateDir");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##RotatateDir", &eObj->m_rotation);
+	if (ErGui::BetterDragFloat("##RotatateDir", &eObj->m_rotation)) {
+		float rotateDir = eObj->m_rotation;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_rotation, rotateDir, SpawnParticleGameObject);
+	}
 
 
 	ImGui::Text("RotateVar");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##RotationVar", &eObj->m_rotationVariance);
+	if (ErGui::BetterDragFloat("##RotationVar", &eObj->m_rotationVariance)) {
+		float rotationVar = eObj->m_rotationVariance;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_rotationVariance, rotationVar, SpawnParticleGameObject);
+	}
 
-	ImGui::Checkbox("Match Rot", &eObj->m_matchRotation);
+	if (ImGui::Checkbox("Match Rot", &eObj->m_matchRotation)) {
+		float match = eObj->m_matchRotation;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_matchRotation, match, SpawnParticleGameObject);
+	}
 
 	SeparatorPlus("Scale");
 
 	ImGui::Text("Scale");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##Scale", &eObj->m_scale, 1.0f, 5.0f, "%.2f", 0.1f);
+	if (ErGui::BetterDragFloat("##Scale", &eObj->m_scale, 1.0f, 5.0f, "%.2f", 0.1f)) {
+		float scale = eObj->m_scale;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_scale, scale, SpawnParticleGameObject);
+	}
 
 	ImGui::Text("ScaleVar");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
-	ErGui::BetterDragFloat("##ScaleVar", &eObj->m_scaleVariance, 1.0f, 5.0f, "%.2f", 0.1f);
+	if (ErGui::BetterDragFloat("##ScaleVar", &eObj->m_scaleVariance, 1.0f, 5.0f, "%.2f", 0.1f)) {
+		float scaleVar = eObj->m_scaleVariance;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_scaleVariance, scaleVar, SpawnParticleGameObject);
+	}
 
 	SeparatorPlus("");
-
+	//Как же я заебался эти обоссаные ифы прописывать сука
 
 	drawTouchSpawnTriggered(eObj, objArr);
 }
