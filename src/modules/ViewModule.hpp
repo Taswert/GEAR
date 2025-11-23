@@ -6,7 +6,7 @@
 using namespace geode::prelude;
 
 namespace ErGui {
-	void renderSettingsModule();
+	void renderViewModule();
 
 	inline bool showLdm;
 }

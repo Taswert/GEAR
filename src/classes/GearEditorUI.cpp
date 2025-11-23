@@ -10,6 +10,7 @@
 #include "ContextMenuModule.hpp"
 #include "../features/Hovering.hpp"
 #include "../features/Selection.hpp"
+#include "PropertiesModule.hpp"
 
 void exitEditor() { // EditorUI is already destroyed here
 	// Save Object Config
@@ -89,6 +90,11 @@ GameObject* GearEditorUI::createObject(int p0, CCPoint p1) {
 
 void GearEditorUI::deselectAll() {
 	EditorUI::deselectAll();
+	ErGui::g_selectVersion++;
+}
+
+void GearEditorUI::deselectObject(GameObject* obj) {
+	EditorUI::deselectObject(obj);
 	ErGui::g_selectVersion++;
 }
 
@@ -281,13 +287,13 @@ void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 
 
 	// Lasso color
-	ccColor4F lassoColor = { 0.f, 1.f, 0.f, 1.f };
+	ccColor4F lassoColor = ErGui::g_additiveSelectColor;
 	switch (Mod::get()->getSavedValue<int>("select-mode", 1)) {
 	case 2:	// Subtractive
-		lassoColor = { 1.f, 0.f, 1.f, 1.f };
+		lassoColor = ErGui::g_subtractiveSelectColor;
 		break;
 	case 3: // Intersective
-		lassoColor = { 1.f, 0.6f, 0.f, 1.f };
+		lassoColor = ErGui::g_intersectiveSelectColor;
 		break;
 	case 1: // Additive
 	default:

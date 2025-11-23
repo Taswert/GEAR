@@ -2,109 +2,109 @@
 using namespace ErGui;
 
 void drawCollisionTriggerSettings(GameObject* obj, CCArray* objArr) {
-	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
-	ImGui::Checkbox("P1", &cObj->m_targetPlayer1);
+	ImGui::Checkbox("P1", &eObj->m_targetPlayer1);
 	ImGui::SameLine();
-	ImGui::Checkbox("P2", &cObj->m_targetPlayer2);
+	ImGui::Checkbox("P2", &eObj->m_targetPlayer2);
 	ImGui::SameLine();
-	ImGui::Checkbox("PP", &cObj->m_followCPP);
+	ImGui::Checkbox("PP", &eObj->m_followCPP);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("BlockA ID", &cObj->m_itemID)) {
-		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
-		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+	if (ImGui::InputInt("BlockA ID", &eObj->m_itemID)) {
+		if (eObj->m_itemID < 0) eObj->m_itemID = 0;
+		if (eObj->m_itemID > 9999) eObj->m_itemID = 9999;
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("BlockB ID", &cObj->m_itemID2)) {
-		if (cObj->m_itemID2 < 0) cObj->m_itemID2 = 0;
-		if (cObj->m_itemID2 > 9999) cObj->m_itemID2 = 9999;
+	if (ImGui::InputInt("BlockB ID", &eObj->m_itemID2)) {
+		if (eObj->m_itemID2 < 0) eObj->m_itemID2 = 0;
+		if (eObj->m_itemID2 > 9999) eObj->m_itemID2 = 9999;
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Target ID", &cObj->m_targetGroupID)) {
-		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
-		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+	if (ImGui::InputInt("Target ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 		lel->updateObjectLabel(obj);
 	}
 
-	ImGui::Checkbox("Activate Group", &cObj->m_activateGroup);
-	ImGui::Checkbox("Trigger On Exit", &cObj->m_triggerOnExit);
+	ImGui::Checkbox("Activate Group", &eObj->m_activateGroup);
+	ImGui::Checkbox("Trigger On Exit", &eObj->m_triggerOnExit);
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawInstantCollisionSettings(GameObject* obj, CCArray* objArr) {
-	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("BlockA ID", &cObj->m_itemID)) {
-		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
-		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+	if (ImGui::InputInt("BlockA ID", &eObj->m_itemID)) {
+		if (eObj->m_itemID < 0) eObj->m_itemID = 0;
+		if (eObj->m_itemID > 9999) eObj->m_itemID = 9999;
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("BlockB ID", &cObj->m_itemID2)) {
-		if (cObj->m_itemID2 < 0) cObj->m_itemID2 = 0;
-		if (cObj->m_itemID2 > 9999) cObj->m_itemID2 = 9999;
+	if (ImGui::InputInt("BlockB ID", &eObj->m_itemID2)) {
+		if (eObj->m_itemID2 < 0) eObj->m_itemID2 = 0;
+		if (eObj->m_itemID2 > 9999) eObj->m_itemID2 = 9999;
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("True ID", &cObj->m_targetGroupID)) {
-		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
-		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+	if (ImGui::InputInt("True ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 		lel->updateObjectLabel(obj);
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("False ID", &cObj->m_centerGroupID)) {
-		if (cObj->m_centerGroupID < 0) cObj->m_centerGroupID = 0;
-		if (cObj->m_centerGroupID > 9999) cObj->m_centerGroupID = 9999;
+	if (ImGui::InputInt("False ID", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
 	}
 
-	ImGui::Checkbox("P1", &cObj->m_targetPlayer1);
+	ImGui::Checkbox("P1", &eObj->m_targetPlayer1);
 	ImGui::SameLine();
-	ImGui::Checkbox("P2", &cObj->m_targetPlayer2);
+	ImGui::Checkbox("P2", &eObj->m_targetPlayer2);
 	ImGui::SameLine();
-	ImGui::Checkbox("PP", &cObj->m_followCPP);
+	ImGui::Checkbox("PP", &eObj->m_followCPP);
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawCollisionStateSettings(GameObject* obj, CCArray* objArr) {
-	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("State On", &cObj->m_targetGroupID)) {
-		if (cObj->m_targetGroupID < 0) cObj->m_targetGroupID = 0;
-		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
+	if (ImGui::InputInt("State On", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 		lel->updateObjectLabel(obj);
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("State Off", &cObj->m_centerGroupID)) {
-		if (cObj->m_centerGroupID < 0) cObj->m_centerGroupID = 0;
-		if (cObj->m_centerGroupID > 9999) cObj->m_centerGroupID = 9999;
+	if (ImGui::InputInt("State Off", &eObj->m_centerGroupID)) {
+		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
+		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
 		lel->updateObjectLabel(obj);
 	}
 }
 
 void drawCollisionBlockSettings(GameObject* obj, CCArray* objArr) {
-	auto cObj = static_cast<EffectGameObject*>(obj);
+	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Block ID", &cObj->m_itemID)) {
-		if (cObj->m_itemID < 0) cObj->m_itemID = 0;
-		if (cObj->m_itemID > 9999) cObj->m_itemID = 9999;
+	if (ImGui::InputInt("Block ID", &eObj->m_itemID)) {
+		if (eObj->m_itemID < 0) eObj->m_itemID = 0;
+		if (eObj->m_itemID > 9999) eObj->m_itemID = 9999;
 		lel->updateObjectLabel(obj);
 	}
 
-	if (ImGui::Checkbox("Dynamic Block", &cObj->m_isDynamicBlock)) {
+	if (ImGui::Checkbox("Dynamic Block", &eObj->m_isDynamicBlock)) {
 		lel->updateObjectLabel(obj);
 	}
 }

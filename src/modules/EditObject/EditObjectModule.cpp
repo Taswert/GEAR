@@ -22,23 +22,37 @@
 using namespace ErGui;
 
 
-void ErGui::drawTouchSpawnTriggered(EffectGameObject* eObj) {
-	ImGui::Checkbox("Touch Trigger", &eObj->m_isTouchTriggered);
-	ImGui::Checkbox("Spawn Trigger", &eObj->m_isSpawnTriggered);
+void ErGui::drawTouchSpawnTriggered(EffectGameObject* eObj, CCArray* objArr) {
+	if (ImGui::Checkbox("Touch Trigger", &eObj->m_isTouchTriggered)) {
+		auto field = eObj->m_isTouchTriggered;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isTouchTriggered, field, EffectGameObject);
+	}
+	if (ImGui::Checkbox("Spawn Trigger", &eObj->m_isSpawnTriggered)) {
+		auto field = eObj->m_isSpawnTriggered;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isSpawnTriggered, field, EffectGameObject);
+	}
 
 	ImGui::BeginDisabled(!(eObj->m_isSpawnTriggered || eObj->m_isTouchTriggered));
-	ImGui::Checkbox("Multi Trigger", &eObj->m_isMultiTriggered);
+	if (ImGui::Checkbox("Multi Trigger", &eObj->m_isMultiTriggered)) {
+		auto field = eObj->m_isMultiTriggered;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isMultiTriggered, field, EffectGameObject);
+	}
 	ImGui::EndDisabled();
 }
 
-void ErGui::drawEasingSettings(EffectGameObject* eObj, float itemsWidth) {
+void ErGui::drawEasingSettings(EffectGameObject* eObj, CCArray* objArr, float itemsWidth) {
 	if (itemsWidth != 0) ImGui::SetNextItemWidth(itemsWidth);
-	ImGui::Combo("Easing Type", reinterpret_cast<int*>(&eObj->m_easingType), easingItems, IM_ARRAYSIZE(easingItems));
+	if (ImGui::Combo("Easing Type", reinterpret_cast<int*>(&eObj->m_easingType), easingItems, IM_ARRAYSIZE(easingItems))) {
+		auto field = eObj->m_easingType;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_easingType, field, EffectGameObject);
+	}
 	if (static_cast<int>(eObj->m_easingType) > 0 && static_cast<int>(eObj->m_easingType) < 7) {
 		if (itemsWidth != 0) ImGui::SetNextItemWidth(itemsWidth);
 		if (ImGui::InputFloat("Easing Rate", &eObj->m_easingRate, 0.1f, 0.5f, "%.2f")) {
-			if (eObj->m_easingRate < 0.1f) eObj->m_easingRate = 0.1f;
-			if (eObj->m_easingRate > 20.f) eObj->m_easingRate = 20.f;
+			auto field = eObj->m_easingRate;
+			if (field < 0.1f) eObj->m_easingRate = 0.1f;
+			if (field > 20.f) eObj->m_easingRate = 20.f;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_easingRate, field, EffectGameObject);
 		}
 	}
 }
@@ -55,14 +69,6 @@ bool ErGui::isOldColorTrigger(GameObject* obj) {
 	else return false;
 }
 
-void ErGui::SeparatorPlus(const char* txt) {
-	ImGui::Dummy(ImVec2(0.f, dummy.x));
-	ImGui::SeparatorText(txt);
-	ImGui::Dummy(ImVec2(0.f, dummy.y));
-
-	//if (dummy.x < 0.f) dummy.x = 0.f;
-	//if (dummy.y < 0.f) dummy.y = 0.f;
-}
 
 
 void renderObjectSettings(GameObject* obj) {
@@ -93,7 +99,7 @@ void renderObjectSettings(GameObject* obj) {
 
 void renderMultiObjectSettings(CCArray* objArr) {
 	auto editorUI = EditorUI::get();
-	static int localSelectVersion = ErGui::g_selectVersion;
+	static int localSelectVersion = -1;
 	static int objId = 0;
 
 	if (localSelectVersion != ErGui::g_selectVersion) {

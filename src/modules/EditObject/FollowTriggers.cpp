@@ -31,7 +31,7 @@ void drawFollowSettings(GameObject* obj, CCArray* objArr) {
 		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawFollowPlayerY(GameObject* obj, CCArray* objArr) {
@@ -69,7 +69,7 @@ void drawFollowPlayerY(GameObject* obj, CCArray* objArr) {
 		eObj->m_endPosition = *somePoint;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 

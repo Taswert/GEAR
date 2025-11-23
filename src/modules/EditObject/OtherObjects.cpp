@@ -14,7 +14,7 @@ void drawShakeSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::DragFloat("Duration", &eObj->m_duration, .05f, 0.f, 2.f);
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawRotateGameplaySettings(GameObject* obj, CCArray* objArr) {
@@ -46,7 +46,7 @@ void drawRotateGameplaySettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SameLine(150.f);
 	ImGui::Checkbox("Instant Offset", &rObj->m_instantOffset);
 
-	drawTouchSpawnTriggered(rObj);
+	drawTouchSpawnTriggered(rObj, objArr);
 }
 
 void gameEventCheckbox(EventLinkTrigger*& eventObject, const char* name, GJGameEvent event) {
@@ -230,7 +230,7 @@ void drawEventSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::Separator();
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawGravitySettings(GameObject* obj, CCArray* objArr) {
@@ -254,7 +254,7 @@ void drawGravitySettings(GameObject* obj, CCArray* objArr) {
 		eObj->m_targetPlayer2 = false;
 	}
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawPlayerControlSettings(GameObject* obj, CCArray* objArr) {
@@ -272,7 +272,7 @@ void drawPlayerControlSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SameLine(150.f);
 	ImGui::Checkbox("Stop Slide", &pObj->m_stopSlide);
 
-	drawTouchSpawnTriggered(pObj);
+	drawTouchSpawnTriggered(pObj, objArr);
 }
 
 void gameOptionsCheckbox(GameOptionsSetting& setting, const char* label) {
@@ -314,7 +314,7 @@ void drawGameOptionsSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::DragFloat("Respawn Time", &gObj->m_respawnTime, .05f, .1f, 10.f);
 
-	drawTouchSpawnTriggered(gObj);
+	drawTouchSpawnTriggered(gObj, objArr);
 }
 
 void drawTeleportSettings(GameObject* obj, CCArray* objArr) {
@@ -390,7 +390,7 @@ void drawTeleportSettings(GameObject* obj, CCArray* objArr) {
 	if (obj->m_objectID == 747 || obj->m_objectID == 2902 || obj->m_objectID == 3027)
 		ImGui::Checkbox("Multi Activate", &tObj->m_isMultiActivate);
 	else
-		drawTouchSpawnTriggered(tObj);
+		drawTouchSpawnTriggered(tObj, objArr);
 }
 
 void drawEndTriggerSettings(GameObject* obj, CCArray* objArr) {
@@ -412,7 +412,7 @@ void drawEndTriggerSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Checkbox("No SFX", &eObj->m_noSFX);
 	ImGui::Checkbox("Instant", &eObj->m_instant);
 
-	drawTouchSpawnTriggered(eObj);
+	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawTextObjectSettings(GameObject* obj, CCArray* objArr) {
@@ -454,7 +454,7 @@ void drawCheckpointSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::InputInt("Respawn ID", &cObj->m_respawnID);
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawObjectControlSettings(GameObject* obj, CCArray* objArr) { // smol
@@ -466,7 +466,7 @@ void drawObjectControlSettings(GameObject* obj, CCArray* objArr) { // smol
 		if (cObj->m_targetGroupID > 9999) cObj->m_targetGroupID = 9999;
 	}
 
-	drawTouchSpawnTriggered(cObj);
+	drawTouchSpawnTriggered(cObj, objArr);
 }
 
 void drawForceBlockSettings(GameObject* obj, CCArray* objArr) {

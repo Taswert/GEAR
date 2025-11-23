@@ -8,18 +8,16 @@
 #include "misc/cpp/imgui_stdlib.h"
 using namespace geode::prelude;
 
-#define APPLY_FIELDS_TO_OTHER_TRIGGERS(m_field, TriggerClass)	\
-auto myField = eObj->m_field;									\
-for (auto objInArr : CCArrayExt<TriggerClass*>(objArr)) {		\
-	objInArr->m_field = myField;								\
+#define APPLY_FIELDS_TO_OTHER_TRIGGERS(m_field, valueToSet, TriggerClass)	\
+for (auto objInArr : CCArrayExt<TriggerClass*>(objArr)) {					\
+	objInArr->m_field = valueToSet;											\
 }
 
 // LevelEditorLayer should be defined as lel at this point pls
-#define APPLY_FIELDS_TO_OTHER_TRIGGERS_AND_UPDATE(m_field, TriggerClass)	\
-auto myField = eObj->m_field;												\
-for (auto objInArr : CCArrayExt<TriggerClass*>(objArr)) {					\
-	objInArr->m_field = myField;											\
-	lel->updateObjectLabel(objInArr);										\
+#define APPLY_FIELDS_TO_OTHER_TRIGGERS_AND_UPDATE(m_field, valueToSet, TriggerClass)	\
+for (auto objInArr : CCArrayExt<TriggerClass*>(objArr)) {								\
+	objInArr->m_field = valueToSet;														\
+	lel->updateObjectLabel(objInArr);													\
 }
 
 namespace ErGui {
@@ -77,8 +75,8 @@ namespace ErGui {
 	inline float savedHueEO, savedSaturationEO, savedValueEO;
 
 	
-	void drawTouchSpawnTriggered(EffectGameObject* eObj);
-	void drawEasingSettings(EffectGameObject* eObj, float itemsWidth = 0.f);
+	void drawTouchSpawnTriggered(EffectGameObject* eObj, CCArray* objArr);
+	void drawEasingSettings(EffectGameObject* eObj, CCArray* objArr, float itemsWidth = 0.f);
 
 	void saveHueValues(ccColor3B* color);
 	bool isOldColorTrigger(GameObject* obj);
@@ -86,7 +84,5 @@ namespace ErGui {
 	void setupTriggersSettings();
 	void renderEditObjectModule();
 
-
-	inline const ImVec2 dummy = ImVec2(5.f, 0.f);
 	void SeparatorPlus(const char* txt);
 }

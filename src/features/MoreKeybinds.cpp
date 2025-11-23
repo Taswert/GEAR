@@ -21,7 +21,8 @@ void releaseEditorUIKeys() {
 class $modify(CCEGLView) {
 	void pollEvents() {
 		auto& io = ImGui::GetIO();
-		if (io.WantCaptureMouse && !editorUIHoldingKeys.empty()) {
+		auto lel = LevelEditorLayer::get();
+		if (io.WantCaptureMouse && !editorUIHoldingKeys.empty() && lel && lel->m_playbackMode != PlaybackMode::Playing) {
 			releaseEditorUIKeys();
 		}
 	}

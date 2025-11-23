@@ -8,6 +8,7 @@
 #include "IconsMaterialDesignIcons.h"
 #include "myUtils.hpp"
 #include "Geode/modify/EditorUI.hpp"
+#include "PropertiesModule.hpp"
 
 using namespace geode::prelude;
 
@@ -202,20 +203,19 @@ class $modify(LevelEditorLayer) {
             }
 
             // Hovering
+            auto isHovered = static_cast<ErGui::GearGameObject*>(obj)->m_fields->m_isHovered;
             if (geode::Mod::get()->getSavedValue<bool>("hovering-selects", true)) {
-                if (static_cast<ErGui::GearGameObject*>(obj)->m_fields->m_isHovered) {
-
-
-                    //if (obj->m_colorSprite)
-                    //    obj->m_colorSprite->setColor({ 255, 255, 0 });
-                    //obj->setColor({ 255, 255, 0 });
-                    obj->setObjectColor({ 255, 255, 0 });
+                if (isHovered) {
+                    obj->setObjectColor(ErGui::g_hoveredObjectColor);
                     if (obj->m_colorSprite)
-                        obj->m_colorSprite->setColor({ 255, 255, 0 });
-                    //for (auto childSpr : CCArrayExt<CCSprite*>(obj->getChildren())) {
-                    //    childSpr->setColor({ 255, 255, 0 });
-                    //}
+                        obj->m_colorSprite->setColor(ErGui::g_hoveredObjectColor);
                 }
+            }
+
+            if (obj->m_isSelected && !isHovered) {
+                obj->setObjectColor(ErGui::g_selectedObjectColor);
+                if (obj->m_colorSprite)
+                    obj->m_colorSprite->setColor(ErGui::g_selectedObjectColor);
             }
         }
     }

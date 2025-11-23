@@ -21,20 +21,18 @@
 #include "modules/EditColorModule.hpp"
 #include "modules/GameWindowModule.hpp"
 #include "modules/GlobalDockingView.hpp"
-#include "modules/SettingsModule.hpp"
+#include "modules/ViewModule.hpp"
 #include "modules/ContextMenuModule.hpp"
 #include "modules/EditorUtilsModule.hpp"
 #include "modules/DebugModule.hpp"
+#include "modules/PropertiesModule.hpp"
 
-#include "includes/ObjectCategories.hpp"
 #include <matjson.hpp>
 #include <matjson/reflect.hpp>
 #include <matjson/std.hpp>
 #include <matjson/stl_serialize.hpp>
 
 #include <Geode/Result.hpp>
-#include "CopyEGMState.hpp"
-#include "features/Hovering.hpp"
 //#include "AdvancedUndoRedo.hpp"
 
 using namespace geode::prelude;
@@ -51,6 +49,7 @@ class $modify(CCEGLView) {
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 
+			// Horizontal Scroll
 			if (msg.message == WM_MOUSEHWHEEL) {
 				CCDirector::sharedDirector()->getMouseDispatcher()->dispatchScrollMSG(0, GET_WHEEL_DELTA_WPARAM(msg.wParam) * 0.4f * -1);
 				continue;
@@ -148,8 +147,6 @@ class $modify(CCTouchDispatcher) {
 		auto* touch = static_cast<CCTouch*>(touches->anyObject());
 		if (!touch) return;
 
-		
-
 		if (type == CCTOUCHBEGAN && ErGui::isGameWindowHovered) {
 			ErGui::isGameWindowTouching = true;
 		}
@@ -166,7 +163,6 @@ class $modify(CCTouchDispatcher) {
 		if (type == CCTOUCHENDED || type == CCTOUCHCANCELLED) {
 			ErGui::isGameWindowTouching = false;
 		}
-
 		
 		CCTouchDispatcher::touches(touches, event, type);
 	}
@@ -239,15 +235,13 @@ $on_mod(Loaded) {
 				ErGui::renderEditObjectModule();
 				ErGui::renderActionHistoryModule();
 				ErGui::renderEditColor();
-				ErGui::renderSettingsModule();
+				ErGui::renderViewModule();
 				ErGui::renderLayerModule();
 				ErGui::renderGameWindow();
 				ErGui::renderContextMenu();
-				ErGui::renderDebugModule();
+				ErGui::renderPropertiesModule();
 
-				ImGui::Begin("Debug");
-				ImGui::Text("g_selectionVersion: % d", ErGui::g_selectVersion);
-				ImGui::End();
+				ErGui::renderDebugModule();
 
 				//ImGui::ShowStyleEditor();
 
