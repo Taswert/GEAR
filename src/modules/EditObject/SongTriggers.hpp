@@ -1,5 +1,5 @@
 #pragma once
-#include "EditObject/EditObjectModule.hpp"
+#include "EditObjectModule.hpp"
 
 namespace ErGui {
 	void mapSongTriggers();
