@@ -169,9 +169,10 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
+		if (eObj->m_targetGroupID < 0)	eObj->m_targetGroupID = 0;
+		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
 		auto targetGroup = eObj->m_targetGroupID;
-		if (targetGroup < 0)	eObj->m_targetGroupID = 0;
-		if (targetGroup > 9999) eObj->m_targetGroupID = 9999;
+		lel->updateObjectLabel(eObj);
 		APPLY_FIELDS_TO_OTHER_TRIGGERS_AND_UPDATE(m_targetGroupID, targetGroup, EnhancedTriggerObject);
 	}
 

@@ -182,6 +182,9 @@ $on_mod(Loaded) {
 	//ErGui::objectCfg = data;
 	//log::info("Offset DrawGridLayer::m_gridSize = {} bytes", offsetof(DrawGridLayer, DrawGridLayer::m_gridSize));
 
+
+	static auto isEditorEnabled = &GameManager::sharedState()->m_editorEnabled;
+
 	ImGuiCocos::get().setup([] {
 		ImGuiIO& io = ImGui::GetIO();
 		
@@ -223,7 +226,7 @@ $on_mod(Loaded) {
 
 		ErGui::setupTriggersSettings();
 		}).draw([] {
-			if (auto lel = GameManager::sharedState()->getEditorLayer() && !ErGui::hideUI) {
+			if (*isEditorEnabled && !ErGui::hideUI) {
 				ErGui::renderGlobalDockingView();
 				ErGui::renderEditGroupModule();
 				ErGui::renderSelectFilter();

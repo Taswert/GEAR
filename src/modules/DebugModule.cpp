@@ -6,6 +6,7 @@ void ErGui::renderDebugModule() {
 		ImGui::Begin("Debug");
 		//ImGui::Text("g_selectionVersion: % d", ErGui::g_selectVersion);
 		ImGui::Text("ErGui::showProperties: %d", ErGui::showProperties);
+		ImGui::Checkbox("EditorUI", &EditorUI::get()->m_bVisible);
 		ImGui::End();
 	}
 }
