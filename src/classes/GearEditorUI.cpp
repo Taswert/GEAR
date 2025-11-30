@@ -188,6 +188,14 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 
 	lel->addChild(hideUIMenu);
 
+
+	//this->m_fields->oldPosition = this->m_editorLayer->m_objectLayer->getPosition();
+	//this->m_fields->newPosition = this->m_fields->oldPosition;
+	//this->m_fields->oldScale = this->m_editorLayer->m_objectLayer->getScale();
+	//this->m_fields->newScale = this->m_fields->oldScale;
+
+	this->schedule(schedule_selector(GearEditorUI::myUpdate));
+	
 	return ret;
 }
 

@@ -96,6 +96,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Snap (G)");
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	
 	bool autoBuildHelperBool = Mod::get()->getSavedValue<bool>("auto-buildhelper", false);
 	if (ImGui::Selectable(ICON_MDI_WRENCH, &autoBuildHelperBool, 0, BTN_SIZE, selectableRounding)) {

@@ -57,9 +57,11 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/EditObject/CountAndItemTriggers.cpp
     src/modules/EditObject/CollisionTriggers.cpp 
     src/modules/PropertiesModule.cpp
-)
+ "src/modules/EditObject/EditObjectUIComponents.cpp")
 
-
+if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    add_compile_definitions(GEAR_DEBUG)
+endif()
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -90,5 +92,3 @@ target_include_directories(imgui-cocos INTERFACE ./library/imgui-docking)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/includes)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/modules)
-
-

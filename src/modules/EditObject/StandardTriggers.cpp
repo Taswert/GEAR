@@ -125,13 +125,6 @@ void drawColorSettings(GameObject* obj, CCArray* objArr) {
 		}
 	}
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputFloat("Fade Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
-		if (eObj->m_duration < 0.f) eObj->m_duration = 0.f;
-		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
-		eObj->m_endPosition = *somePoint;
-	}
-
 	ImGui::Checkbox("Blending", &eObj->m_usesBlending);
 
 	auto copyColorAction = GameManager::sharedState()->m_levelEditorLayer->m_levelSettings->m_effectManager->getColorAction(eObj->m_copyColorID);
@@ -159,6 +152,8 @@ void drawColorSettings(GameObject* obj, CCArray* objArr) {
 		ImGui::Checkbox("Tint Ground", &eObj->m_tintGround);
 	}
 
+	drawComponentTime(eObj, objArr, "Fade Time", false);
+
 	drawTouchSpawnTriggered(eObj, objArr);
 }
 
@@ -167,14 +162,7 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
 
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0)	eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		auto targetGroup = eObj->m_targetGroupID;
-		lel->updateObjectLabel(eObj);
-		APPLY_FIELDS_TO_OTHER_TRIGGERS_AND_UPDATE(m_targetGroupID, targetGroup, EnhancedTriggerObject);
-	}
+	ErGui::drawComponentGroupID(eObj, objArr, "Group ID");
 
 	ImGui::Separator();
 
@@ -353,44 +341,18 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		}
 	}
 
-	ImGui::Separator();
-
 	if (!eObj->m_isSilent) {
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-		if (ImGui::InputFloat("Move Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
-			if (eObj->m_duration < -1.f) eObj->m_duration = -1.f;
-			auto duration = eObj->m_duration;
-			auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
-			eObj->m_endPosition = *somePoint;
-
-			for (auto objInArr : CCArrayExt<EnhancedTriggerObject*>(objArr)) {
-				objInArr->m_duration = duration;
-				objInArr->m_endPosition = *somePoint;
-			}
-		}
-
-		drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
+		drawComponentTime(eObj, objArr, "Move Time", true);
 	}
 
 	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawStopSettings(GameObject* obj, CCArray* objArr) {
-	ImGui::Text("Stop");
-	auto eObj = static_cast<EffectGameObject*>(obj);
-	auto lel = LevelEditorLayer::get();
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
-
 	auto tcObj = static_cast<TriggerControlGameObject*>(obj);
-	//tcObj->targetID
-
-
+	auto lel = LevelEditorLayer::get();
+	
+	drawComponentGroupID(tcObj, objArr, "Group ID");
 	drawTouchSpawnTriggered(tcObj, objArr);
 }
 
@@ -525,23 +487,22 @@ void drawAlphaSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
+	drawComponentGroupID(eObj, objArr, "Group ID");
 
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
-	if (ImGui::InputFloat("Fade Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
-		if (eObj->m_duration < 0.f) eObj->m_duration = 0.f;
-		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
-		eObj->m_endPosition = *somePoint;
+	ImGui::SeparatorText("Core Settings");
+	ImGui::Text("Opacity");
+	ImGui::SameLine(80.f);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ErGui::BetterDragFloat("##Opacity", &eObj->m_opacity, 0.1f, 0.5f, "%.2f", 0.05f, 0.f, 1.f, ImGuiSliderFlags_ClampZeroRange)) {
+		auto opacity = eObj->m_opacity;
+		if (opacity < 0.f) opacity = 0.f;
+		if (opacity > 1.f) opacity = 1.f;
+		eObj->m_opacity = opacity;
 
-		//lel->resetEffectTriggerOptim(obj, lel->m_editorUI->m_selectedObjects); fuck you RobTop. Fuck you and your damn inline funcs. I fucking hate you, dickhead.
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_opacity, opacity, EffectGameObject)
 	}
-	if (ImGui::InputFloat("Opacity", &eObj->m_opacity, 0.f, 0.f, "%.2f")) {
-		if (eObj->m_opacity < 0.f) eObj->m_opacity = 0.f;
-		if (eObj->m_opacity > 1.f) eObj->m_opacity = 1.f;
-	}
+
+	drawComponentTime(eObj, objArr, "Fade Time", false);
 
 	drawTouchSpawnTriggered(eObj, objArr);
 }
@@ -550,18 +511,26 @@ void drawToggleSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
+	drawComponentGroupID(eObj, objArr, "Group ID");
 
 	if (ImGui::Checkbox("Activate Group", &eObj->m_activateGroup) && eObj->getChildByType<CCSprite*>(0)) {
 		if (!eObj->m_activateGroup) {
 			eObj->getChildByType<CCSprite*>(0)->setColor({ 255, 63, 63 });
+			
+			// Multi Edit
+			for (auto objInArr : CCArrayExt<EffectGameObject*>(objArr)) {
+				objInArr->m_activateGroup = false;
+				objInArr->getChildByType<CCSprite*>(0)->setColor({ 255, 63, 63 });
+			}
 		}
 		else {
 			eObj->getChildByType<CCSprite*>(0)->setColor({ 0, 255, 127 });
+			
+			// Multi Edit
+			for (auto objInArr : CCArrayExt<EffectGameObject*>(objArr)) {
+				objInArr->m_activateGroup = true;
+				eObj->getChildByType<CCSprite*>(0)->setColor({ 0, 255, 127 });
+			}
 		}
 	}
 
@@ -572,12 +541,7 @@ void drawSpawnSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<SpawnTriggerGameObject*>(obj);
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
+	drawComponentGroupID(eObj, objArr, "Group ID");
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::InputFloat("Delay", &eObj->m_spawnDelay, 0.1f, 0.5f, "%.2f");
@@ -648,17 +612,7 @@ void drawRotateSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EnhancedTriggerObject*>(obj);
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Target ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Center ID", &eObj->m_centerGroupID)) {
-		if (eObj->m_centerGroupID < 0)		eObj->m_centerGroupID = 0;
-		if (eObj->m_centerGroupID > 9999)	eObj->m_centerGroupID = 9999;
-	}
+	drawComponentGroupID(eObj, objArr, "Target ID", "Center ID");
 
 	ImGui::Separator();
 
@@ -729,22 +683,15 @@ void drawRotateSettings(GameObject* obj, CCArray* objArr) {
 		}
 	}
 
-	ImGui::Separator();
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputFloat("Move Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
-		if (eObj->m_duration < -1.f) eObj->m_duration = -1.f;
-		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
-		eObj->m_endPosition = *somePoint;
-	}
 
 	if (eObj->m_isDynamicMode && (eObj->m_useMoveTarget || eObj->m_isDirectionFollowSnap360)) {
+		drawComponentTime(eObj, objArr, "Move Time", false);
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		ImGui::InputInt("Easing", reinterpret_cast<int*>(&eObj->m_dynamicModeEasing), 1, 10);
 		//ImGui::Text(std::to_string(static_cast<int>(eObj->m_dynamicModeEasing)).c_str());
 	}
 	else {
-		drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
+		drawComponentTime(eObj, objArr, "Move Time", true);
 	}
 
 	drawTouchSpawnTriggered(eObj, objArr);
@@ -754,18 +701,7 @@ void drawScaleSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<TransformTriggerGameObject*>(obj);
 
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Target ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Center ID", &eObj->m_centerGroupID)) {
-		if (eObj->m_centerGroupID < 0)		eObj->m_centerGroupID = 0;
-		if (eObj->m_centerGroupID > 9999)	eObj->m_centerGroupID = 9999;
-	}
+	drawComponentGroupID(eObj, objArr, "Target ID", "Center ID");
 
 	ImGui::Separator();
 
@@ -782,16 +718,7 @@ void drawScaleSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Checkbox("Relative Scale", &eObj->m_relativeScale);
 	ImGui::Checkbox("Relative Rotation", &eObj->m_relativeRotation);
 
-	ImGui::Separator();
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputFloat("Scale Time", &eObj->m_duration, 0.1f, 0.5f, "%.2f")) {
-		if (eObj->m_duration < 0.f) eObj->m_duration = 0.f;
-		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
-		eObj->m_endPosition = *somePoint;
-	}
-	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
-
+	drawComponentTime(eObj, objArr, "Scale Time", true);
 	drawTouchSpawnTriggered(eObj, objArr);
 }
 
@@ -799,15 +726,18 @@ void drawAnimateSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
+	drawComponentGroupID(eObj, objArr, "Group ID");
 
-	if (ImGui::InputInt("Animation ID", &eObj->m_animationID)) {
-		if (eObj->m_animationID < 0) eObj->m_animationID = 0;
-		if (eObj->m_animationID > 9) eObj->m_animationID = 9;
+	ImGui::Text("Animation ID");
+	ImGui::SameLine(80.f);
+	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+	if (ErGui::BetterDragInt("##AnimationID", &eObj->m_animationID, 1, 5, "%d", 1, 0, 9, ImGuiSliderFlags_ClampZeroRange)) {
+		auto animationID = eObj->m_animationID;
+		if (animationID < 0) eObj->m_animationID = 0;
+		if (animationID > 9) eObj->m_animationID = 9;
+		animationID = eObj->m_opacity;
+
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_animationID, animationID, EffectGameObject)
 	}
 
 	drawTouchSpawnTriggered(eObj, objArr);
@@ -830,12 +760,7 @@ void drawTouchSettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 	auto lel = LevelEditorLayer::get();
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
+	drawComponentGroupID(eObj, objArr, "Group ID");
 
 	bool p1 = (int)eObj->m_touchPlayerMode == 1;
 	bool p2 = (int)eObj->m_touchPlayerMode == 2;
@@ -878,24 +803,15 @@ void drawRandomSettings(GameObject* obj, CCArray* objArr) {
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Group ID 1", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
+	drawComponentGroupID(eObj, objArr, "Group ID 1", "Group ID 2");
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::InputInt("Group ID 2", &eObj->m_centerGroupID)) {
-		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
-		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
-		lel->updateObjectLabel(obj);
-	}
-
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::DragFloat("Chance", &eObj->m_duration, 1.f, 0.f, 100.f, "%.0f%%")) {
-		if (eObj->m_duration < 0.f) eObj->m_duration = 0.f;
-		if (eObj->m_duration > 100.f) eObj->m_duration = 100.f;
+	if (ErGui::BetterDragFloat("Chance", &eObj->m_duration, 1.f, 5.f, "%.0f%%", 1.f, 0.f, 100.f)) {
+		auto chance = eObj->m_duration;
+		if (chance < 0.f) eObj->m_duration = 0.f;
+		if (chance > 100.f) eObj->m_duration = 100.f;
+		chance = eObj->m_duration;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_duration, chance, EffectGameObject)
 	}
 
 	drawTouchSpawnTriggered(eObj, objArr);
@@ -909,27 +825,7 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	//ImGui::DragFloat("Top", &dummy.x);
 	//ImGui::DragFloat("Down", &dummy.y);
 
-	ImGui::Text("Particle group");
-	ImGui::SameLine(100.f);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 5.25f);
-	if (ImGui::InputInt("##Particle group", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-
-		int targetGroup = eObj->m_targetGroupID;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_targetGroupID, targetGroup, SpawnParticleGameObject);
-	}
-
-	ImGui::Text("Position group");
-	ImGui::SameLine(100.f);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 5.25f);
-	if (ImGui::InputInt("##Position group", &eObj->m_centerGroupID)) {
-		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
-		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
-
-		int centerGroup = eObj->m_centerGroupID;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_centerGroupID, centerGroup, SpawnParticleGameObject);
-	}
+	drawComponentGroupID(eObj, objArr, "Particle ID", "Position ID");
 
 	SeparatorPlus("Position");
 
@@ -1006,24 +902,16 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_scaleVariance, scaleVar, SpawnParticleGameObject);
 	}
 
-	SeparatorPlus("");
-	//Как же я заебался эти обоссаные ифы прописывать сука
-
 	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawReset(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-	}
+	drawComponentGroupID(eObj, objArr, "Group ID");
 	drawTouchSpawnTriggered(eObj, objArr);
 }
 
 void drawReverseSettings(GameObject* obj, CCArray* objArr) {
-	ImGui::Text("Reverse Settings");
-
 	auto eObj = static_cast<UISettingsGameObject*>(obj);
 	drawTouchSpawnTriggered(eObj, objArr);
 }
@@ -1032,9 +920,12 @@ void drawTimeWarp(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::DragFloat("Time Modifier", &eObj->m_timeWarpTimeMod, 0.05f, .1f, 2.f)) {
-		if (eObj->m_timeWarpTimeMod < 0.1f) eObj->m_timeWarpTimeMod = 0.1f;
-		if (eObj->m_timeWarpTimeMod > 2.f) eObj->m_timeWarpTimeMod = 2.f;
+	if (ErGui::BetterDragFloat("Time Modifier", &eObj->m_timeWarpTimeMod, 0.1f, 0.5f, "%.2f", 0.05f, .1f, 2.f)) {
+		auto time = eObj->m_timeWarpTimeMod;
+		if (time < 0.1f) eObj->m_timeWarpTimeMod = 0.1f;
+		if (time > 2.f) eObj->m_timeWarpTimeMod = 2.f;
+		time = eObj->m_timeWarpTimeMod;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_timeWarpTimeMod, time, EffectGameObject);
 
 		auto dgl = GameManager::sharedState()->m_levelEditorLayer->m_drawGridLayer;
 		dgl->loadTimeMarkers(dgl->m_timeMarkerString);
@@ -1045,20 +936,10 @@ void drawTimeWarp(GameObject* obj, CCArray* objArr) {
 
 void drawUISettings(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<UISettingsGameObject*>(obj);
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-	}
-
-	if (ImGui::InputInt("UI Center ID", &eObj->m_centerGroupID)) {
-		if (eObj->m_centerGroupID < 0) eObj->m_centerGroupID = 0;
-		if (eObj->m_centerGroupID > 9999) eObj->m_centerGroupID = 9999;
-	}
-
+	drawComponentGroupID(eObj, objArr, "Group ID", "UI Center ID");
 
 	ImGui::Checkbox("XRef Relative", &eObj->m_xRelative);
 	ImGui::Checkbox("YRef Relative", &eObj->m_yRelative);
-
 
 	const char* refItemsX[] = { "Auto", "Center", "Left", "Right" };
 	const char* refItemsY[] = { "Auto", "Center", "Bottom", "Top" };
@@ -1082,10 +963,7 @@ void drawUISettings(GameObject* obj, CCArray* objArr) {
 
 void drawVisibilityLink(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
-	if (ImGui::InputInt("Group ID", &eObj->m_targetGroupID)) {
-		if (eObj->m_targetGroupID < 0) eObj->m_targetGroupID = 0;
-		if (eObj->m_targetGroupID > 9999) eObj->m_targetGroupID = 9999;
-	}
+	drawComponentGroupID(eObj, objArr, "Group ID");
 }
 
 void ErGui::mapStandardTriggers() {

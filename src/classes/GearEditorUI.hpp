@@ -18,12 +18,18 @@ public:
 	struct Fields {
 		CCArray* m_lastUnderCursor = nullptr;
 		int m_lastUnderCursorIndex = 0;
+		//CCPoint oldPosition;
+		//CCPoint newPosition;
+		//float oldScale;
+		//float newScale;
 		Fields() {}
 		~Fields();
 	};
 
 	// MyFuncs
 	void onHideUI(CCObject* sender);
+	void myUpdate(float dt);
+	void applyScroll();
 	
 	// Hooks
 	bool onCreate();
@@ -41,4 +47,5 @@ public:
 	void ccTouchEnded(CCTouch* touch, CCEvent* event);
 	void deselectAll();
 	void deselectObject(GameObject* obj);
+	void scrollWheel(float y, float x);
 };

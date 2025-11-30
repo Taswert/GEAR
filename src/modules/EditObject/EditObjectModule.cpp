@@ -21,42 +21,6 @@
 
 using namespace ErGui;
 
-
-void ErGui::drawTouchSpawnTriggered(EffectGameObject* eObj, CCArray* objArr) {
-	if (ImGui::Checkbox("Touch Trigger", &eObj->m_isTouchTriggered)) {
-		auto field = eObj->m_isTouchTriggered;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isTouchTriggered, field, EffectGameObject);
-	}
-	if (ImGui::Checkbox("Spawn Trigger", &eObj->m_isSpawnTriggered)) {
-		auto field = eObj->m_isSpawnTriggered;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isSpawnTriggered, field, EffectGameObject);
-	}
-
-	ImGui::BeginDisabled(!(eObj->m_isSpawnTriggered || eObj->m_isTouchTriggered));
-	if (ImGui::Checkbox("Multi Trigger", &eObj->m_isMultiTriggered)) {
-		auto field = eObj->m_isMultiTriggered;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isMultiTriggered, field, EffectGameObject);
-	}
-	ImGui::EndDisabled();
-}
-
-void ErGui::drawEasingSettings(EffectGameObject* eObj, CCArray* objArr, float itemsWidth) {
-	if (itemsWidth != 0) ImGui::SetNextItemWidth(itemsWidth);
-	if (ImGui::Combo("Easing Type", reinterpret_cast<int*>(&eObj->m_easingType), easingItems, IM_ARRAYSIZE(easingItems))) {
-		auto field = eObj->m_easingType;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_easingType, field, EffectGameObject);
-	}
-	if (static_cast<int>(eObj->m_easingType) > 0 && static_cast<int>(eObj->m_easingType) < 7) {
-		if (itemsWidth != 0) ImGui::SetNextItemWidth(itemsWidth);
-		if (ImGui::InputFloat("Easing Rate", &eObj->m_easingRate, 0.1f, 0.5f, "%.2f")) {
-			auto field = eObj->m_easingRate;
-			if (field < 0.1f) eObj->m_easingRate = 0.1f;
-			if (field > 20.f) eObj->m_easingRate = 20.f;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_easingRate, field, EffectGameObject);
-		}
-	}
-}
-
 void ErGui::saveHueValues(ccColor3B* color) {
 	float r = color->r / 255.f;
 	float g = color->g / 255.f;
@@ -68,8 +32,6 @@ bool ErGui::isOldColorTrigger(GameObject* obj) {
 	if (oldColorTriggers.contains(obj->m_objectID)) return true;
 	else return false;
 }
-
-
 
 void renderObjectSettings(GameObject* obj) {
 	int objId = obj->m_objectID;

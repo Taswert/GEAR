@@ -7,7 +7,7 @@ void drawCameraZoomSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::DragFloat("Zoom", &eObj->m_zoomValue, .05f, .4f, 3.f);
 
-	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, objArr);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragFloat("Move Time", &eObj->m_duration, .05f, 0.f, 10.f)) {
@@ -58,7 +58,7 @@ void drawCameraStaticSettings(GameObject* obj, CCArray* objArr) {
 		ImGui::DragFloat("Modifier", &eObj->m_velocityModifier, .05f, 0.f, 1.f);
 	}
 
-	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, objArr);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragFloat("Move Time", &eObj->m_duration, .05f, 0.f, 10.f)) {
@@ -96,7 +96,7 @@ void drawCameraOffsetSettings(GameObject* obj, CCArray* objArr) {
 		else cObj->m_moveTargetMode = MoveTargetType::Both;
 	}
 
-	drawEasingSettings(cObj, objArr, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(cObj, objArr);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragFloat("Move Time", &cObj->m_duration, .05f, 0.f, 10.f)) {
@@ -155,14 +155,7 @@ void drawCameraRotateSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::SameLine(150.f);
 	ImGui::Checkbox("Add", &cObj->m_lockObjectRotation);
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::DragFloat("Move Time", &cObj->m_duration, .05f, 0.f, 10.f)) {
-		auto somePoint = reinterpret_cast<CCPoint*>(geode::base::get() + 0x6a40b8);
-		cObj->m_endPosition = *somePoint;
-	}
-
-	drawEasingSettings(cObj, objArr, ErGui::INPUT_ITEM_WIDTH);
-
+	drawComponentTime(cObj, objArr, "Move Time", true);
 	drawTouchSpawnTriggered(cObj, objArr);
 }
 

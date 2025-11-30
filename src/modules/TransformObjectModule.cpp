@@ -213,8 +213,17 @@ void renderStackTool() {
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
 		ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##YScaleStack", &stackYScale, 0.1f, 0.5f, "%.2f", 0.1f);
 
-		// Perform func
+		ImGui::Separator();
 
+		// Z-Order
+		ImGui::Text("Z-Order");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 6.f / 4.f + ImGui::GetStyle().ItemSpacing.x);
+		int oldStackZOrder = stackZOrder;
+		ErGui::BetterDragInt("##ZOrderStack", &stackZOrder, 1, 5, "%d", 1);
+
+
+		// Perform func
 		auto lel = GameManager::sharedState()->getEditorLayer();
 		auto editorUI = lel->m_editorUI;
 
@@ -246,6 +255,16 @@ void renderStackTool() {
 							obj->setScaleY(scaleY + stackYScale + stackScale);
 							obj->m_scaleX = scaleX + stackXScale + stackScale;
 							obj->m_scaleY = scaleY + stackYScale + stackScale;
+						}
+
+						if (stackZOrder) {
+							obj->m_zOrder += stackZOrder;
+							if (obj->m_zOrder == 0) {
+								if (stackZOrder > 0) 
+									obj->m_zOrder++;
+								else
+									obj->m_zOrder--;
+							}
 						}
 					}
 

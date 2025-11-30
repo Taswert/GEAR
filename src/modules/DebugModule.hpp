@@ -8,5 +8,9 @@ using namespace geode::prelude;
 namespace ErGui {
 	void renderDebugModule();
 	
+	#ifdef GEAR_DEBUG
+	inline bool g_showDebugModule = true;
+	#else
 	inline bool g_showDebugModule = false;
+	#endif
 }

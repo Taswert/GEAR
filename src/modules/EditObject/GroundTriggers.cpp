@@ -10,7 +10,7 @@ void drawSetupMGSettings(GameObject* obj, CCArray* objArr) {
 		eObj->m_moveOffset.y = yOffset * 3.f;
 	}
 
-	drawEasingSettings(eObj, objArr, ErGui::INPUT_ITEM_WIDTH);
+	drawEasingSettings(eObj, objArr);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	if (ImGui::DragFloat("Move Time", &eObj->m_duration, .05f, 0.f, 10.f)) {

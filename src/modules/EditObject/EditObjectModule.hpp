@@ -6,6 +6,7 @@
 #include "../features/Selection.hpp"
 #include "CustomImGuiWidgets.hpp"
 #include "misc/cpp/imgui_stdlib.h"
+#include "EditObjectUIComponents.hpp"
 using namespace geode::prelude;
 
 #define APPLY_FIELDS_TO_OTHER_TRIGGERS(m_field, valueToSet, TriggerClass)	\
@@ -27,15 +28,6 @@ namespace ErGui {
 	inline std::unordered_map<int, ErGuiSettingsDrawer> triggersMap;
 
 	inline std::set<int> oldColorTriggers = { 29, 30, 105, 744, 900, 915 };
-
-	inline const char* easingItems[] = { "None",
-		"Ease In Out",			"Ease In",			"Ease Out",
-		"Elastic In Out",		"Elastic In",		"Elastic Out",
-		"Bounce In Out",		"Bounce In",		"Bounce Out",
-		"Exponential In Out",	"Exponential In",	"Exponential Out",
-		"Sine In Out",			"Sine In",			"Sine Out",
-		"Back In Out",			"Back In",			"Back Out"
-	};
 
 	inline const char* moveTargetModeItems[] = {
 		"Both", "X Only", "Y Only"
@@ -74,9 +66,6 @@ namespace ErGui {
 
 	inline float savedHueEO, savedSaturationEO, savedValueEO;
 
-	
-	void drawTouchSpawnTriggered(EffectGameObject* eObj, CCArray* objArr);
-	void drawEasingSettings(EffectGameObject* eObj, CCArray* objArr, float itemsWidth = 0.f);
 
 	void saveHueValues(ccColor3B* color);
 	bool isOldColorTrigger(GameObject* obj);

@@ -29,6 +29,8 @@ namespace ErGui {
 	static float stackXScale = 0.f;
 	static float stackYScale = 0.f;
 
+	static int stackZOrder = 0;
+
 	//
 	
 	static bool rotateObjectsPositionSnap = false;
