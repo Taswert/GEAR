@@ -228,7 +228,7 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::PushItemWidth(150.0f);
 		ImGui::InputInt(zOrderStr.c_str(), &zord);
 		obj->m_zOrder = zord;
-		obj->m_shouldUpdateColorSprite = 1;
+		obj->m_updateParents = 1;
 	}
 
 	if (ImGui::CollapsingHeader("Extra")) {
@@ -661,7 +661,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 					int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
 					*objLayer = layerIntItems[i];
-					obj->m_shouldUpdateColorSprite = 1;
+					obj->m_updateParents = 1;
 				}
 				groupInfoUpdate();
 			}
@@ -766,7 +766,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				if (oldOrder == 1 && delta == -1) obj->m_zOrder = -1;
 				if (oldOrder == -1 && delta == 1) obj->m_zOrder = 1;
 
-				obj->m_shouldUpdateColorSprite = 1;
+				obj->m_updateParents = 1;
 			}
 			groupInfoUpdate();
 		}
