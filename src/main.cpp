@@ -192,7 +192,7 @@ $on_mod(Loaded) {
 			const char* prev_ini = io.IniFilename;
 			io.IniFilename = nullptr;
 			auto defaultCfgDir = Mod::get()->getResourcesDir() / "default_imgui.ini";
-			ImGui::LoadIniSettingsFromDisk(defaultCfgDir.string().c_str());
+			ImGui::LoadIniSettingsFromDisk(utils::string::pathToString(defaultCfgDir).c_str());
 			io.IniFilename = prev_ini;
 		}
 
@@ -204,7 +204,7 @@ $on_mod(Loaded) {
 		auto mdiDir = Mod::get()->getResourcesDir() / "materialdesignicons-webfont.ttf";
 		auto cpiDir = Mod::get()->getResourcesDir() / "gear-copy-paste-icons.ttf";
 
-		io.Fonts->AddFontFromFileTTF(interDir.string().c_str(), 15.f);
+		io.Fonts->AddFontFromFileTTF(utils::string::pathToString(interDir).c_str(), 15.f);
 		
 		static const ImWchar mdi_icons_ranges[] = { ICON_MIN_MDI, ICON_MAX_MDI, 0 };
 		ImFontConfig iconConfig;
@@ -214,11 +214,11 @@ $on_mod(Loaded) {
 		iconConfig.OversampleV = 3;
 		iconConfig.PixelSnapH = true;
 
-		io.Fonts->AddFontFromFileTTF(mdiDir.string().c_str(), 24.f, &iconConfig, mdi_icons_ranges);
+		io.Fonts->AddFontFromFileTTF(utils::string::pathToString(mdiDir).c_str(), 24.f, &iconConfig, mdi_icons_ranges);
 
 		static const ImWchar cpi_icons_ranges[] = { ICON_MIN_GEARCPI, ICON_MAX_GEARCPI, 0 };
-		if (!io.Fonts->AddFontFromFileTTF(cpiDir.string().c_str(), 24.f, &iconConfig, cpi_icons_ranges)) {
-			log::info("Failed to load font: {}", cpiDir.string());
+		if (!io.Fonts->AddFontFromFileTTF(utils::string::pathToString(cpiDir).c_str(), 24.f, &iconConfig, cpi_icons_ranges)) {
+			log::info("Failed to load font: {}", utils::string::pathToString(cpiDir));
 		}
 		
 		ErGui::initImGuiStyling();

@@ -74,7 +74,9 @@ std::map<int, int> collectKey20Values(const std::string& s) {
 
         while (std::getline(os, key, ',') && std::getline(os, value, ',')) {
             if (key == "20") {
-                foundValue = std::stoi(value);
+                auto let = numFromString<int>(value);
+                if (let.isOk())
+                    foundValue = let.unwrap();
                 break;
             }
         }
@@ -183,8 +185,8 @@ class $modify(LevelEditorLayer) {
     void updateVisibility(float p0) {
         LevelEditorLayer::updateVisibility(p0);
         // log::debug("{}--{}", m_activeObjectsCount, m_activeObjects.size()); different
-        auto mode = *reinterpret_cast<int*>(reinterpret_cast<long long>(this) + 0x878);
-        if (mode == 1) return;
+        auto mode = this->m_playbackMode;
+        if (mode == PlaybackMode::Playing) return;
 
         for (int i = 0; i < m_activeObjectsCount; i++) {
             GameObject* obj = m_activeObjects[i];
@@ -212,11 +214,11 @@ class $modify(LevelEditorLayer) {
                 }
             }
 
-            if (obj->m_isSelected && !isHovered) {
-                obj->setObjectColor(ErGui::g_selectedObjectColor);
-                if (obj->m_colorSprite)
-                    obj->m_colorSprite->setColor(ErGui::g_selectedObjectColor);
-            }
+            //if (obj->m_isSelected && !isHovered) {
+            //    obj->setObjectColor(ErGui::g_selectedObjectColor);
+            //    if (obj->m_colorSprite)
+            //        obj->m_colorSprite->setColor(ErGui::g_selectedObjectColor);
+            //}
         }
     }
 };

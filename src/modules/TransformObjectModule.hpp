@@ -36,6 +36,7 @@ namespace ErGui {
 	static bool rotateObjectsPositionSnap = false;
 	static bool scaleObjectsPositionSnap = false;
 	static bool skewObjectsPositionSnap = false;
+	static bool flipObjectsPositionSnap = false;
 
 	void renderTransformation();
 }

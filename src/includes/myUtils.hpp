@@ -70,6 +70,7 @@ namespace ErGui {
 	void selectEveryObjectInSquare(GameObject* obj);
 
 	const float INPUT_ITEM_WIDTH = 160.f;
+	const float SHORT_INPUT_ITEM_WIDTH = 120.f;
 	const float FIRST_ELEMENT_SAMELINE_SPACING = 72.f;
 	inline CCDrawNode* touchedDN = nullptr;
 	inline CCPoint touchedDNFirstPoint = { 0.f, 0.f };

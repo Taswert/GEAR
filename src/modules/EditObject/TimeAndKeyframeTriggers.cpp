@@ -67,10 +67,115 @@ void drawKeyframeAnimationSettings(GameObject* obj, CCArray* objArr) {
 	drawTouchSpawnTriggered(kObj, objArr);
 }
 
+void drawKeyframeSettings(GameObject* obj, CCArray* objArr) {
+	auto kObj = static_cast<KeyframeGameObject*>(obj);
+	auto lel = LevelEditorLayer::get();
+
+	drawComponentGroupID(kObj, objArr, "Group ID");
+
+	ImGui::SeparatorText("Extended Settings");
+	
+	ImGui::Text("Key Group");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
+	if (ErGui::BetterDragInt("##KeyframeGroup", &kObj->m_keyframeGroup)) {
+		// Uh, I guess it's fine just like that, lol
+		lel->refreshKeyframeAnims();
+	}
+
+	ImGui::Text("Key Index");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
+	int oldIndex = kObj->m_keyframeIndex;
+	int maxIndex = 0;
+	if (ErGui::BetterDragInt("##KeyframeIndex", &kObj->m_keyframeIndex)) {
+		// but this abomination...
+		std::unordered_map<int, KeyframeGameObject*> currentGroupKeyframes;
+		int currentGroup = kObj->m_keyframeGroup;
+		int currentIndex = kObj->m_keyframeIndex;
+		for (auto objInArr : CCArrayExt<KeyframeGameObject*>(lel->m_keyframeObjects)) {
+			if (currentGroup == objInArr->m_keyframeGroup && kObj != objInArr) {
+				currentGroupKeyframes[objInArr->m_keyframeIndex] = objInArr;
+				if (objInArr->m_keyframeIndex > maxIndex) 
+					maxIndex = objInArr->m_keyframeIndex;
+
+				if (currentIndex == objInArr->m_keyframeIndex) {
+					if (oldIndex < currentIndex) {
+						objInArr->m_keyframeIndex--;
+					}
+				}
+			}
+		}
+
+		if (!(currentIndex > maxIndex || currentIndex < 0)) {
+
+			if (oldIndex < currentIndex) {
+				//for (int i = 0; i <= maxIndex; i++) {
+				//	log::info("{} / {} - {}", i, currentGroupKeyframes[i] ? currentGroupKeyframes[i]->m_keyframeIndex : -1, currentGroupKeyframes[i]);
+				//}
+				//log::info("Old Index {}", oldIndex);
+				//log::info("Current Index {}", currentIndex);
+
+
+				for (int i = oldIndex + 1; i <= currentIndex; i++) {
+					currentGroupKeyframes[i]->m_keyframeIndex--;
+					currentGroupKeyframes[i - 1] = currentGroupKeyframes[i];
+				}
+				currentGroupKeyframes[currentIndex-1]->m_keyframeIndex++;
+
+				//log::info("--------", currentIndex);
+				//for (int i = 0; i <= maxIndex; i++) {
+				//	if (currentIndex == i) {
+				//		currentGroupKeyframes[i] = kObj;
+				//		log::info("{} / {} - {}  <-------", i, currentGroupKeyframes[i] ? currentGroupKeyframes[i]->m_keyframeIndex : -1, currentGroupKeyframes[i]);
+				//	}
+				//	else
+				//		log::info("{} / {} - {}", i, currentGroupKeyframes[i] ? currentGroupKeyframes[i]->m_keyframeIndex : -1, currentGroupKeyframes[i]);
+				//}
+				//log::info("--------DONE--------\n\n", currentIndex);
+			}
+			else {
+				//for (int i = 0; i <= maxIndex; i++) {
+				//	log::info("{} / {} - {}", i, currentGroupKeyframes[i] ? currentGroupKeyframes[i]->m_keyframeIndex : -1, currentGroupKeyframes[i]);
+				//}
+				//log::info("Old Index {}", oldIndex);
+				//log::info("Current Index {}", currentIndex);
+
+				for (int i = oldIndex - 1; i >= currentIndex; i--) {
+					currentGroupKeyframes[i]->m_keyframeIndex++;
+					currentGroupKeyframes[i + 1] = currentGroupKeyframes[i];
+				}
+
+				//log::info("--------", currentIndex);
+				//for (int i = 0; i <= maxIndex; i++) {
+				//	if (currentIndex == i) {
+				//		currentGroupKeyframes[i] = kObj;
+				//		log::info("{} / {} - {}  <-------", i, currentGroupKeyframes[i] ? currentGroupKeyframes[i]->m_keyframeIndex : -1, currentGroupKeyframes[i]);
+				//	}
+				//	else
+				//		log::info("{} / {} - {}", i, currentGroupKeyframes[i] ? currentGroupKeyframes[i]->m_keyframeIndex : -1, currentGroupKeyframes[i]);
+				//}
+				//log::info("--------DONE--------\n\n", currentIndex);
+			}
+
+		}
+
+		lel->refreshKeyframeAnims();
+	}
+
+
+	ImGui::SeparatorText("Core Settings");
+
+	drawComponentTime(kObj, objArr, "Time", true);
+}
+
 void ErGui::mapTimeAndKeyframeTriggers() {
 	// Time
 	// Time Event
 	triggersMap[3617] = drawTimeControlSettings;
-	triggersMap[3033] = drawKeyframeAnimationSettings;
+	
 	// Setup Keyframe
+	triggersMap[3032] = drawKeyframeSettings;
+	triggersMap[3033] = drawKeyframeAnimationSettings;
+	
 }

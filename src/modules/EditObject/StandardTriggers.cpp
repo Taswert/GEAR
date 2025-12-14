@@ -164,55 +164,8 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 
 	ErGui::drawComponentGroupID(eObj, objArr, "Group ID");
 
-	ImGui::Separator();
 
-	if (ImGui::Checkbox("Use Target", &eObj->m_useMoveTarget)) {
-		auto field = eObj->m_useMoveTarget;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, field, EnhancedTriggerObject);
-		if (eObj->m_isDirectionFollowSnap360) {
-			eObj->m_isDirectionFollowSnap360 = false;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, false, EnhancedTriggerObject);
-		}
-	}
-	ImGui::SameLine(150.f);
-	if (ImGui::Checkbox("Dynamic Mode", &eObj->m_isDynamicMode)) {
-		auto field = eObj->m_isDynamicMode;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDynamicMode, field, EnhancedTriggerObject);
-	}
-	if (ImGui::Checkbox("Use Direction", &eObj->m_isDirectionFollowSnap360)) {
-		auto field = eObj->m_isDirectionFollowSnap360;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, field, EnhancedTriggerObject);
-		if (eObj->m_useMoveTarget) {
-			eObj->m_useMoveTarget = false;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, false, EnhancedTriggerObject);
-		}
-	}
-	ImGui::SameLine(150.f);
-	if (ImGui::Checkbox("Small Step", &eObj->m_smallStep)) {
-		auto field = eObj->m_smallStep;
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_smallStep, field, EnhancedTriggerObject);
-	}
-
-	if (ImGui::Checkbox("Silent", &eObj->m_isSilent)) {
-		auto field = eObj->m_isSilent;
-		if (field) {
-			eObj->m_lockToCameraX = false;
-			eObj->m_lockToPlayerX = false;
-			eObj->m_lockToCameraY = false;
-			eObj->m_lockToPlayerY = false;
-
-			for (auto objInArr : CCArrayExt<EnhancedTriggerObject*>(objArr)) {
-				objInArr->m_lockToCameraX = false;
-				objInArr->m_lockToPlayerX = false;
-				objInArr->m_lockToCameraY = false;
-				objInArr->m_lockToPlayerY = false;
-			}
-		}
-
-		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isSilent, field, EnhancedTriggerObject);
-	}
-
-	ImGui::Separator();
+	ImGui::SeparatorText("Core Settings");
 
 	float modStep = 1.f;
 	if (!eObj->m_smallStep) modStep = 3.f;
@@ -221,74 +174,92 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		float xStep = eObj->m_moveOffset.x / modStep;
 		float yStep = eObj->m_moveOffset.y / modStep;
 
-		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		
 		if (!eObj->m_lockToCameraX && !eObj->m_lockToPlayerX) {
-			ImGui::InputFloat("Move X", &xStep, 1.f, 10.f, "%.2f");
-			eObj->m_moveOffset.x = xStep * modStep;
-			auto field = eObj->m_moveOffset.x;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.x, field, EnhancedTriggerObject);
+			ImGui::Text("Move X");
+			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
+			if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##MoveX", &xStep, 1.f, 10.f, "%.2f")) {
+				eObj->m_moveOffset.x = xStep * modStep;
+				auto field = eObj->m_moveOffset.x;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.x, field, EnhancedTriggerObject);
+			}
 		}
 		else {
-			if (ImGui::InputFloat("Mod X", &eObj->m_moveModX, 0.1f, 0.5f, "%.3f")) {
+			ImGui::Text("Mod X");
+			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
+			if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##Mod X", &eObj->m_moveModX, 0.1f, 0.5f, "%.3f", 0.1f)) {
 				auto field = eObj->m_moveModX;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModX, field, EnhancedTriggerObject);
 			}
 		}
 
-		if (!eObj->m_isSilent) {
-			if (ImGui::Checkbox("Player##Lock-X", &eObj->m_lockToPlayerX)) {
-				auto field = eObj->m_lockToPlayerX;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerX, field, EnhancedTriggerObject);
-				if (eObj->m_lockToCameraX) {
-					eObj->m_lockToCameraX = false;
-					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraX, false, EnhancedTriggerObject);
-				}
-			}
-			ImGui::SameLine();
-			if (ImGui::Checkbox("Camera##Lock-X", &eObj->m_lockToCameraX)) {
-				auto field = eObj->m_lockToCameraX;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraX, field, EnhancedTriggerObject);
-				if (eObj->m_lockToPlayerX) {
-					eObj->m_lockToPlayerX = false;
-					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerX, false, EnhancedTriggerObject);
-				}
+		ImGui::BeginDisabled(eObj->m_isSilent);
+		ImGui::Text("Lock X");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		if (ImGui::Checkbox("Player##Lock-X", &eObj->m_lockToPlayerX)) {
+			auto field = eObj->m_lockToPlayerX;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerX, field, EnhancedTriggerObject);
+			if (eObj->m_lockToCameraX) {
+				eObj->m_lockToCameraX = false;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraX, false, EnhancedTriggerObject);
 			}
 		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Camera##Lock-X", &eObj->m_lockToCameraX)) {
+			auto field = eObj->m_lockToCameraX;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraX, field, EnhancedTriggerObject);
+			if (eObj->m_lockToPlayerX) {
+				eObj->m_lockToPlayerX = false;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerX, false, EnhancedTriggerObject);
+			}
+		}
+		ImGui::EndDisabled();
 
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (!eObj->m_lockToCameraY && !eObj->m_lockToPlayerY) {
-			ImGui::InputFloat("Move Y", &yStep, 1.f, 10.f, "%.2f");
-			eObj->m_moveOffset.y = yStep * modStep;
-			auto field = eObj->m_moveOffset.y;
-			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.y, field, EnhancedTriggerObject);
+			ImGui::Text("Move Y");
+			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
+			if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##MoveY", &yStep, 1.f, 10.f, "%.2f")) {
+				eObj->m_moveOffset.y = yStep * modStep;
+				auto field = eObj->m_moveOffset.y;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.y, field, EnhancedTriggerObject);
+			}
 		}
 		else {
-			if (ImGui::InputFloat("Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f")) {
+			ImGui::Text("Mod Y");
+			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
+			if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f", 0.1f)) {
 				auto field = eObj->m_moveModY;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModY, field, EnhancedTriggerObject);
 			}
 
 		}
 
-		if (!eObj->m_isSilent) {
-			if (ImGui::Checkbox("Player##Lock-Y", &eObj->m_lockToPlayerY)) {
-				auto field = eObj->m_lockToPlayerY;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerY, field, EnhancedTriggerObject);
-				if (eObj->m_lockToCameraY) {
-					eObj->m_lockToCameraY = false;
-					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraY, false, EnhancedTriggerObject);
-				}
-			}
-			ImGui::SameLine();
-			if (ImGui::Checkbox("Camera##Lock-Y", &eObj->m_lockToCameraY)) {
-				auto field = eObj->m_lockToCameraY;
-				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraY, field, EnhancedTriggerObject);
-				if (eObj->m_lockToPlayerY) {
-					eObj->m_lockToPlayerY = false;
-					APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerY, false, EnhancedTriggerObject);
-				}
+		ImGui::BeginDisabled(eObj->m_isSilent);
+		ImGui::Text("Lock Y");
+		ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+		if (ImGui::Checkbox("Player##Lock-Y", &eObj->m_lockToPlayerY)) {
+			auto field = eObj->m_lockToPlayerY;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerY, field, EnhancedTriggerObject);
+			if (eObj->m_lockToCameraY) {
+				eObj->m_lockToCameraY = false;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraY, false, EnhancedTriggerObject);
 			}
 		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Camera##Lock-Y", &eObj->m_lockToCameraY)) {
+			auto field = eObj->m_lockToCameraY;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToCameraY, field, EnhancedTriggerObject);
+			if (eObj->m_lockToPlayerY) {
+				eObj->m_lockToPlayerY = false;
+				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_lockToPlayerY, false, EnhancedTriggerObject);
+			}
+		}
+		ImGui::EndDisabled();
 
 	}
 	else {
@@ -339,6 +310,54 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveTargetMode, field, EnhancedTriggerObject);
 			}
 		}
+	}
+
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Use Target", &eObj->m_useMoveTarget)) {
+		auto field = eObj->m_useMoveTarget;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, field, EnhancedTriggerObject);
+		if (eObj->m_isDirectionFollowSnap360) {
+			eObj->m_isDirectionFollowSnap360 = false;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, false, EnhancedTriggerObject);
+		}
+	}
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox("Dynamic Mode", &eObj->m_isDynamicMode)) {
+		auto field = eObj->m_isDynamicMode;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDynamicMode, field, EnhancedTriggerObject);
+	}
+	if (ImGui::Checkbox("Use Direction", &eObj->m_isDirectionFollowSnap360)) {
+		auto field = eObj->m_isDirectionFollowSnap360;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isDirectionFollowSnap360, field, EnhancedTriggerObject);
+		if (eObj->m_useMoveTarget) {
+			eObj->m_useMoveTarget = false;
+			APPLY_FIELDS_TO_OTHER_TRIGGERS(m_useMoveTarget, false, EnhancedTriggerObject);
+		}
+	}
+	ImGui::SameLine(150.f);
+	if (ImGui::Checkbox("Small Step", &eObj->m_smallStep)) {
+		auto field = eObj->m_smallStep;
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_smallStep, field, EnhancedTriggerObject);
+	}
+
+	if (ImGui::Checkbox("Silent", &eObj->m_isSilent)) {
+		auto field = eObj->m_isSilent;
+		if (field) {
+			eObj->m_lockToCameraX = false;
+			eObj->m_lockToPlayerX = false;
+			eObj->m_lockToCameraY = false;
+			eObj->m_lockToPlayerY = false;
+
+			for (auto objInArr : CCArrayExt<EnhancedTriggerObject*>(objArr)) {
+				objInArr->m_lockToCameraX = false;
+				objInArr->m_lockToPlayerX = false;
+				objInArr->m_lockToCameraY = false;
+				objInArr->m_lockToPlayerY = false;
+			}
+		}
+
+		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_isSilent, field, EnhancedTriggerObject);
 	}
 
 	if (!eObj->m_isSilent) {
@@ -832,13 +851,13 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Text("Offset");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##Offset X", &eObj->m_offset.x)) {
 		float offsetX = eObj->m_offset.x;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.x, offsetX, SpawnParticleGameObject);
 	}
 	ImGui::SameLine();
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##Offset Y", &eObj->m_offset.y)) {
 		float offsetY = eObj->m_offset.y;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.y, offsetY, SpawnParticleGameObject);
@@ -847,14 +866,14 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	ImGui::Text("OffVar");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat(ImVec4(175, 50, 50, 255), "##OffVar X", &eObj->m_offsetVariance.x)) {
 		float offVarX = eObj->m_offsetVariance.x;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.x, offVarX, SpawnParticleGameObject);
 	}
 	
 	ImGui::SameLine();
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat(ImVec4(50, 74, 178, 255), "##OffVar Y", &eObj->m_offsetVariance.y)) {
 		float offVarY = eObj->m_offsetVariance.y;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.y, offVarY, SpawnParticleGameObject);
@@ -864,7 +883,7 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::Text("RotateDir");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat("##RotatateDir", &eObj->m_rotation)) {
 		float rotateDir = eObj->m_rotation;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_rotation, rotateDir, SpawnParticleGameObject);
@@ -873,7 +892,7 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::Text("RotateVar");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat("##RotationVar", &eObj->m_rotationVariance)) {
 		float rotationVar = eObj->m_rotationVariance;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_rotationVariance, rotationVar, SpawnParticleGameObject);
@@ -888,7 +907,7 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::Text("Scale");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat("##Scale", &eObj->m_scale, 1.0f, 5.0f, "%.2f", 0.1f)) {
 		float scale = eObj->m_scale;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_scale, scale, SpawnParticleGameObject);
@@ -896,7 +915,7 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::Text("ScaleVar");
 	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 3.f / 4.f);
+	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	if (ErGui::BetterDragFloat("##ScaleVar", &eObj->m_scaleVariance, 1.0f, 5.0f, "%.2f", 0.1f)) {
 		float scaleVar = eObj->m_scaleVariance;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_scaleVariance, scaleVar, SpawnParticleGameObject);

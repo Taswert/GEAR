@@ -354,6 +354,9 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::Text("Object ID: %d", obj->m_objectID);
 
 		ImGui::Text("Class: %s", typeid(*obj).name() + 6);
+
+		ImGui::Text("Inner Section: %d", obj->m_innerSectionIndex);
+		ImGui::Text("Outer Section: %d", obj->m_outerSectionIndex);
 	}
 
 	// in an imgui window somewhere...

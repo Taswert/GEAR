@@ -424,7 +424,7 @@ void drawTextObjectSettings(GameObject* obj, CCArray* objArr) {
 	}
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ImGui::DragInt("Kerning", &eObj->m_kerning, 1.f, -10, 20, "%d", 0)) {
+	if (ImGui::DragInt("Kerning", &eObj->m_kerning, 1.f)) {
 		eObj->updateTextKerning(eObj->m_kerning);
 		eObj->updateTextObject(eObj->m_text, false);
 	}

@@ -195,7 +195,7 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 	//this->m_fields->newScale = this->m_fields->oldScale;
 
 	this->schedule(schedule_selector(GearEditorUI::myUpdate));
-	
+
 	return ret;
 }
 
@@ -336,12 +336,7 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 	// --- RMB Begin ---
 
 	if (ErGui::rightTouch) {
-		auto cameraPos = lel->m_objectLayer->getPosition();
-		auto cameraScale = lel->m_objectLayer->getScale();
-		CCPoint touchConverted = CCPoint(
-			(touch->getLocation() - cameraPos) / cameraScale
-		);
-		if (auto obj = lel->objectAtPosition(touchConverted)) {
+		if (auto obj = this->objectAtPosition(touch->getLocation())) {
 			ErGui::objectUnderCursor = obj;
 		}
 
@@ -391,4 +386,89 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 
 
 	EditorUI::ccTouchEnded(touch, event);
+}
+
+
+CCArray* GearEditorUI::objectsAtPosition(CCPoint touchPoint) {
+	LevelEditorLayer* lel = LevelEditorLayer::get();
+
+	auto cameraPos = lel->m_objectLayer->getPosition();
+	auto cameraScale = lel->m_objectLayer->getScale();
+	CCPoint touchConverted = CCPoint(
+		(touchPoint - cameraPos) / cameraScale
+	);
+
+	auto objArr = CCArray::create();
+
+	int count = lel->m_sections.empty() ? -1 : lel->m_sections.size();
+	for (int i = lel->m_leftSectionIndex; i <= lel->m_rightSectionIndex && i < count; ++i) {
+		auto leftSection = lel->m_sections[i];
+		if (!leftSection) continue;
+
+		auto leftSectionSize = leftSection->size();
+		for (int j = lel->m_bottomSectionIndex; j <= lel->m_topSectionIndex && j < leftSectionSize; ++j) {
+			auto section = leftSection->at(j);
+			if (!section) continue;
+
+			auto sectionSize = lel->m_sectionSizes[i]->at(j);
+			for (int k = 0; k < sectionSize; ++k) {
+				auto obj = section->at(k);
+				if (!obj) continue;
+
+				auto objHb = ErGui::getObjectHitbox(obj);
+				auto objHbConverted = CCRect({ (objHb.origin.x - cameraPos.x) / cameraScale, (objHb.origin.y - cameraPos.y) / cameraScale }, objHb.size / cameraScale);
+				bool check1 = ErGui::isHitboxAtPoint(touchConverted, objHbConverted);
+				//log::info("CHECK: {}", check1);
+				//log::info("TOUCH: {}", touchConverted);
+				//log::info("HITBOX: {}", objHbConverted);
+				auto playbackMode = lel->m_playbackMode;
+				if (check1 && ErGui::selectFilterRealization(obj) && playbackMode != PlaybackMode::Playing &&
+					(obj->m_editorLayer == lel->m_currentLayer || (obj->m_editorLayer2 == lel->m_currentLayer && obj->m_editorLayer2 != 0) || lel->m_currentLayer == -1)
+					)
+					objArr->addObject(obj);
+			}
+		}
+	}
+
+	return objArr;
+}
+
+
+GameObject* GearEditorUI::objectAtPosition(CCArray* objArrAtPosition) {
+	CCArray* lastUnderCursor = this->m_fields->m_lastUnderCursor;
+	int* lucIndex = &this->m_fields->m_lastUnderCursorIndex;
+
+	if (int arrCount = objArrAtPosition->count()) {
+		if (ErGui::compareCCArrays(objArrAtPosition, lastUnderCursor)) {
+			*lucIndex = (*lucIndex + 1) % arrCount;
+		}
+		else {
+			*lucIndex = 0;
+		}
+
+		lastUnderCursor->removeAllObjects();
+		lastUnderCursor->addObjectsFromArray(objArrAtPosition);
+
+		auto objToSelect = static_cast<GameObject*>(objArrAtPosition->objectAtIndex(*lucIndex));
+
+		// if this object is selected, then go to other one
+		if (this->m_selectedObject == objToSelect || this->m_selectedObjects->containsObject(objToSelect)) {
+			int startIndex = *lucIndex;
+			do {
+				*lucIndex = (*lucIndex + 1) % arrCount;
+				objToSelect = static_cast<GameObject*>(objArrAtPosition->objectAtIndex(*lucIndex));
+			} while ((this->m_selectedObjects->containsObject(objToSelect) || this->m_selectedObject == objToSelect)
+				&& *lucIndex != startIndex);
+		}
+
+		return objToSelect;
+	}
+
+	return nullptr;
+}
+
+
+GameObject* GearEditorUI::objectAtPosition(CCPoint touchPoint) {
+	auto objArr = this->objectsAtPosition(touchPoint);
+	return objectAtPosition(objArr);
 }

@@ -30,6 +30,9 @@ public:
 	void onHideUI(CCObject* sender);
 	void myUpdate(float dt);
 	void applyScroll();
+	CCArray* objectsAtPosition(CCPoint touchPoint); // Should be in GearLevelEditorLayer I think
+	GameObject* objectAtPosition(CCPoint touchPoint);
+	GameObject* objectAtPosition(CCArray* objArrAtPosition);
 	
 	// Hooks
 	bool onCreate();

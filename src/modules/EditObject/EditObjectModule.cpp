@@ -36,7 +36,7 @@ bool ErGui::isOldColorTrigger(GameObject* obj) {
 void renderObjectSettings(GameObject* obj) {
 	int objId = obj->m_objectID;
 	if (triggerSet.contains(objId)) {
-		if (triggersMap[objId]) {
+		if (triggersMap.contains(objId)) {
 			ErGuiSettingsDrawer drawTriggerSettings = triggersMap[objId];
 			(*drawTriggerSettings)(obj, nullptr);
 		}
@@ -56,6 +56,9 @@ void renderObjectSettings(GameObject* obj) {
 		if (ImGui::Button("Edit Special")) {
 			editorUI->editObjectSpecial(0);
 		}
+		if (ImGui::Button("Edit Group")) {
+			editorUI->editGroup(0);
+		}
 	}
 }
 
@@ -67,7 +70,7 @@ void renderMultiObjectSettings(CCArray* objArr) {
 	if (localSelectVersion != ErGui::g_selectVersion) {
 		localSelectVersion = ErGui::g_selectVersion;
 		objId = static_cast<GameObject*>(objArr->objectAtIndex(0))->m_objectID;
-		if (!triggerSet.contains(objId)) {
+		if (!triggersMap.contains(objId)) {
 			objId = 0;
 		}
 		else {
@@ -96,6 +99,9 @@ void renderMultiObjectSettings(CCArray* objArr) {
 		}
 		if (ImGui::Button("Edit Special")) {
 			editorUI->editObjectSpecial(0);
+		}
+		if (ImGui::Button("Edit Group")) {
+			editorUI->editGroup(0);
 		}
 	}
 }

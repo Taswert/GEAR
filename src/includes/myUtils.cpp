@@ -349,39 +349,64 @@ namespace ErGui {
 		if (auto txtObj = typeinfo_cast<TextGameObject*>(obj)) {
 			auto txtChildren = txtObj->getChildren();
 			if (txtChildren && txtChildren->count() > 0) {
+				
 				auto firstLetter = static_cast<CCFontSprite*>(txtChildren->firstObject());
 				const auto firstBox = firstLetter->boundingBox();
 
 				auto lastLetter = static_cast<CCFontSprite*>(txtChildren->lastObject());
 				const auto lastBox = lastLetter->boundingBox();
 
+
+				float maxPosX = firstLetter->getPositionX();
+				float minPosX = firstLetter->getPositionX();
+				CCFontSprite* maxLetterX = firstLetter;
+				CCFontSprite* minLetterX = firstLetter;
+				for (auto letter : CCArrayExt<CCFontSprite*>(txtChildren)) {
+					float somePos = letter->getPositionX();
+					if (maxPosX < somePos) {
+						maxPosX = somePos;
+						maxLetterX = letter;
+					}
+
+					if (minPosX > somePos) {
+						minPosX = somePos;
+						minLetterX = letter;
+					}
+				}
+
+				const auto maxLetterXBox = maxLetterX->boundingBox();
+				const auto minLetterXBox = minLetterX->boundingBox();
+
+
 				auto firstCenterPoint = firstLetter->getParent()->convertToWorldSpace({
-					firstBox.getMidX(),
+					minLetterXBox.getMidX(),
 					firstBox.getMidY()
 					});
 
 				auto lastCenterPoint = lastLetter->getParent()->convertToWorldSpace({
-					lastBox.getMidX(),
+					maxLetterXBox.getMidX(),
 					lastBox.getMidY()
 					});
+
 
 				centerPoint = CCPoint(
 					(firstCenterPoint.x + lastCenterPoint.x) / 2.f,
 					(firstCenterPoint.y + lastCenterPoint.y) / 2.f
 				);
 
-				auto firstPosLocal = firstLetter->getPosition();
-				auto lastPosLocal = lastLetter->getPosition();
+				CCPoint firstPosLocal = { minLetterX->getPositionX(), firstLetter->getPositionY() };
+				CCPoint lastPosLocal = { maxLetterX->getPositionX(), lastLetter->getPositionY() };
 
 				float dx = (lastPosLocal.x - firstPosLocal.x) * obj->m_scaleX;
-				float dy = (lastPosLocal.y - firstPosLocal.y) * obj->m_scaleY;
-				float centerDistLocal = sqrtf(dx * dx + dy * dy);
+				float dy = (firstPosLocal.y - lastPosLocal.y) * obj->m_scaleY;
 
+				auto minXSize = minLetterX->getScaledContentSize() * CCSize(obj->m_scaleX, obj->m_scaleY);
 				auto firstSize = firstLetter->getScaledContentSize() * CCSize(obj->m_scaleX, obj->m_scaleY);
+				auto maxXSize = maxLetterX->getScaledContentSize() * CCSize(obj->m_scaleX, obj->m_scaleY);
 				auto lastSize = lastLetter->getScaledContentSize() * CCSize(obj->m_scaleX, obj->m_scaleY);
 
-				float widthLocal = centerDistLocal + (firstSize.width + lastSize.width) * 0.5f;
-				float heightLocal = std::max(firstSize.height, lastSize.height);
+				float widthLocal = dx + (minXSize.width + maxXSize.width) * 0.5f;
+				float heightLocal = dy + (firstSize.height + lastSize.height) * 0.5f;
 
 				contentSize = CCSize(widthLocal, heightLocal);
 
