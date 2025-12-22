@@ -15,4 +15,7 @@ namespace ErGui {
 
 	inline ccColor3B g_selectedObjectColor = { 0, 255, 0 };
 	inline ccColor3B g_hoveredObjectColor = { 255, 255, 0 };
+
+	inline bool posStepToKeybinds = false;
+	inline bool rotStepToKeybinds = false;
 }

@@ -1,4 +1,3 @@
-#pragma once
 #include "CustomImGuiWidgets.hpp"
 
 namespace ErGui {

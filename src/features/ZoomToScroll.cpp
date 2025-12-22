@@ -1,4 +1,3 @@
-#pragma once
 #include <Geode/modify/EditorUI.hpp>
 #include <../classes/GearEditorUI.hpp>
 #include "../modules/GameWindowModule.hpp"

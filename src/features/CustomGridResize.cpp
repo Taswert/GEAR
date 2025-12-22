@@ -1,4 +1,3 @@
-#pragma once
 #include <Geode/modify/ObjectToolbox.hpp>
 using namespace geode::prelude;
 

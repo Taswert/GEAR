@@ -12,6 +12,9 @@
 #include "../features/Selection.hpp"
 #include "PropertiesModule.hpp"
 
+#include <geode.custom-keybinds/include/Keybinds.hpp>
+using namespace keybinds;
+
 void exitEditor() { // EditorUI is already destroyed here
 	// Save Object Config
 	auto cfgDir = utils::string::pathToString(Mod::get()->getSettingValue<std::filesystem::path>("object-list-config"));
@@ -153,7 +156,15 @@ void GearEditorUI::onHideUI(CCObject * sender) {
 	ErGui::hideUI = false;
 }
 
+void GearEditorUI::deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUndo) {
+	EditorUI::deleteObject(obj, noUndo);
+	this->m_selectedObjects->removeObject(obj, false);
+}
+
 bool GearEditorUI::init(LevelEditorLayer * lel) {
+	// Keybinds
+	registerKeybindsEventListeners();
+
 	// Lasso And Swipe
 	ErGui::editorUIDrawNode = CCDrawNode::create();
 	lel->m_objectParent->addChild(ErGui::editorUIDrawNode);
@@ -195,6 +206,18 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 	//this->m_fields->newScale = this->m_fields->oldScale;
 
 	this->schedule(schedule_selector(GearEditorUI::myUpdate));
+
+
+
+	// Keybinds
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			// do a backflip!
+		}
+		// Return Propagate if you want other actions with the same bind to
+		// also be fired, or Stop if you want to halt propagation
+		return ListenerResult::Propagate;
+		}, "backflip"_spr);
 
 	return ret;
 }
@@ -248,7 +271,8 @@ bool GearEditorUI::ccTouchBegan(CCTouch* touch, CCEvent* event) {
 
 
 void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
-		
+	auto lel = LevelEditorLayer::get();
+
 	// Maybe leave it here???
 	if (ErGui::rightTouch) {
 		CCLayer::ccTouchMoved(touch, event);
@@ -315,15 +339,29 @@ void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 			ccColor4F{ lassoColor.r - lassoColor.r / 1.3f, lassoColor.g - lassoColor.g / 1.3f, lassoColor.b - lassoColor.b / 1.3f, 0.1f } :
 			ccColor4F{ 0, 0, 0, 0 };
 
+		bool isSwiping = m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed();
+
 		// --- Lasso ccTouchMoved
-		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && isSwiping) {
 			ErGui::ccTouchMoved_Lasso(this, touch, selectionFillColor, lassoColor);
-			return;
+			return CCLayer::ccTouchMoved(touch, event);
 		}
 
 		// --- Vanilla Swipe ccTouchMoved
-		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed()) && ErGui::editorUISwipePoints.size() > 0) {
+		else if (this->m_selectedMode == 3 && isSwiping && ErGui::editorUISwipePoints.size() > 0) {
 			ErGui::ccTouchMoved_VanillaSwipe(this, touch, selectionFillColor, lassoColor);
+			return CCLayer::ccTouchMoved(touch, event);
+		}
+
+		// --- Delete and Swipe
+		else if (this->m_selectedMode == 1 && isSwiping) {
+			auto objArr = objectsAtPosition(touch->getLocation());
+			if (objArr->count() > 0) {
+				for (auto obj : CCArrayExt<GameObject*>(objArr)) {
+					this->deleteObjectAndRemoveFromSelected(obj, false);
+				}
+			}
+			return CCLayer::ccTouchMoved(touch, event);
 		}
 	}
 
@@ -332,11 +370,11 @@ void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 
 void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 	auto lel = LevelEditorLayer::get();
+	auto touchLocation = touch->getLocation();
 
-	// --- RMB Begin ---
-
+	// RMB
 	if (ErGui::rightTouch) {
-		if (auto obj = this->objectAtPosition(touch->getLocation())) {
+		if (auto obj = this->objectAtPosition(touchLocation)) {
 			ErGui::objectUnderCursor = obj;
 		}
 
@@ -344,8 +382,7 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 		return CCLayer::ccTouchEnded(touch, event);
 	}
 
-	// --- RMB End ---
-
+	// Drawnodes reset
 	ErGui::touchedDN->clear();
 	ErGui::editorUIDrawNode->clear();
 	ErGui::forEachObject(lel, ErGui::resetHover);
@@ -364,8 +401,23 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 		return EditorUI::ccTouchEnded(touch, event);
 	}
 
-	
-	// Select Mode = Edit
+	// Editor Selected Mode = Delete
+	if (this->m_selectedMode == 1) {
+
+		if (ErGui::beginTouchLocation.x >= touchLocation.x - 20.f &&
+			ErGui::beginTouchLocation.x <= touchLocation.x + 20.f &&
+			ErGui::beginTouchLocation.y >= touchLocation.y - 20.f &&
+			ErGui::beginTouchLocation.y <= touchLocation.y + 20.f) {
+			
+			auto objAtPosition = this->objectAtPosition(touchLocation);
+			if (objAtPosition != nullptr) this->deleteObjectAndRemoveFromSelected(objAtPosition, false);
+			return CCLayer::ccTouchEnded(touch, event);
+		}
+
+		return EditorUI::ccTouchEnded(touch, event);
+	}
+
+	// Editor Selected Mode = Edit
 	if (!ErGui::isFreeMoveAndObjectTouching && this->m_selectedMode == 3) {
 
 		if (ErGui::ccTouchEnded_Selection(this, touch)) {
@@ -438,6 +490,16 @@ GameObject* GearEditorUI::objectAtPosition(CCArray* objArrAtPosition) {
 	CCArray* lastUnderCursor = this->m_fields->m_lastUnderCursor;
 	int* lucIndex = &this->m_fields->m_lastUnderCursorIndex;
 
+	// Sorting array by pointers. Delete rolling is working. Yay.
+	auto begin = reinterpret_cast<GameObject**>(objArrAtPosition->data->arr);
+	auto end = begin + objArrAtPosition->data->num;
+
+	std::sort(begin, end, [](GameObject* a, GameObject* b) {
+		return reinterpret_cast<uintptr_t>(a) < reinterpret_cast<uintptr_t>(b);
+	});
+
+
+
 	if (int arrCount = objArrAtPosition->count()) {
 		if (ErGui::compareCCArrays(objArrAtPosition, lastUnderCursor)) {
 			*lucIndex = (*lucIndex + 1) % arrCount;
@@ -451,13 +513,13 @@ GameObject* GearEditorUI::objectAtPosition(CCArray* objArrAtPosition) {
 
 		auto objToSelect = static_cast<GameObject*>(objArrAtPosition->objectAtIndex(*lucIndex));
 
-		// if this object is selected, then go to other one
-		if (this->m_selectedObject == objToSelect || this->m_selectedObjects->containsObject(objToSelect)) {
+		// if this object is selected or delete mode it is, then go to other one
+		if (this->m_selectedObject == objToSelect || this->m_selectedObjects->containsObject(objToSelect) || this->m_selectedMode != 3) {
 			int startIndex = *lucIndex;
 			do {
 				*lucIndex = (*lucIndex + 1) % arrCount;
 				objToSelect = static_cast<GameObject*>(objArrAtPosition->objectAtIndex(*lucIndex));
-			} while ((this->m_selectedObjects->containsObject(objToSelect) || this->m_selectedObject == objToSelect)
+			} while ((this->m_selectedObjects->containsObject(objToSelect) || this->m_selectedObject == objToSelect || this->m_selectedMode != 3)
 				&& *lucIndex != startIndex);
 		}
 

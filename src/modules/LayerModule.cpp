@@ -1,5 +1,4 @@
-﻿#pragma once
-#include "LayerModule.hpp"
+﻿#include "LayerModule.hpp"
 #include <imgui_internal.h>
 #include <algorithm>
 #include <Geode/Geode.hpp>

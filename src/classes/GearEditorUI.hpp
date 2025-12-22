@@ -33,6 +33,8 @@ public:
 	CCArray* objectsAtPosition(CCPoint touchPoint); // Should be in GearLevelEditorLayer I think
 	GameObject* objectAtPosition(CCPoint touchPoint);
 	GameObject* objectAtPosition(CCArray* objArrAtPosition);
+	void deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUndo);
+	void registerKeybindsEventListeners();
 	
 	// Hooks
 	bool onCreate();
@@ -51,4 +53,9 @@ public:
 	void deselectAll();
 	void deselectObject(GameObject* obj);
 	void scrollWheel(float y, float x);
+	void moveObjectCall(EditCommand command);
+	void transformObjectCall(EditCommand command);
+
+	virtual void keyDown(cocos2d::enumKeyCodes p0);
+	virtual void keyUp(cocos2d::enumKeyCodes p0);
 };

@@ -1,4 +1,3 @@
-#pragma once
 #include "EditObjectModule.hpp"
 #include <Geode/GeneratedPredeclare.hpp>
 #include <cocos2d.h>

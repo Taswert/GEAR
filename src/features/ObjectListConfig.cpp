@@ -1,4 +1,3 @@
-#pragma once
 #include "ObjectCategories.hpp"
 using namespace geode::prelude;
 

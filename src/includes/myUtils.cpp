@@ -1,4 +1,3 @@
-#pragma once
 #include "myUtils.hpp"
 #include "../modules/ToolsModule.hpp"
 #include <Geode/modify/GameObject.hpp>

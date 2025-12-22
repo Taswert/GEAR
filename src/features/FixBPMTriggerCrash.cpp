@@ -1,4 +1,3 @@
-#pragma once
 #include <Geode/modify/LevelEditorLayer.hpp>
 using namespace geode::prelude;
 

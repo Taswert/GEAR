@@ -1,7 +1,7 @@
-#pragma once
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CCScheduler.hpp>
 #include <Geode/modify/EditorUI.hpp>
+#include <Geode/modify/LevelEditorLayer.hpp>
 
 #include "SelectedObjectInfo.hpp"
 #include "SelectFilter.hpp"
@@ -446,5 +446,33 @@ class $modify(EditorUI) {
 		}
 
 		EditorUI::deselectAll();
+	}
+
+	void onDelete(CCObject* sender) {
+		EditorUI::onDelete(sender);
+		g_soiNeedsUpdate = true;
+	}
+
+	void onDeleteSelected(CCObject* sender) {
+		EditorUI::onDeleteSelected(sender);
+		g_soiNeedsUpdate = true;
+	}
+
+	void undoLastAction(CCObject* sender) {
+		EditorUI::undoLastAction(sender);
+		g_soiNeedsUpdate = true;
+	}
+
+	void redoLastAction(CCObject* sender) {
+		EditorUI::redoLastAction(sender);
+		g_soiNeedsUpdate = true;
+	}
+};
+
+class $modify(LevelEditorLayer) {
+
+	void removeObject(GameObject * p0, bool p1) {
+		LevelEditorLayer::removeObject(p0, p1);
+		g_soiNeedsUpdate = true;
 	}
 };

@@ -1,4 +1,3 @@
-#pragma once
 #include "SelectFilterModule.hpp"
 
 void ErGui::renderSelectFilter() {

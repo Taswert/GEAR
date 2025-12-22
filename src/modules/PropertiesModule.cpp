@@ -2,6 +2,7 @@
 #include "CustomImGuiWidgets.hpp"
 #include "../features/SelectedObjectInfo.hpp"
 #include "DebugModule.hpp"
+#include "TransformObjectModule.hpp"
 
 void renderGeneralSettings() {
 	auto gm = GameManager::sharedState();
@@ -91,6 +92,66 @@ void renderGeneralSettings() {
 		isAnyItemClicked = true;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Disables damage during playtesting.");
+
+
+	ErGui::SeparatorPlus("Transform Steps");
+	auto style = ImGui::GetStyle();
+	float inputFloatWidth = 30.f * 7.f + style.ItemSpacing.x * 6.f;
+	// position
+	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::InputFloat("MoveStep", &ErGui::moveStep, 1.f);
+	if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 0.5f;	ImGui::SameLine();
+	if (ImGui::Button("2##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 2.f;		ImGui::SameLine();
+	if (ImGui::Button("7.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 7.5f;	ImGui::SameLine();
+	if (ImGui::Button("10##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 10.f;		ImGui::SameLine();
+	if (ImGui::Button("15##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 15.f;		ImGui::SameLine();
+	if (ImGui::Button("30##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 30.f;		ImGui::SameLine();
+	if (ImGui::Button("150##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 150.f;	ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::Text("Presets");
+	ImGui::Checkbox("Apply steps to Keybinds##MOVE", &ErGui::posStepToKeybinds);
+	
+	ImGui::Dummy({0.f, 5.f});
+
+	// rotation
+	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::InputFloat("RotStep", &ErGui::rotationStep, 1.f);
+	if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 1.f;		ImGui::SameLine();
+	if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 10.f;	ImGui::SameLine();
+	if (ImGui::Button("15##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 15.f;	ImGui::SameLine();
+	if (ImGui::Button("30##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 30.f;	ImGui::SameLine();
+	if (ImGui::Button("45##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 45.f;	ImGui::SameLine();
+	if (ImGui::Button("90##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 90.f;	ImGui::SameLine();
+	if (ImGui::Button("180##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 180.f;	ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::Text("Presets");
+	ImGui::Checkbox("Apply steps to Keybinds##ROTATE", &ErGui::rotStepToKeybinds);
+
+	ImGui::Dummy({ 0.f, 5.f });
+
+	// scale
+	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::InputFloat("ScaleStep", &ErGui::scaleStep, 0.25f);
+	if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.01f;	ImGui::SameLine();
+	if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.05f;	ImGui::SameLine();
+	if (ImGui::Button("0.1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.1f;		ImGui::SameLine();
+	if (ImGui::Button("0.25##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.25f;	ImGui::SameLine();
+	if (ImGui::Button("0.5##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.5f;		ImGui::SameLine();
+	if (ImGui::Button("1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 1.f;			ImGui::SameLine();
+	if (ImGui::Button("2##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 2.f;			ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::Text("Presets");
+	
+	ImGui::Dummy({ 0.f, 5.f });
+
+	// skew
+	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::InputFloat("SkewStep", &ErGui::skewStep, 1.f);
+	if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 1.f;		ImGui::SameLine();
+	if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 5.f;		ImGui::SameLine();
+	if (ImGui::Button("10##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 10.f;		ImGui::SameLine();
+	if (ImGui::Button("15##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 15.f;		ImGui::SameLine();
+	if (ImGui::Button("30##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 30.f;		ImGui::SameLine();
+	if (ImGui::Button("45##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 45.f;		ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::Text("Presets");
+
 
 
 	ImGui::Dummy(ImVec2(10.f, 10.f));
@@ -190,12 +251,13 @@ void renderInterfaceSettings() {
 
 	// Saving Values
 	if (isAnyItemClicked) {
-		mod->setSavedValue<bool>("triangle-color-wheel", triangleColorWheel);
-		mod->setSavedValue<bool>("rotate-color-wheel", rotateColorWheel);
-		mod->setSavedValue<bool>("hide-object-list-popup", hideObjectListPopup);
-		mod->setSavedValue<bool>("autoswitch-to-build-mode", autoswitchToBuildMode);
+		mod->setSavedValue<bool>("triangle-color-wheel",		triangleColorWheel);
+		mod->setSavedValue<bool>("rotate-color-wheel",			rotateColorWheel);
+		mod->setSavedValue<bool>("hide-object-list-popup",		hideObjectListPopup);
+		mod->setSavedValue<bool>("autoswitch-to-build-mode",	autoswitchToBuildMode);
+		mod->setSavedValue<bool>("show-zoom-controls",			showZoomControls);
 		gm->setGameVariable("0097", showLinkControls);
-		mod->setSavedValue<bool>("show-zoom-controls", showZoomControls);
+		
 
 		lel->updateOptions();
 	}
@@ -309,24 +371,24 @@ void renderObjectInfoSettings() {
 	// Saving Values
 	if (isAnyItemClicked) {
 		gm->setGameVariable("0041", showObjectInfo);
-		mod->setSavedValue<bool>("soi-position", soiPosition);
-		mod->setSavedValue<bool>("soi-rotation", soiRotation);
-		mod->setSavedValue<bool>("soi-scale", soiScale);
-		mod->setSavedValue<bool>("soi-color", soiColor);
-		mod->setSavedValue<bool>("soi-hsv", soiHSV);
-		mod->setSavedValue<bool>("soi-groups", soiGroups);
-		mod->setSavedValue<bool>("soi-zlayer", soiZLayer);
-		mod->setSavedValue<bool>("soi-zorder", soiZOrder);
-		mod->setSavedValue<bool>("soi-objectid", soiObjectID);
-		mod->setSavedValue<bool>("soi-targetgroup", soiTargetGroup);
-		mod->setSavedValue<bool>("soi-itemid", soiItemID);
-		mod->setSavedValue<bool>("soi-blockid", soiBlockID);
-		mod->setSavedValue<bool>("soi-particles", soiParticles);
-		mod->setSavedValue<bool>("soi-hidden", soiHidden);
-		mod->setSavedValue<bool>("soi-no-touch", soiNoTouch);
-		mod->setSavedValue<bool>("soi-high-detail", soiHighDetail);
-		mod->setSavedValue<bool>("soi-object-count", soiObjectCount);
-		mod->setSavedValue<bool>("soi-object-type", soiObjectType);
+		mod->setSavedValue<bool>("soi-position",		soiPosition);
+		mod->setSavedValue<bool>("soi-rotation",		soiRotation);
+		mod->setSavedValue<bool>("soi-scale",			soiScale);
+		mod->setSavedValue<bool>("soi-color",			soiColor);
+		mod->setSavedValue<bool>("soi-hsv",				soiHSV);
+		mod->setSavedValue<bool>("soi-groups",			soiGroups);
+		mod->setSavedValue<bool>("soi-zlayer",			soiZLayer);
+		mod->setSavedValue<bool>("soi-zorder",			soiZOrder);
+		mod->setSavedValue<bool>("soi-objectid",		soiObjectID);
+		mod->setSavedValue<bool>("soi-targetgroup",		soiTargetGroup);
+		mod->setSavedValue<bool>("soi-itemid",			soiItemID);
+		mod->setSavedValue<bool>("soi-blockid",			soiBlockID);
+		mod->setSavedValue<bool>("soi-particles",		soiParticles);
+		mod->setSavedValue<bool>("soi-hidden",			soiHidden);
+		mod->setSavedValue<bool>("soi-no-touch",		soiNoTouch);
+		mod->setSavedValue<bool>("soi-high-detail",		soiHighDetail);
+		mod->setSavedValue<bool>("soi-object-count",	soiObjectCount);
+		mod->setSavedValue<bool>("soi-object-type",		soiObjectType);
 		g_soiNeedsUpdate = true;
 	}
 }

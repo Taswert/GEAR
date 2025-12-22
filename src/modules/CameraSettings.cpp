@@ -1,4 +1,3 @@
-#pragma once
 #include "CameraSettings.hpp"
 
 namespace ErGui {

@@ -1,5 +1,4 @@
-﻿#pragma once
-#include "ObjectListModule.hpp"
+﻿#include "ObjectListModule.hpp"
 #include <Geode/Geode.hpp>
 #include <Geode/GeneratedPredeclare.hpp>
 #include <cocos2d.h>

@@ -1,4 +1,3 @@
-#pragma once
 #include "myUtils.hpp"
 #include "Hovering.hpp"
 //#include <Geode/modify/GameObject.hpp>
