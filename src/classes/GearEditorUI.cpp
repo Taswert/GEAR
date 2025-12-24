@@ -150,6 +150,19 @@ void GearEditorUI::processSelectObjects(CCArray * objArr) { // I hope this would
 	EditorUI::processSelectObjects(sfr);
 }
 
+void GearEditorUI::resetSelectedObjectsColor() {
+	EditorUI::resetSelectedObjectsColor();
+	for (int i = 0; i < m_editorLayer->m_activeObjectsCount; i++) {
+		GameObject* obj = m_editorLayer->m_activeObjects[i];
+
+		if (obj->m_isSelected) {
+			obj->setObjectColor(ErGui::g_selectedObjectColor);
+			if (obj->m_colorSprite)
+				obj->m_colorSprite->setColor(ErGui::g_selectedObjectColor);
+		}
+	}
+}
+
 
 void GearEditorUI::onHideUI(CCObject * sender) {
 	static_cast<CCMenuItemSpriteExtra*>(sender)->setVisible(false);
@@ -157,8 +170,13 @@ void GearEditorUI::onHideUI(CCObject * sender) {
 }
 
 void GearEditorUI::deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUndo) {
-	EditorUI::deleteObject(obj, noUndo);
-	this->m_selectedObjects->removeObject(obj, false);
+	// Maybe, just maybe, this specific if-statement should not be here... I'll find it out eventually :P
+	if (shouldDeleteObject(obj)) {
+		EditorUI::deleteObject(obj, noUndo);
+	}
+	if (this->m_selectedObjects->containsObject(obj)) {
+		this->m_selectedObjects->removeObject(obj, false);
+	}
 }
 
 bool GearEditorUI::init(LevelEditorLayer * lel) {
@@ -206,18 +224,6 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 	//this->m_fields->newScale = this->m_fields->oldScale;
 
 	this->schedule(schedule_selector(GearEditorUI::myUpdate));
-
-
-
-	// Keybinds
-	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-		if (event->isDown()) {
-			// do a backflip!
-		}
-		// Return Propagate if you want other actions with the same bind to
-		// also be fired, or Stop if you want to halt propagation
-		return ListenerResult::Propagate;
-		}, "backflip"_spr);
 
 	return ret;
 }

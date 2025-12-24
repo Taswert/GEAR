@@ -1,9 +1,10 @@
 #include "ToolsModule.hpp"
 #include "EditColorModule.hpp"
 #include "IconsMaterialDesignIcons.h"
-#include "GearCopyPasteIcons.hpp"
+#include "GearIcons.hpp"
 #include "ObjectListModule.hpp"
 #include "EditGroupModule.hpp"
+#include "../classes/GearEditorUI.hpp"
 
 #include "../features/Hovering.hpp"
 
@@ -115,7 +116,7 @@ void ErGui::renderToolsModule1() {
 	ImGui::BeginDisabled(selectedObject == nullptr);
 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { 0.70f, 0.75f });
 	
-	if (ImGui::Selectable(ICON_GEARCPI_COPY_VALUES, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_GEAR_COPY_VALUES, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onCopyState(nullptr);
 		//LevelEditorLayer::get()->copyObjectState(selectedObject);
 	}
@@ -128,14 +129,14 @@ void ErGui::renderToolsModule1() {
 
 	ImGui::BeginDisabled((selectedObject == nullptr && selectedObjects->count() == 0) || copyStateObj == nullptr);
 
-	if (ImGui::Selectable(ICON_GEARCPI_PASTE_VALUES, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_GEAR_PASTE_VALUES, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onPasteState(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Paste State");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_GEARCPI_PASTE_COLOR, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_GEAR_PASTE_COLOR, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onPasteColor(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
@@ -327,55 +328,48 @@ void ErGui::renderToolsModule2() {
 
 			std::string newFrameName;
 			auto lel = LevelEditorLayer::get();
-			bool isClicked = false;
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
 
 
 			ImTextureID startposObjectTexture = (ImTextureID)(intptr_t)getObjectSprite(31)->getTexture()->getName();
 			if (ImGui::ImageButton("##STARTPOS-OBJECT", startposObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) {
-				addObjectsToUndoList(lel->m_objects, UndoCommand::DeleteMulti);
-				for (auto obj : CCArrayExt<GameObject*>(lel->m_objects)) {
-					if (obj->m_objectID == 31) editorUI->deleteObject(obj, true);
-				}
+				editorUI->deselectAll();
+				lel->removeAllObjectsOfType(31);
+				if (static_cast<UndoObject*>(lel->m_undoObjects->lastObject())->m_objects->count() == 0)
+					lel->m_undoObjects->removeLastObject();
+				editorUI->updateButtons();
 			}
 			ImGui::SameLine();
 
 
 			// Texture
 			if (objId == 0) {
-				if (ImGui::Button("##SELECTED-OBJECT", { 30.f, 30.f })) isClicked = true;
+				ImGui::Button("##SELECTED-OBJECT", { 30.f, 30.f });
 			}
 			else {
 				ImTextureID selectedObjectTexture = (ImTextureID)(intptr_t)getObjectSprite(objId)->getTexture()->getName();
-				if (ImGui::ImageButton("##SELECTED-OBJECT", selectedObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) isClicked = true;
-			}
-			
-			// Callback
-			if (isClicked) {
-				editorUI->onDeleteSelectedType(nullptr);
-				isClicked = false;
+				if (ImGui::ImageButton("##SELECTED-OBJECT", selectedObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) {
+					editorUI->onDeleteSelectedType(nullptr);
+				}
 			}
 			ImGui::SameLine();
 
 
 			// Texture
 			if (editorUI->m_selectedObjectIndex == 0) {
-				if (ImGui::Button("##LIST-OBJECT", { 30.f, 30.f })) isClicked = true;
+				ImGui::Button("##LIST-OBJECT", { 30.f, 30.f });
 			}
 			else {
 				ImTextureID listObjectTexture = (ImTextureID)(intptr_t)getObjectSprite(editorUI->m_selectedObjectIndex)->getTexture()->getName();
-				if (ImGui::ImageButton("##LIST-OBJECT", listObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) isClicked = true;
+				if (ImGui::ImageButton("##LIST-OBJECT", listObjectTexture, { 26.f, 26.f }, ImVec2(0, 1), ImVec2(1, 0))) {
+					editorUI->deselectAll();
+					lel->removeAllObjectsOfType(editorUI->m_selectedObjectIndex);
+					if (static_cast<UndoObject*>(lel->m_undoObjects->lastObject())->m_objects->count() == 0)
+						lel->m_undoObjects->removeLastObject();
+					editorUI->updateButtons();
+				}
 			} 
-
-			// Callback
-			if (isClicked) {
-				addObjectsToUndoList(lel->m_objects, UndoCommand::DeleteMulti);
-				editorUI->deselectAll();
-				lel->removeAllObjectsOfType(editorUI->m_selectedObjectIndex);
-				editorUI->updateButtons();
-			}
-
 
 			ImGui::PopStyleVar();
 			
@@ -452,7 +446,9 @@ void ErGui::renderToolsModule2() {
 		}
 		case 3: //Edit
 		{
-			if (ImGui::Checkbox("Lasso", &isLassoEnabled)) {
+			const float selectableRounding = ImGui::GetStyle().FrameRounding;
+
+			if (ImGui::Selectable(ICON_MDI_LASSO, isLassoEnabled, 0, BTN_SIZE, selectableRounding)) {
 				if (isLassoEnabled && editorUI->m_swipeEnabled) {
 					//GameManager::sharedState()->setGameVariable("0003", true);
 					lassoPatch->enable();
@@ -461,17 +457,32 @@ void ErGui::renderToolsModule2() {
 					//GameManager::sharedState()->setGameVariable("0003", false);
 					lassoPatch->disable();
 				}
+				isLassoEnabled = !isLassoEnabled;
 			}
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				ImGui::SetTooltip("Lasso");
+
+			ImGui::SameLine();
+			ImGui::Dummy(ImVec2(5.f, 0.f));
 			ImGui::SameLine();
 
 
 			int selectMode = Mod::get()->getSavedValue<int>("select-mode", 1);
 
-			ImGui::RadioButton("Additive##RADIO",		&selectMode, 1);
+			if (ImGui::Selectable(ICON_GEAR_ADDITIVE_MODE, selectMode == 1, 0, BTN_SIZE, selectableRounding))
+				selectMode = 1;
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				ImGui::SetTooltip("Additive Mode");
 			ImGui::SameLine();
-			ImGui::RadioButton("Subtractive##RADIO",	&selectMode, 2);
+			if (ImGui::Selectable(ICON_GEAR_SUBTRACTIVE_MODE, selectMode == 2, 0, BTN_SIZE, selectableRounding))
+				selectMode = 2;
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				ImGui::SetTooltip("Subtractive Mode");
 			ImGui::SameLine();
-			ImGui::RadioButton("Intersective##RADIO",	&selectMode, 3);
+			if (ImGui::Selectable(ICON_GEAR_INTERSECTIVE_MODE, selectMode == 3, 0, BTN_SIZE, selectableRounding))
+				selectMode = 3;
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+				ImGui::SetTooltip("Intersective Mode");
 			
 
 			Mod::get()->setSavedValue("select-mode", selectMode);

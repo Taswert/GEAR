@@ -240,6 +240,46 @@ $execute{
 		Category::EDITOR_MODIFY,
 		false
 		});
+	
+	// Half Steps: Up
+	bindManager->registerBindable({
+		"move-obj-up-half"_spr,
+		"Move Object Up Half",
+		"Move Selected Object(s) Up 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
+
+	// Half Steps: Down
+	bindManager->registerBindable({
+		"move-obj-down-half"_spr,
+		"Move Object Down Half",
+		"Move Selected Object(s) Down 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
+
+	// Half Steps: Left
+	bindManager->registerBindable({
+		"move-obj-left-half"_spr,
+		"Move Object Left Half",
+		"Move Selected Object(s) Left 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
+
+	// Half Steps: Right
+	bindManager->registerBindable({
+		"move-obj-right-half"_spr,
+		"Move Object Right Half",
+		"Move Selected Object(s) Right 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
 
 
 
@@ -314,6 +354,35 @@ $execute{
 		}
 		return ListenerResult::Propagate;
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-right-small"));
+
+	// Half Steps (Position)
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "move-obj-up-half"_spr));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "move-obj-down-half"_spr));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "move-obj-left-half"_spr));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "move-obj-right-half"_spr));
 
 
 	// Rotation

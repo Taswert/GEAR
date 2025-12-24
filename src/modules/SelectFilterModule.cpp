@@ -1,4 +1,5 @@
 #include "SelectFilterModule.hpp"
+#include "ObjectListModule.hpp"
 
 void ErGui::renderSelectFilter() {
 	ImGui::Begin("Filter");
@@ -60,17 +61,26 @@ void ErGui::renderSelectFilter() {
 		}
 
 		ImGui::SeparatorText("Filter");
-		int i = 1;
+		float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+		bool shouldMakeNewLine = false;
 		for (auto objId : objectsFilterSet) {
-			std::string btnStr = std::to_string(objId);
-			btnStr += "##OBJ-FILTER";
-			if (ImGui::Button(btnStr.c_str())) {
+			shouldMakeNewLine = false;
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+			ImTextureID startposObjectTexture = (ImTextureID)(intptr_t)getObjectSprite(objId)->getTexture()->getName();
+			if (ImGui::ImageButton(fmt::format("{}##OBJ-FILTER",objId).c_str(), startposObjectTexture, {26.f, 26.f}, ImVec2(0, 1), ImVec2(1, 0))) {
 				objectsFilterSet.erase(objId);
 			}
-			if (i % 10 != 0) ImGui::SameLine();
-			i++;
+			ImGui::PopStyleVar();
+
+			float lastButtonX2 = ImGui::GetItemRectMax().x;
+			float nextButtonX2 = lastButtonX2 + ImGui::GetStyle().ItemSpacing.x + 26.f;
+
+			if (nextButtonX2 < windowVisibleX2) {
+				ImGui::SameLine();
+				shouldMakeNewLine = true;
+			}
 		}
-		if (i - 1 % 10 != 0) ImGui::NewLine();
+		if (shouldMakeNewLine) ImGui::NewLine();
 	}
 
 

@@ -204,20 +204,22 @@ class $modify(LevelEditorLayer) {
             }
 
             // Hovering
-            auto isHovered = static_cast<ErGui::GearGameObject*>(obj)->m_fields->m_isHovered;
             if (geode::Mod::get()->getSavedValue<bool>("hovering-selects", true)) {
+                auto gearObj = static_cast<ErGui::GearGameObject*>(obj);
+                auto isHovered = gearObj->m_fields->m_isHovered;
                 if (isHovered) {
-                    obj->setObjectColor(ErGui::g_hoveredObjectColor);
-                    if (obj->m_colorSprite)
-                        obj->m_colorSprite->setColor(ErGui::g_hoveredObjectColor);
+                    gearObj->m_fields->m_wasHovered = true;
+                    gearObj->setObjectColor(ErGui::g_hoveredObjectColor);
+                    if (gearObj->m_colorSprite)
+                        gearObj->m_colorSprite->setColor(ErGui::g_hoveredObjectColor);
+                }
+                else if (gearObj->m_fields->m_wasHovered && gearObj->m_isSelected) {
+                    gearObj->m_fields->m_wasHovered = false;
+                    gearObj->setObjectColor(ErGui::g_selectedObjectColor);
+                    if (gearObj->m_colorSprite)
+                        gearObj->m_colorSprite->setColor(ErGui::g_selectedObjectColor);
                 }
             }
-
-            //if (obj->m_isSelected && !isHovered) {
-            //    obj->setObjectColor(ErGui::g_selectedObjectColor);
-            //    if (obj->m_colorSprite)
-            //        obj->m_colorSprite->setColor(ErGui::g_selectedObjectColor);
-            //}
         }
     }
 };

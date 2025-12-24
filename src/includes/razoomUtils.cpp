@@ -96,8 +96,23 @@ namespace {
             color = isBright ? ccc3(0, 0, 0) : ccc3(127, 127, 127);
         }
     LAB_14010dac2:
+
+        // Dynamic Coloring. Should somehow update already drawn objects.
+        //if (Mod::get()->getSavedValue<bool>("enable-build-color-1")) {
+        //    int colorID = Mod::get()->getSavedValue<int>("build-color-1");
+        //    auto effectManager = LevelEditorLayer::get()->m_effectManager;
+        //    color = effectManager->getColorSprite(colorID)->m_color;
+        //}
+        
+
         gameObj->setObjectColor(color);
         color = isBright ? ccc3(200, 200, 255) : ccc3(100, 100, 127);
+
+        //if (Mod::get()->getSavedValue<bool>("enable-build-color-2")) {
+        //    int colorID = Mod::get()->getSavedValue<int>("build-color-2");
+        //    auto effectManager = LevelEditorLayer::get()->m_effectManager;
+        //    color = effectManager->getColorSprite(colorID)->m_color;
+        //}
         gameObj->setChildColor(color);
     }
 

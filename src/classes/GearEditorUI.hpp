@@ -55,6 +55,7 @@ public:
 	void scrollWheel(float y, float x);
 	void moveObjectCall(EditCommand command);
 	void transformObjectCall(EditCommand command);
+	void resetSelectedObjectsColor();
 
 	virtual void keyDown(cocos2d::enumKeyCodes p0);
 	virtual void keyUp(cocos2d::enumKeyCodes p0);

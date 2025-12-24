@@ -44,6 +44,7 @@ namespace ErGui {
 	class $modify(GearGameObject, GameObject) {
 		struct Fields {
 			bool m_isHovered = false;
+			bool m_wasHovered = false;
 		};
 	};
 

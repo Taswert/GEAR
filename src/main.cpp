@@ -8,7 +8,7 @@
 #include <Geode/modify/CCEGLView.hpp>
 
 #include <IconsMaterialDesignIcons.h>
-#include <GearCopyPasteIcons.hpp>
+#include <GearIcons.hpp>
 #include "modules/EditGroupModule.hpp"
 #include "modules/SelectFilterModule.hpp"
 #include "modules/TransformObjectModule.hpp"

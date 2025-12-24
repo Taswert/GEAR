@@ -4,6 +4,51 @@
 #include "DebugModule.hpp"
 #include "TransformObjectModule.hpp"
 
+
+const ccColor4F default_additiveSelectColor = { 0.f, 1.f, 0.f, 1.f };
+const ccColor4F default_subtractiveSelectColor = { 1.f, 0.f, 1.f, 1.f };
+const ccColor4F default_intersectiveSelectColor = { 1.f, 0.6f, 0.f, 1.f };
+const ccColor3B default_selectedObjectColor = { 0, 255, 0 };
+const ccColor3B default_hoveredObjectColor = { 255, 255, 0 };
+
+template<>
+struct matjson::Serialize<ccColor4F> {
+	static Result<ccColor4F> fromJson(matjson::Value const& value) {
+		GEODE_UNWRAP_INTO(float r, value["r"].asDouble());
+		GEODE_UNWRAP_INTO(float g, value["g"].asDouble());
+		GEODE_UNWRAP_INTO(float b, value["b"].asDouble());
+		GEODE_UNWRAP_INTO(float a, value["a"].asDouble());
+		return Ok(ccColor4F{ r, g, b, a });
+	}
+
+	static matjson::Value toJson(ccColor4F const& value) {
+		auto obj = matjson::Value();
+		obj["r"] = value.r;
+		obj["g"] = value.g;
+		obj["b"] = value.b;
+		obj["a"] = value.a;
+		return obj;
+	}
+};
+
+void renderConfirmPopup(std::function<void()> const& callback) {
+	if (ImGui::BeginPopupModal("Confirm Reset")) {
+		ImGui::Text("Are you sure, you want to reset settings in this category to default?");
+		ImGui::Text("This will only affect settings added by GEAR.");
+		if (ImGui::Button("Reset")) {
+			callback();
+			LevelEditorLayer::get()->updateOptions();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
+
 void renderGeneralSettings() {
 	auto gm = GameManager::sharedState();
 	auto mod = geode::Mod::get();
@@ -155,9 +200,15 @@ void renderGeneralSettings() {
 
 
 	ImGui::Dummy(ImVec2(10.f, 10.f));
-	ImGui::BeginDisabled();
-	ImGui::Button("Reset to Default");
-	ImGui::EndDisabled();
+
+	renderConfirmPopup([mod]() {
+		mod->setSavedValue<bool>("auto-buildhelper", false);
+		mod->setSavedValue<bool>("deselect-controls", false);
+		mod->setSavedValue<bool>("gamewindow-static-ratio", false);
+		});
+	if (ImGui::Button("Reset to Default")) {
+		ImGui::OpenPopup("Confirm Reset");
+	}
 
 
 	// Saving Values
@@ -244,10 +295,20 @@ void renderInterfaceSettings() {
 	}
 
 	//ImGui::SeparatorText("Styling Settings");
+
 	ImGui::Dummy(ImVec2(10.f, 10.f));
-	ImGui::BeginDisabled();
-	ImGui::Button("Reset to Default");
-	ImGui::EndDisabled();
+
+	renderConfirmPopup([mod]() {
+		mod->setSavedValue<bool>("triangle-color-wheel", true);
+		mod->setSavedValue<bool>("rotate-color-wheel", false);
+		mod->setSavedValue<bool>("hide-object-list-popup", true);
+		mod->setSavedValue<bool>("autoswitch-to-build-mode", true);
+		mod->setSavedValue<bool>("show-zoom-controls", true);
+		});
+	if (ImGui::Button("Reset to Default")) {
+		ImGui::OpenPopup("Confirm Reset");
+	}
+	
 
 	// Saving Values
 	if (isAnyItemClicked) {
@@ -364,9 +425,30 @@ void renderObjectInfoSettings() {
 
 
 	ImGui::Dummy(ImVec2(10.f, 10.f));
-	ImGui::BeginDisabled();
-	ImGui::Button("Reset to Default");
-	ImGui::EndDisabled();
+
+	renderConfirmPopup([mod]() {
+		mod->setSavedValue<bool>("soi-position", true);
+		mod->setSavedValue<bool>("soi-rotation", true);
+		mod->setSavedValue<bool>("soi-scale", true);
+		mod->setSavedValue<bool>("soi-color", true);
+		mod->setSavedValue<bool>("soi-hsv", false);
+		mod->setSavedValue<bool>("soi-groups", true);
+		mod->setSavedValue<bool>("soi-zlayer", true);
+		mod->setSavedValue<bool>("soi-zorder", true);
+		mod->setSavedValue<bool>("soi-objectid", false);
+		mod->setSavedValue<bool>("soi-targetgroup", true);
+		mod->setSavedValue<bool>("soi-itemid", false);
+		mod->setSavedValue<bool>("soi-blockid", false);
+		mod->setSavedValue<bool>("soi-particles", true);
+		mod->setSavedValue<bool>("soi-hidden", true);
+		mod->setSavedValue<bool>("soi-no-touch", true);
+		mod->setSavedValue<bool>("soi-high-detail", false);
+		mod->setSavedValue<bool>("soi-object-count", true);
+		mod->setSavedValue<bool>("soi-object-type", false);
+		});
+	if (ImGui::Button("Reset to Default")) {
+		ImGui::OpenPopup("Confirm Reset");
+	}
 
 	// Saving Values
 	if (isAnyItemClicked) {
@@ -398,8 +480,13 @@ void renderDrawsSettings() {
 
 	bool isAnyItemClicked = false;
 
-	bool fillSelectionZone = mod->getSavedValue<bool>("fill-selection-zone", false);    // Fills selection zone with solid color
-	bool hoveringSelects = mod->getSavedValue<bool>("hovering-selects", true);          // Hovers objects in the selection zone
+	bool fillSelectionZone =			mod->getSavedValue<bool>("fill-selection-zone", false);    // Fills selection zone with solid color
+	bool hoveringSelects =				mod->getSavedValue<bool>("hovering-selects", true);          // Hovers objects in the selection zone
+	ErGui::g_additiveSelectColor =		mod->getSavedValue<ccColor4F>("additive-select-color", ErGui::g_additiveSelectColor);
+	ErGui::g_subtractiveSelectColor =	mod->getSavedValue<ccColor4F>("subtractive-select-color", ErGui::g_subtractiveSelectColor);
+	ErGui::g_intersectiveSelectColor =	mod->getSavedValue<ccColor4F>("intersective-select-color", ErGui::g_intersectiveSelectColor);
+	ErGui::g_selectedObjectColor =		mod->getSavedValue<ccColor3B>("selected-object-color", ErGui::g_selectedObjectColor);
+	ErGui::g_hoveredObjectColor =		mod->getSavedValue<ccColor3B>("hovered-object-color", ErGui::g_hoveredObjectColor);
 
 	if (ImGui::Checkbox("Fill Selection Zone", &fillSelectionZone)) {
 		isAnyItemClicked = true;
@@ -414,9 +501,15 @@ void renderDrawsSettings() {
 		ImGui::SetTooltip("Objects that are in the selection zone, change their color to yellow.");
 	}
 
-	ImGui::ColorEdit4("Additive Select",		reinterpret_cast<float*>(&ErGui::g_additiveSelectColor));
-	ImGui::ColorEdit4("Subtractive Select",		reinterpret_cast<float*>(&ErGui::g_subtractiveSelectColor));
-	ImGui::ColorEdit4("Intersective Select",	reinterpret_cast<float*>(&ErGui::g_intersectiveSelectColor));
+	if (ImGui::ColorEdit4("Additive Select", reinterpret_cast<float*>(&ErGui::g_additiveSelectColor))) {
+		isAnyItemClicked = true;
+	}
+	if (ImGui::ColorEdit4("Subtractive Select", reinterpret_cast<float*>(&ErGui::g_subtractiveSelectColor))) {
+		isAnyItemClicked = true;
+	}
+	if (ImGui::ColorEdit4("Intersective Select", reinterpret_cast<float*>(&ErGui::g_intersectiveSelectColor))) {
+		isAnyItemClicked = true;
+	}
 
 	ImGui::Dummy(ImVec2(0.f, 5.f));
 
@@ -425,7 +518,10 @@ void renderDrawsSettings() {
 		ErGui::g_selectedObjectColor.g / 255.f,
 		ErGui::g_selectedObjectColor.b / 255.f
 	};
-	ImGui::ColorEdit3("Selected Object", selectedColor);
+	if (ImGui::ColorEdit3("Selected Object", selectedColor)) {
+		isAnyItemClicked = true;
+		EditorUI::get()->resetSelectedObjectsColor();
+	}
 	ErGui::g_selectedObjectColor = {
 		static_cast<unsigned char>(selectedColor[0] * 255),
 		static_cast<unsigned char>(selectedColor[1] * 255),
@@ -437,7 +533,9 @@ void renderDrawsSettings() {
 		ErGui::g_hoveredObjectColor.g / 255.f,
 		ErGui::g_hoveredObjectColor.b / 255.f
 	};
-	ImGui::ColorEdit3("Hovered Object", hoveredColor);
+	if (ImGui::ColorEdit3("Hovered Object", hoveredColor)) {
+		isAnyItemClicked = true;
+	}
 	ErGui::g_hoveredObjectColor = {
 		static_cast<unsigned char>(hoveredColor[0] * 255),
 		static_cast<unsigned char>(hoveredColor[1] * 255),
@@ -446,14 +544,31 @@ void renderDrawsSettings() {
 	
 
 	ImGui::Dummy(ImVec2(10.f, 10.f));
-	ImGui::BeginDisabled();
-	ImGui::Button("Reset to Default");
-	ImGui::EndDisabled();
+
+	renderConfirmPopup([mod]() {
+		mod->setSavedValue<bool>("fill-selection-zone", false);
+		mod->setSavedValue<bool>("hovering-selects", true);
+		mod->setSavedValue<ccColor4F>("additive-select-color", default_additiveSelectColor);
+		mod->setSavedValue<ccColor4F>("subtractive-select-color", default_subtractiveSelectColor);
+		mod->setSavedValue<ccColor4F>("intersective-select-color", default_intersectiveSelectColor);
+		mod->setSavedValue<ccColor3B>("selected-object-color", default_selectedObjectColor);
+		mod->setSavedValue<ccColor3B>("hovered-object-color", default_hoveredObjectColor);
+		});
+	if (ImGui::Button("Reset to Default")) {
+		ImGui::OpenPopup("Confirm Reset");
+	}
 
 	// Saving Values
 	if (isAnyItemClicked) {
 		mod->setSavedValue<bool>("fill-selection-zone", fillSelectionZone);
 		mod->setSavedValue<bool>("hovering-selects", hoveringSelects);
+
+		mod->setSavedValue<ccColor4F>("additive-select-color", ErGui::g_additiveSelectColor);
+		mod->setSavedValue<ccColor4F>("subtractive-select-color", ErGui::g_subtractiveSelectColor);
+		mod->setSavedValue<ccColor4F>("intersective-select-color", ErGui::g_intersectiveSelectColor);
+
+		mod->setSavedValue<ccColor3B>("selected-object-color", ErGui::g_selectedObjectColor);
+		mod->setSavedValue<ccColor3B>("hovered-object-color", ErGui::g_hoveredObjectColor);
 	}
 }
 
@@ -484,11 +599,14 @@ void renderDebugSettings() {
 		ImGui::SetTooltip("Shows positions of begin and end of touch.");
 	}
 
-
-	ImGui::Dummy(ImVec2(10.f, 10.f));
-	ImGui::BeginDisabled();
-	ImGui::Button("Reset to Default");
-	ImGui::EndDisabled();
+	renderConfirmPopup([mod]() {
+		ErGui::g_showDebugModule = false;
+		ErGui::dbgTDN = false;
+		mod->setSavedValue<bool>("debug-show-objects-boxes", false);
+		});
+	if (ImGui::Button("Reset to Default")) {
+		ImGui::OpenPopup("Confirm Reset");
+	}
 
 	// Saving Values
 	if (isAnyItemClicked) {
