@@ -70,6 +70,10 @@
 		"hjfod.betteredit": {
 			"version": ">=6.10.0-alpha.12",
 			"importance": "breaking"
+		},
+		"ninkaz.editor_utils": {
+			"version": ">=1.4.0",
+			"importance": "breaking"
 		}
 	}
 }
