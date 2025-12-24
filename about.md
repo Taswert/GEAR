@@ -6,7 +6,7 @@ I mean, I really just don't know what to say here. The mod is so big, you just n
 
 ## <c-fbe970>Features</c>
 - RMB Context Menu
-- Compact UI
+- Fully reworked UI
 - Different Selection types
 - Object Search
 - Advanced Layers

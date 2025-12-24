@@ -8,6 +8,10 @@
 
 #include "../features/Hovering.hpp"
 
+
+#include <geode.custom-keybinds/include/Keybinds.hpp>
+using namespace keybinds;
+
 void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 	float lastButtonX2 = ImGui::GetItemRectMax().x;
@@ -17,6 +21,15 @@ void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 		ImGui::SameLine();
 	else
 		ImGui::Dummy(DummyPad);
+}
+
+void SetTooltipWithBind(const std::string& name, const keybinds::ActionID& actionID) {
+	std::string bindsStr;
+	for (auto what : BindManager::get()->getBindsFor(actionID)) {
+		keybinds::Bind* bind = what.data();
+		bindsStr += bind->toString();
+	}
+	ImGui::SetTooltip(fmt::format("{} ({})", name, bindsStr).c_str());
 }
 
 void ErGui::renderToolsModule1() {
@@ -31,27 +44,38 @@ void ErGui::renderToolsModule1() {
 	const float selectableRounding = ImGui::GetStyle().FrameRounding;
 
 	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+	
 
-
-	if (ImGui::Selectable(ICON_MDI_BRUSH, editorUI->m_selectedMode == 2, 0, BTN_SIZE, selectableRounding))
+	if (ImGui::Selectable(ICON_MDI_BRUSH, editorUI->m_selectedMode == 2, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->m_selectedMode = 2;
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Build Mode (1)");
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		SetTooltipWithBind("Build Mode", "robtop.geometry-dash/build-mode");
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+
 	if (ImGui::Selectable(ICON_MDI_SELECTION, editorUI->m_selectedMode == 3, 0, BTN_SIZE, selectableRounding))
 		editorUI->m_selectedMode = 3;
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Edit Mode (2)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		SetTooltipWithBind("Edit Mode", "robtop.geometry-dash/edit-mode");
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+
 	if (ImGui::Selectable(ICON_MDI_DELETE, editorUI->m_selectedMode == 1, 0, BTN_SIZE, selectableRounding))
 		editorUI->m_selectedMode = 1;
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Delete Mode (3)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Delete Mode (3)");
+		SetTooltipWithBind("Delete Mode", "robtop.geometry-dash/delete-mode");
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+
 	if (ImGui::Selectable(ICON_MDI_EYE, editorUI->m_selectedMode == 4, 0, BTN_SIZE, selectableRounding))
 		editorUI->m_selectedMode = 4;
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Observer Mode (4)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Observer Mode (4)");
+		SetTooltipWithBind("View Mode", "view-mode"_spr);
+	}
+		
 	ImGui::Separator();
 	
 	bool swipeBool = editorUI->m_swipeEnabled;
@@ -65,8 +89,11 @@ void ErGui::renderToolsModule1() {
 			lassoPatch->disable();
 		}
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Swipe (T)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Swipe (T)");
+		SetTooltipWithBind("Swipe", "robtop.geometry-dash/toggle-swipe");
+	}
+		
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	bool rotationBool = gameManager->getGameVariable("0007");
@@ -79,32 +106,41 @@ void ErGui::renderToolsModule1() {
 			editorUI->m_rotationControl->setVisible(false);
 		}
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Rotation (R)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Rotation (R)");
+		SetTooltipWithBind("Rotate", "robtop.geometry-dash/toggle-rotate");
+	}	
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	bool freeMoveBool = editorUI->m_freeMoveEnabled;
 	if (ImGui::Selectable(ICON_MDI_CURSOR_MOVE, &freeMoveBool, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->m_freeMoveEnabled = freeMoveBool;
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Free Move (F)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Free Move (F)");
+		SetTooltipWithBind("Free Move", "robtop.geometry-dash/toggle-free-move");
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	bool snapBool = gameManager->getGameVariable("0008");
 	if (ImGui::Selectable(ICON_MDI_AXIS_ARROW, &snapBool, 0, BTN_SIZE, selectableRounding)) {
 		gameManager->setGameVariable("0008", snapBool);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Snap (G)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Snap (G)");
+		SetTooltipWithBind("Snap", "robtop.geometry-dash/toggle-snap");
+	}
+		
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	
 	bool autoBuildHelperBool = Mod::get()->getSavedValue<bool>("auto-buildhelper", false);
 	if (ImGui::Selectable(ICON_MDI_WRENCH, &autoBuildHelperBool, 0, BTN_SIZE, selectableRounding)) {
 		Mod::get()->setSavedValue<bool>("auto-buildhelper", autoBuildHelperBool);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		ImGui::SetTooltip("AutoBuild Helper");
+	}
+		
 
 	ImGui::Separator();
 
@@ -150,8 +186,10 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_MDI_CONTENT_DUPLICATE, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onDuplicate(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Duplicate (Ctrl+D)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Duplicate (Ctrl+D)");
+		SetTooltipWithBind("Duplicate", "robtop.geometry-dash/copy-paste");
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_DELETE_FOREVER, false, 0, BTN_SIZE, selectableRounding)) {
@@ -161,15 +199,19 @@ void ErGui::renderToolsModule1() {
 		}
 		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Delete Selected (Del)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Delete Selected (Del)");
+		SetTooltipWithBind("Delete Selected", "robtop.geometry-dash/delete");	
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_VECTOR_SQUARE, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->activateTransformControl(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Warp Selected (Ctrl+W)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Warp Selected (Ctrl+W)");
+		SetTooltipWithBind("Warp Selected", "toggle-warp"_spr);
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_RESIZE, false, 0, BTN_SIZE, selectableRounding)) {
@@ -188,8 +230,10 @@ void ErGui::renderToolsModule1() {
 		editorUI->createUndoSelectObject(false);
 		editorUI->deselectAll();
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Deselect Objects (Alt+D)");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Deselect Objects (Alt+D)");
+		SetTooltipWithBind("Deselect Objects", "robtop.geometry-dash/deselect-all");
+	}
 
 
 	ImGui::Separator();
@@ -202,22 +246,33 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_MDI_MUSIC_NOTE, false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onPlayback(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip("Playback");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip("Playback");
+		SetTooltipWithBind("Playback", "robtop.geometry-dash/playback-music");
+	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	if (ImGui::Selectable(playtestStr.c_str(), false, 0, BTN_SIZE, selectableRounding)) {
 		editorUI->onPlaytest(nullptr);
 	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-		ImGui::SetTooltip(mode == PlaybackMode::Playing ? "Pause" : "Playtest");
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		//ImGui::SetTooltip(mode == PlaybackMode::Playing ? "Pause" : "Playtest");
+		if (mode == PlaybackMode::Playing) {
+			ImGui::SetTooltip("Pause");
+		}
+		else {
+			SetTooltipWithBind("Playtest", "robtop.geometry-dash/playtest");
+		}
+	}
 
 	if (mode == PlaybackMode::Playing || mode == PlaybackMode::Paused) {
 		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 		if (ImGui::Selectable(ICON_MDI_STOP, false, 0, BTN_SIZE, selectableRounding)) {
 			editorUI->onStopPlaytest(nullptr);
 		}
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			ImGui::SetTooltip("Stop");
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+			//ImGui::SetTooltip("Stop");
+			SetTooltipWithBind("Stop", "robtop.geometry-dash/playtest");
+		}
 	}
 
 	ImGui::Separator();
@@ -257,13 +312,17 @@ void ErGui::renderToolsModule1() {
 
 		if (ImGui::Selectable(ICON_MDI_MAGNIFY_PLUS, false, 0, BTN_SIZE, selectableRounding))
 			editorUI->zoomIn(nullptr);
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			ImGui::SetTooltip("Zoom In");
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+			//ImGui::SetTooltip("Zoom In");
+			SetTooltipWithBind("Zoom In", "robtop.geometry-dash/zoom-in");
+		}
 		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 		if (ImGui::Selectable(ICON_MDI_MAGNIFY_MINUS, false, 0, BTN_SIZE, selectableRounding))
 			editorUI->zoomOut(nullptr);
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-			ImGui::SetTooltip("Zoom Out");
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+			//ImGui::SetTooltip("Zoom Out");
+			SetTooltipWithBind("Zoom Out", "robtop.geometry-dash/zoom-out");
+		}
 	}
 
 
