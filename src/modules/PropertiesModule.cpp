@@ -141,9 +141,9 @@ void renderGeneralSettings() {
 
 	ErGui::SeparatorPlus("Transform Steps");
 	auto style = ImGui::GetStyle();
-	float inputFloatWidth = 30.f * 7.f + style.ItemSpacing.x * 6.f;
+	const float INPUT_FLOAT_WIDTH = 30.f * 7.f + style.ItemSpacing.x * 6.f;
 	// position
-	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 	ImGui::InputFloat("MoveStep", &ErGui::moveStep, 1.f);
 	if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 0.5f;	ImGui::SameLine();
 	if (ImGui::Button("2##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 2.f;		ImGui::SameLine();
@@ -158,7 +158,7 @@ void renderGeneralSettings() {
 	ImGui::Dummy({0.f, 5.f});
 
 	// rotation
-	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 	ImGui::InputFloat("RotStep", &ErGui::rotationStep, 1.f);
 	if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 1.f;		ImGui::SameLine();
 	if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 10.f;	ImGui::SameLine();
@@ -173,7 +173,7 @@ void renderGeneralSettings() {
 	ImGui::Dummy({ 0.f, 5.f });
 
 	// scale
-	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 	ImGui::InputFloat("ScaleStep", &ErGui::scaleStep, 0.25f);
 	if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.01f;	ImGui::SameLine();
 	if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.05f;	ImGui::SameLine();
@@ -187,7 +187,7 @@ void renderGeneralSettings() {
 	ImGui::Dummy({ 0.f, 5.f });
 
 	// skew
-	ImGui::SetNextItemWidth(inputFloatWidth);
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 	ImGui::InputFloat("SkewStep", &ErGui::skewStep, 1.f);
 	if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 1.f;		ImGui::SameLine();
 	if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 5.f;		ImGui::SameLine();
@@ -243,7 +243,7 @@ void renderInterfaceSettings() {
 	bool autoswitchToBuildMode = mod->getSavedValue<bool>("autoswitch-to-build-mode", true);	//
 	bool showLinkControls = gm->getGameVariable("0097");                                        // 
 	bool showZoomControls = mod->getSavedValue<bool>("show-zoom-controls", true);				// Shows zoom controls buttons on toolbox
-
+	bool showBindsInToolbar = mod->getSavedValue<bool>("show-binds-in-toolbar", true);			// 
 
 
 	ImGui::SeparatorText("Color Widget Settings");
@@ -293,6 +293,12 @@ void renderInterfaceSettings() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		ImGui::SetTooltip("Shows zoom controls in the toolbar.");
 	}
+	if (ImGui::Checkbox("Show Keybinds", &showBindsInToolbar)) {
+		isAnyItemClicked = true;
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		ImGui::SetTooltip("Shows keybinds in tooltips in the toolbar.");
+	}
 
 	//ImGui::SeparatorText("Styling Settings");
 
@@ -304,6 +310,7 @@ void renderInterfaceSettings() {
 		mod->setSavedValue<bool>("hide-object-list-popup", true);
 		mod->setSavedValue<bool>("autoswitch-to-build-mode", true);
 		mod->setSavedValue<bool>("show-zoom-controls", true);
+		mod->setSavedValue<bool>("show-binds-in-toolbar", true);
 		});
 	if (ImGui::Button("Reset to Default")) {
 		ImGui::OpenPopup("Confirm Reset");
@@ -317,6 +324,7 @@ void renderInterfaceSettings() {
 		mod->setSavedValue<bool>("hide-object-list-popup",		hideObjectListPopup);
 		mod->setSavedValue<bool>("autoswitch-to-build-mode",	autoswitchToBuildMode);
 		mod->setSavedValue<bool>("show-zoom-controls",			showZoomControls);
+		mod->setSavedValue<bool>("show-binds-in-toolbar",		showBindsInToolbar);
 		gm->setGameVariable("0097", showLinkControls);
 		
 

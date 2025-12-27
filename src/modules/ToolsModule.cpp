@@ -24,12 +24,17 @@ void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 }
 
 void SetTooltipWithBind(const std::string& name, const keybinds::ActionID& actionID) {
-	std::string bindsStr;
-	for (auto what : BindManager::get()->getBindsFor(actionID)) {
-		keybinds::Bind* bind = what.data();
-		bindsStr += bind->toString();
+	if (Mod::get()->getSavedValue<bool>("show-binds-in-toolbar", true)) {
+		std::string bindsStr;
+		for (auto bindRef : BindManager::get()->getBindsFor(actionID)) {
+			keybinds::Bind* bind = bindRef.data();
+			bindsStr += bind->toString();
+		}
+		ImGui::SetTooltip(fmt::format("{} ({})", name, bindsStr).c_str());
 	}
-	ImGui::SetTooltip(fmt::format("{} ({})", name, bindsStr).c_str());
+	else {
+		ImGui::SetTooltip(name.c_str());
+	}
 }
 
 void ErGui::renderToolsModule1() {

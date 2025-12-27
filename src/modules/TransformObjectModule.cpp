@@ -295,6 +295,8 @@ void renderForObject(GameObject* obj) {
 	bool isChanging = false;
 	bool isClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left, false);
 
+	const float INPUT_FLOAT_WIDTH = 30.f * 7.f + ImGui::GetStyle().ItemSpacing.x * 6.f;
+	const float INNER_SPACING = ImGui::GetStyle().ItemInnerSpacing.x;
 	// Styling things
 	//static ImVec2 minRect = ImGui::GetCursorPos();
 	//static ImVec2 maxRect = ImGui::GetCursorPos();
@@ -306,15 +308,16 @@ void renderForObject(GameObject* obj) {
 
 	// ----- Position -----
 	if (ImGui::BeginPopup("MoveStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
 
-		if (ImGui::Button("0.5##MoveStepPreset")) moveStep = 0.5f;	ImGui::SameLine();
-		if (ImGui::Button("2##MoveStepPreset")) moveStep = 2.f;		ImGui::SameLine();
-		if (ImGui::Button("7.5##MoveStepPreset")) moveStep = 7.5f;	ImGui::SameLine();
-		if (ImGui::Button("10##MoveStepPreset")) moveStep = 10.f;	ImGui::SameLine();
-		if (ImGui::Button("15##MoveStepPreset")) moveStep = 15.f;	ImGui::SameLine();
-		if (ImGui::Button("30##MoveStepPreset")) moveStep = 30.f;	ImGui::SameLine();
-		if (ImGui::Button("150##MoveStepPreset")) moveStep = 150.f;	ImGui::SameLine();
+		if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 0.5f;	ImGui::SameLine();
+		if (ImGui::Button("2##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 2.f;		ImGui::SameLine();
+		if (ImGui::Button("7.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 7.5f;	ImGui::SameLine();
+		if (ImGui::Button("10##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 10.f;	ImGui::SameLine();
+		if (ImGui::Button("15##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 15.f;	ImGui::SameLine();
+		if (ImGui::Button("30##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 30.f;	ImGui::SameLine();
+		if (ImGui::Button("150##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 150.f;	ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 
 		ImGui::EndPopup();
@@ -358,14 +361,15 @@ void renderForObject(GameObject* obj) {
 
 	// ----- Rotation -----
 	if (ImGui::BeginPopup("RotationStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("RotStep", &rotationStep, 1.f);
-		if (ImGui::Button("1##RotateStepPreset")) rotationStep = 1.f;		ImGui::SameLine();
-		if (ImGui::Button("10##RotateStepPreset")) rotationStep = 10.f;		ImGui::SameLine();
-		if (ImGui::Button("15##RotateStepPreset")) rotationStep = 15.f;		ImGui::SameLine();
-		if (ImGui::Button("30##RotateStepPreset")) rotationStep = 30.f;		ImGui::SameLine();
-		if (ImGui::Button("45##RotateStepPreset")) rotationStep = 45.f;		ImGui::SameLine();
-		if (ImGui::Button("90##RotateStepPreset")) rotationStep = 90.f;		ImGui::SameLine();
-		if (ImGui::Button("180##RotateStepPreset")) rotationStep = 180.f;	ImGui::SameLine();
+		if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 1.f;		ImGui::SameLine();
+		if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 10.f;		ImGui::SameLine();
+		if (ImGui::Button("15##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 15.f;		ImGui::SameLine();
+		if (ImGui::Button("30##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 30.f;		ImGui::SameLine();
+		if (ImGui::Button("45##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 45.f;		ImGui::SameLine();
+		if (ImGui::Button("90##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 90.f;		ImGui::SameLine();
+		if (ImGui::Button("180##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 180.f;	ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 
 		ImGui::EndPopup();
@@ -432,14 +436,15 @@ void renderForObject(GameObject* obj) {
 
 	// ----- Scale -----
 	if (ImGui::BeginPopup("ScaleStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
-		if (ImGui::Button("0.01##ScaleStepPreset")) scaleStep = 0.01f;		ImGui::SameLine();
-		if (ImGui::Button("0.05##ScaleStepPreset")) scaleStep = 0.05f;		ImGui::SameLine();
-		if (ImGui::Button("0.1##ScaleStepPreset")) scaleStep = 0.1f;		ImGui::SameLine();
-		if (ImGui::Button("0.25##ScaleStepPreset")) scaleStep = 0.25f;		ImGui::SameLine();
-		if (ImGui::Button("0.5##ScaleStepPreset")) scaleStep = 0.5f;		ImGui::SameLine();
-		if (ImGui::Button("1##ScaleStepPreset")) scaleStep = 1.f;			ImGui::SameLine();
-		if (ImGui::Button("2##ScaleStepPreset")) scaleStep = 2.f;			ImGui::SameLine();
+		if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.01f;		ImGui::SameLine();
+		if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.05f;		ImGui::SameLine();
+		if (ImGui::Button("0.1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.1f;			ImGui::SameLine();
+		if (ImGui::Button("0.25##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.25f;		ImGui::SameLine();
+		if (ImGui::Button("0.5##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.5f;			ImGui::SameLine();
+		if (ImGui::Button("1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 1.f;			ImGui::SameLine();
+		if (ImGui::Button("2##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 2.f;			ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 
 		ImGui::EndPopup();
@@ -518,13 +523,14 @@ void renderForObject(GameObject* obj) {
 
 	// ----- Skew -----
 	if (ImGui::BeginPopup("SkewStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("SkewStep", &skewStep, 1.f);
-		if (ImGui::Button("1##SkewStepPreset")) skewStep = 1.f;			ImGui::SameLine();
-		if (ImGui::Button("5##SkewStepPreset")) skewStep = 5.f;			ImGui::SameLine();
-		if (ImGui::Button("10##SkewStepPreset")) skewStep = 10.f;		ImGui::SameLine();
-		if (ImGui::Button("15##SkewStepPreset")) skewStep = 15.f;		ImGui::SameLine();
-		if (ImGui::Button("30##SkewStepPreset")) skewStep = 30.f;		ImGui::SameLine();
-		if (ImGui::Button("45##SkewStepPreset")) skewStep = 45.f;		ImGui::SameLine();
+		if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 1.f;			ImGui::SameLine();
+		if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 5.f;			ImGui::SameLine();
+		if (ImGui::Button("10##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 10.f;		ImGui::SameLine();
+		if (ImGui::Button("15##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 15.f;		ImGui::SameLine();
+		if (ImGui::Button("30##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 30.f;		ImGui::SameLine();
+		if (ImGui::Button("45##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 45.f;		ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 		ImGui::EndPopup();
 	}
@@ -640,17 +646,20 @@ void renderForArray(CCArray* objArr) {
 	bool isChanging = false;
 	bool isClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left, false);
 
+	const float INPUT_FLOAT_WIDTH = 30.f * 7.f + ImGui::GetStyle().ItemSpacing.x * 6.f;
+	const float INNER_SPACING = ImGui::GetStyle().ItemInnerSpacing.x;
 
 	// ----- Position -----
 	if (ImGui::BeginPopup("MoveStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
-		if (ImGui::Button("0.5##MoveStepPreset")) moveStep = 0.5f;	ImGui::SameLine();
-		if (ImGui::Button("2##MoveStepPreset")) moveStep = 2.f;		ImGui::SameLine();
-		if (ImGui::Button("7.5##MoveStepPreset")) moveStep = 7.5f;	ImGui::SameLine();
-		if (ImGui::Button("10##MoveStepPreset")) moveStep = 10.f;	ImGui::SameLine();
-		if (ImGui::Button("15##MoveStepPreset")) moveStep = 15.f;	ImGui::SameLine();
-		if (ImGui::Button("30##MoveStepPreset")) moveStep = 30.f;	ImGui::SameLine();
-		if (ImGui::Button("150##MoveStepPreset")) moveStep = 150.f;	ImGui::SameLine();
+		if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 0.5f;	ImGui::SameLine();
+		if (ImGui::Button("2##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 2.f;		ImGui::SameLine();
+		if (ImGui::Button("7.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 7.5f;	ImGui::SameLine();
+		if (ImGui::Button("10##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 10.f;	ImGui::SameLine();
+		if (ImGui::Button("15##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 15.f;	ImGui::SameLine();
+		if (ImGui::Button("30##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 30.f;	ImGui::SameLine();
+		if (ImGui::Button("150##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 150.f;	ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 		ImGui::EndPopup();
 	}
@@ -689,14 +698,15 @@ void renderForArray(CCArray* objArr) {
 
 	// ----- Rotation -----
 	if (ImGui::BeginPopup("RotStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("RotStep", &rotationStep, 1.f);
-		if (ImGui::Button("1##RotateStepPreset")) rotationStep = 1.f;		ImGui::SameLine();
-		if (ImGui::Button("10##RotateStepPreset")) rotationStep = 10.f;		ImGui::SameLine();
-		if (ImGui::Button("15##RotateStepPreset")) rotationStep = 15.f;		ImGui::SameLine();
-		if (ImGui::Button("30##RotateStepPreset")) rotationStep = 30.f;		ImGui::SameLine();
-		if (ImGui::Button("45##RotateStepPreset")) rotationStep = 45.f;		ImGui::SameLine();
-		if (ImGui::Button("90##RotateStepPreset")) rotationStep = 90.f;		ImGui::SameLine();
-		if (ImGui::Button("180##RotateStepPreset")) rotationStep = 180.f;	ImGui::SameLine();
+		if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 1.f;		ImGui::SameLine();
+		if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 10.f;		ImGui::SameLine();
+		if (ImGui::Button("15##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 15.f;		ImGui::SameLine();
+		if (ImGui::Button("30##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 30.f;		ImGui::SameLine();
+		if (ImGui::Button("45##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 45.f;		ImGui::SameLine();
+		if (ImGui::Button("90##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 90.f;		ImGui::SameLine();
+		if (ImGui::Button("180##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 180.f;	ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 		ImGui::EndPopup();
 	}
@@ -759,14 +769,15 @@ void renderForArray(CCArray* objArr) {
 
 	// ----- Scale -----
 	if (ImGui::BeginPopup("ScaleStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
-		if (ImGui::Button("0.01##ScaleStepPreset")) scaleStep = 0.01f;		ImGui::SameLine();
-		if (ImGui::Button("0.05##ScaleStepPreset")) scaleStep = 0.05f;		ImGui::SameLine();
-		if (ImGui::Button("0.1##ScaleStepPreset")) scaleStep = 0.1f;		ImGui::SameLine();
-		if (ImGui::Button("0.25##ScaleStepPreset")) scaleStep = 0.25f;		ImGui::SameLine();
-		if (ImGui::Button("0.5##ScaleStepPreset")) scaleStep = 0.5f;		ImGui::SameLine();
-		if (ImGui::Button("1##ScaleStepPreset")) scaleStep = 1.f;			ImGui::SameLine();
-		if (ImGui::Button("2##ScaleStepPreset")) scaleStep = 2.f;			ImGui::SameLine();
+		if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.01f;		ImGui::SameLine();
+		if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.05f;		ImGui::SameLine();
+		if (ImGui::Button("0.1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.1f;			ImGui::SameLine();
+		if (ImGui::Button("0.25##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.25f;		ImGui::SameLine();
+		if (ImGui::Button("0.5##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.5f;			ImGui::SameLine();
+		if (ImGui::Button("1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 1.f;			ImGui::SameLine();
+		if (ImGui::Button("2##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 2.f;			ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 		ImGui::EndPopup();
 	}
@@ -866,13 +877,14 @@ void renderForArray(CCArray* objArr) {
 
 	// ----- Skew -----
 	if (ImGui::BeginPopup("SkewStepPopup")) {
+		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("SkewStep", &skewStep, 1.f);
-		if (ImGui::Button("1##SkewStepPreset")) skewStep = 1.f;			ImGui::SameLine();
-		if (ImGui::Button("5##SkewStepPreset")) skewStep = 5.f;			ImGui::SameLine();
-		if (ImGui::Button("10##SkewStepPreset")) skewStep = 10.f;		ImGui::SameLine();
-		if (ImGui::Button("15##SkewStepPreset")) skewStep = 15.f;		ImGui::SameLine();
-		if (ImGui::Button("30##SkewStepPreset")) skewStep = 30.f;		ImGui::SameLine();
-		if (ImGui::Button("45##SkewStepPreset")) skewStep = 45.f;		ImGui::SameLine();
+		if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 1.f;			ImGui::SameLine();
+		if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 5.f;			ImGui::SameLine();
+		if (ImGui::Button("10##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 10.f;		ImGui::SameLine();
+		if (ImGui::Button("15##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 15.f;		ImGui::SameLine();
+		if (ImGui::Button("30##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 30.f;		ImGui::SameLine();
+		if (ImGui::Button("45##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 45.f;		ImGui::SameLine(0.f, INNER_SPACING);
 		ImGui::Text("Presets");
 		ImGui::EndPopup();
 	}

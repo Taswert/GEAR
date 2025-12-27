@@ -177,6 +177,46 @@ void GearEditorUI::registerKeybindsEventListeners() {
 		}
 		return ListenerResult::Propagate;
 		}, "apply-buildhelper"_spr);
+
+
+	// Ctrl + B
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+		}
+		return ListenerResult::Propagate;
+		}, "apply-buildhelper"_spr);
+
+
+
+	// Half Steps (Position)
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-up-half"_spr);
+
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-down-half"_spr);
+
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-left-half"_spr);
+
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-right-half"_spr);
 }
 
 $execute{
@@ -286,17 +326,17 @@ $execute{
 	// Globals
 	// Default Steps (Position)
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			if (ErGui::posStepToKeybinds)
 				moveObjectsByKey(0.f, ErGui::moveStep);
 			else
 				moveObjectsByKey(0.f, EditorUI::get()->m_gridSize);
 		}
-		return ListenerResult::Stop;
+		return ListenerResult::Propagate;
 	}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-up"));
 
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			if (ErGui::posStepToKeybinds) 
 				moveObjectsByKey(0.f, -ErGui::moveStep);
 			else
@@ -306,7 +346,7 @@ $execute{
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-down"));
 
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			if (ErGui::posStepToKeybinds)
 				moveObjectsByKey(-ErGui::moveStep, 0.f);
 			else
@@ -316,7 +356,7 @@ $execute{
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-left"));
 
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			if (ErGui::posStepToKeybinds)
 				moveObjectsByKey(ErGui::moveStep, 0.f);
 			else
@@ -328,66 +368,37 @@ $execute{
 
 	// Small Steps (Position)
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			moveObjectsByKey(0.f, 2.f);
 		}
 		return ListenerResult::Propagate;
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-up-small"));
 
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			moveObjectsByKey(0.f, -2.f);
 		}
 		return ListenerResult::Propagate;
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-down-small"));
 
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			moveObjectsByKey(-2.f, 0.f);
 		}
 		return ListenerResult::Propagate;
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-left-small"));
 
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			moveObjectsByKey(2.f, 0.f);
 		}
 		return ListenerResult::Propagate;
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-right-small"));
 
-	// Half Steps (Position)
-	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
-			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
-		}
-		return ListenerResult::Propagate;
-		}, InvokeBindFilter(nullptr, "move-obj-up-half"_spr));
-
-	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
-			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
-		}
-		return ListenerResult::Propagate;
-		}, InvokeBindFilter(nullptr, "move-obj-down-half"_spr));
-
-	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
-			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
-		}
-		return ListenerResult::Propagate;
-		}, InvokeBindFilter(nullptr, "move-obj-left-half"_spr));
-
-	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
-			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
-		}
-		return ListenerResult::Propagate;
-		}, InvokeBindFilter(nullptr, "move-obj-right-half"_spr));
-
 
 	// Rotation
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			if (ErGui::rotStepToKeybinds)
 				rotateObjectsByKey(-ErGui::rotationStep);
 			else
@@ -397,7 +408,7 @@ $execute{
 		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/rotate-ccw"));
 
 	new EventListener(+[](InvokeBindEvent* event) {
-		if (event->isDown()) {
+		if (event->isDown() && EditorUI::get()) {
 			if (ErGui::rotStepToKeybinds)
 				rotateObjectsByKey(ErGui::rotationStep);
 			else
