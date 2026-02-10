@@ -57,6 +57,6 @@ public:
 	void transformObjectCall(EditCommand command);
 	void resetSelectedObjectsColor();
 
-	virtual void keyDown(cocos2d::enumKeyCodes p0);
-	virtual void keyUp(cocos2d::enumKeyCodes p0);
+	virtual void keyDown(cocos2d::enumKeyCodes p0, double timestamp);
+	virtual void keyUp(cocos2d::enumKeyCodes p0, double timestamp);
 };

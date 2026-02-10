@@ -13,15 +13,15 @@ namespace ErGui {
 	void setMaxMin(int& value, int max, int min);
 	void setMin(int& value, int min);
 
-	inline auto lassoPatch =					geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), { 0x90, 0x90 });
-	inline auto editorUIbottomConstrainPatch =	geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
-	inline auto vanillaGridOpaquePatch =		geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x2dbe78), { 0x00 });
-	inline auto disablSelectObjectInEditorUI1 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12337d), { 0x90, 0x90, 0x90, 0x90, 0x90 });
-	inline auto disablSelectObjectInEditorUI2 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1235f0), { 0x90, 0x90, 0x90, 0x90, 0x90 });
-	inline auto disablSelectObjectInEditorUI3 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123530), { 0x90, 0x90, 0x90, 0x90, 0x90 });
-	inline auto disablSelectObjectInEditorUI4 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123518), { 0x90, 0x90, 0x90, 0x90, 0x90 });
-	inline auto disablSelectObjectInEditorUI5 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12336f), { 0x90, 0x90, 0x90, 0x90, 0x90 });
-	inline auto disablSelectObjectInEditorUI6 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1232bd), { 0x90, 0x90, 0x90, 0x90, 0x90 });
+	inline auto lassoPatch =					geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x122926), geode::ByteSpan({ 0x90, 0x90 }));
+	inline auto editorUIbottomConstrainPatch =	geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto vanillaGridOpaquePatch =		geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x2dbe78), geode::ByteSpan({ 0x00 }));
+	inline auto disablSelectObjectInEditorUI1 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12337d), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI2 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1235f0), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI3 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123530), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI4 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123518), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI5 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12336f), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI6 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1232bd), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
 
 
 	void initImGuiStyling();

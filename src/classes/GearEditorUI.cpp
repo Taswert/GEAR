@@ -12,8 +12,8 @@
 #include "../features/Selection.hpp"
 #include "PropertiesModule.hpp"
 
-#include <geode.custom-keybinds/include/Keybinds.hpp>
-using namespace keybinds;
+//#include <geode.custom-keybinds/include/Keybinds.hpp>
+//using namespace keybinds;
 
 void exitEditor() { // EditorUI is already destroyed here
 	// Save Object Config

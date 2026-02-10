@@ -42,7 +42,7 @@ void GearEditorUI::scrollWheel(float p0, float p1) {
 
 		float scaleStep = oldScale * 0.1f;
 		float newScale = oldScale + (p0 > 0 ? -scaleStep : scaleStep);
-		newScale = clamp(newScale, 0.1f, 1000.0f);
+		newScale = std::clamp(newScale, 0.1f, 1000.0f);
 
 		float ratio = newScale / oldScale;
 
