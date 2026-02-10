@@ -34,7 +34,7 @@ public:
 	GameObject* objectAtPosition(CCPoint touchPoint);
 	GameObject* objectAtPosition(CCArray* objArrAtPosition);
 	void deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUndo);
-	void registerKeybindsEventListeners();
+	//void registerKeybindsEventListeners();
 	
 	// Hooks
 	bool onCreate();

@@ -181,7 +181,7 @@ void GearEditorUI::deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUnd
 
 bool GearEditorUI::init(LevelEditorLayer * lel) {
 	// Keybinds
-	registerKeybindsEventListeners();
+	//registerKeybindsEventListeners();
 
 	// Lasso And Swipe
 	ErGui::editorUIDrawNode = CCDrawNode::create();
