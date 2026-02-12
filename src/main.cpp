@@ -23,7 +23,6 @@
 #include "modules/GlobalDockingView.hpp"
 #include "modules/ViewModule.hpp"
 #include "modules/ContextMenuModule.hpp"
-#include "modules/EditorUtilsModule.hpp"
 #include "modules/DebugModule.hpp"
 #include "modules/PropertiesModule.hpp"
 

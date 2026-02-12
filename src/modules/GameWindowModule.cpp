@@ -159,12 +159,6 @@ void ErGui::renderGameWindow() {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Constrain By Last Object Y");
 
-	// DEBUG
-	//ImGui::SameLine();
-	//if (ImGui::Button("Save Game Viewport Screenshot")) {
-	//	ScreenRenderer::getCCRenderTexture()->saveToFile("viewport.png");
-	//}
-
 	ImVec2 drawSize;
 	if (Mod::get()->getSavedValue<bool>("gamewindow-static-ratio", false)) {
 		ImVec2 gameWinSize = ImGui::GetContentRegionAvail();

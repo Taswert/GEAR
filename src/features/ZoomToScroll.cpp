@@ -1,25 +1,39 @@
+#include <Geode/Enums.hpp>
 #include <Geode/modify/EditorUI.hpp>
 #include <../classes/GearEditorUI.hpp>
+#include <cstdlib>
 #include "../modules/GameWindowModule.hpp"
+#include "TweenFunctions.hpp"
 using namespace geode::prelude;
 
-float m_scrollCurrent = 1.f;
-float m_scrollTarget = 1.f;
+float zoomStart = 0.f;
+CCPoint positionStart = { 0.f, 0.f };
 
-CCPoint m_positionTarget = { 0.f, 0.f };
-CCPoint m_positionCurrent = { 0.f, 0.f };
-
-float m_scrollVelocity = 0.f; // åñëè íóæíà èíåðöèÿ
-float m_minScroll = 0.f;      // íèæíÿÿ ãðàíèöà
-float m_maxScroll = 1000.f;   // âåðõíÿÿ ãðàíèöà
+float elapsedTime = 0.f;
 
 
 void GearEditorUI::scrollWheel(float p0, float p1) {
+	if (m_fields->m_isSmoothZooming) {
+			applyZoom(m_fields->m_zoomTarget, m_fields->m_positionTarget);
+		}
+
 	//Zoom To Cursor + Expanded constractions
 	if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed()) {
 		auto winSize = CCDirector::sharedDirector()->getWinSize();
 		CCLayer* batchLayer = this->m_editorLayer->m_objectLayer;
 		if (batchLayer == nullptr) return GearEditorUI::scrollWheel(p0, p1);
+
+		if (m_fields->m_isSmoothZooming) {
+			applyZoom(m_fields->m_zoomTarget, m_fields->m_positionTarget);
+			elapsedTime = 0.f;
+		}
+
+		m_fields->m_zoomCurrent = batchLayer->getScale();
+		m_fields->m_positionCurrent = batchLayer->getPosition();
+
+		zoomStart = m_fields->m_zoomCurrent;
+		positionStart = m_fields->m_positionCurrent;
+		m_fields->m_isSmoothZooming = true;
 
 		float oldScale = batchLayer->getScale();
 		CCPoint oldPosition = batchLayer->getPosition();
@@ -40,7 +54,7 @@ void GearEditorUI::scrollWheel(float p0, float p1) {
 			visibleCursor = CCPoint{ vx, vy };
 		}
 
-		float scaleStep = oldScale * 0.1f;
+		float scaleStep = oldScale * m_fields->m_zoomStep;
 		float newScale = oldScale + (p0 > 0 ? -scaleStep : scaleStep);
 		newScale = std::clamp(newScale, 0.1f, 1000.0f);
 
@@ -49,11 +63,11 @@ void GearEditorUI::scrollWheel(float p0, float p1) {
 		CCPoint delta = oldPosition - visibleCursor;
 		CCPoint newPos = visibleCursor + delta * ratio;
 
-		batchLayer->setScale(newScale);
-		batchLayer->setPosition(newPos);
-		//m_scrollTarget = newScale;
-		//m_positionTarget = newPos;
-		
+		// batchLayer->setScale(newScale);
+		// batchLayer->setPosition(newPos);
+		m_fields->m_zoomTarget = newScale;
+		m_fields->m_positionTarget = newPos;
+		// Ñ€ÐµÐ´Ð°ÐºÑ‚Ð¾Ñ€ Ð²Ñ‹Ð»ÐµÑ‚ÐµÐ» ÐºÐ¾Ð³Ð´Ð° Ñ Ð·Ð°Ð¶Ð°Ð» ÐºÐ¾Ð½Ñ‚Ñ€Ð¾Ð» Ð¸ Ð¿Ñ‹Ñ‚Ð°Ð»ÑÑ Ð´Ð²Ð¸Ð³Ð°Ñ‚ÑŒ ÐºÐ°Ð¼ÐµÑ€Ñƒ
 
 		if (this->m_rotationControl)
 			this->m_rotationControl->setScale(1.f / newScale);
@@ -70,18 +84,48 @@ void GearEditorUI::scrollWheel(float p0, float p1) {
 	}
 }
 
-
-// Some works on smooth scroll. Should integrate it in the EditorUI better
-void GearEditorUI::myUpdate(float dt) {
-	float smooth = 1.f - powf(0.001f, dt * 4.f);
-	m_scrollCurrent += (m_scrollTarget - m_scrollCurrent) * smooth;
-	m_positionCurrent += (m_positionTarget - m_positionCurrent) * smooth;
-	//this->applyScroll();
-	//log::info("Hi, from GearEditorUI::update! dt = {}", dt);
+float lerp(float current, float target, float t) {
+	return current + (target - current) * t;
 }
 
-void GearEditorUI::applyScroll() {
+CCPoint lerp(CCPoint current, CCPoint target, float t) {
+	return CCPoint{
+		current.x + (target.x - current.x) * t,
+		current.y + (target.y - current.y) * t
+	};
+}
+
+void GearEditorUI::myUpdate(float dt) {
+	// Smooth Zooming
+	if (m_fields->m_isSmoothZooming) {
+		// Zoom Easing is disabled
+		if (!Mod::get()->getSavedValue<bool>("zoom-easing", false)) {
+			applyZoom(m_fields->m_zoomTarget, m_fields->m_positionTarget);
+			m_fields->m_isSmoothZooming = false;
+		}
+
+		// There is elapsed time
+		else if (elapsedTime < m_fields->m_zoomDuration) {
+			float t = elapsedTime / m_fields->m_zoomDuration;
+			t = tweenfunc::tweenTo(t, m_fields->m_easingType, &m_fields->m_easingRate);
+			m_fields->m_zoomCurrent = lerp(zoomStart, m_fields->m_zoomTarget, t);
+			m_fields->m_positionCurrent = lerp(positionStart, m_fields->m_positionTarget,t);
+			applyZoom(m_fields->m_zoomCurrent, m_fields->m_positionCurrent);
+			elapsedTime += dt;
+		}
+		// Elapsed time is over
+		else {
+			elapsedTime = 0.f;
+			applyZoom(m_fields->m_zoomTarget, m_fields->m_positionTarget);
+			m_fields->m_isSmoothZooming = false;
+		}
+	}
+}
+
+void GearEditorUI::applyZoom(float scale, CCPoint position) {
 	auto batchLayer = this->m_editorLayer->m_objectLayer;
-	batchLayer->setScale(m_scrollCurrent);
-	batchLayer->setPosition(m_positionCurrent);
+	m_fields->m_zoomCurrent = scale;
+	m_fields->m_positionCurrent = position;
+	batchLayer->setScale(scale);
+	batchLayer->setPosition(position);
 }

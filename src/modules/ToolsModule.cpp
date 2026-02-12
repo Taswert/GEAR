@@ -3,9 +3,6 @@
 #include "IconsMaterialDesignIcons.h"
 #include "GearIcons.hpp"
 #include "ObjectListModule.hpp"
-#include "EditGroupModule.hpp"
-#include "../classes/GearEditorUI.hpp"
-
 #include "../features/Hovering.hpp"
 
 
@@ -88,10 +85,10 @@ void ErGui::renderToolsModule1() {
 		editorUI->m_swipeEnabled = swipeBool;
 
 		if (isLassoEnabled && editorUI->m_swipeEnabled) {
-			lassoPatch->enable();
+			//lassoPatch->enable();
 		}
 		else {
-			lassoPatch->disable();
+			//lassoPatch->disable();
 		}
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -515,11 +512,11 @@ void ErGui::renderToolsModule2() {
 			if (ImGui::Selectable(ICON_MDI_LASSO, isLassoEnabled, 0, BTN_SIZE, selectableRounding)) {
 				if (isLassoEnabled && editorUI->m_swipeEnabled) {
 					//GameManager::sharedState()->setGameVariable("0003", true);
-					lassoPatch->enable();
+					//lassoPatch->enable();
 				}
 				else {
 					//GameManager::sharedState()->setGameVariable("0003", false);
-					lassoPatch->disable();
+					//lassoPatch->disable();
 				}
 				isLassoEnabled = !isLassoEnabled;
 			}

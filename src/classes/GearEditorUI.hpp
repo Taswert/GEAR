@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <Geode/Geode.hpp>
 #include <imgui-cocos.hpp>
+#include "TweenFunctions.hpp"
 #include "myUtils.hpp"
 #include "razoomUtils.hpp"
 
@@ -16,12 +17,25 @@ using namespace geode::prelude;
 struct GearEditorUI : public geode::Modify<GearEditorUI, EditorUI> {
 public:
 	struct Fields {
+		// Selection Rolling
 		CCArray* m_lastUnderCursor = nullptr;
 		int m_lastUnderCursorIndex = 0;
-		//CCPoint oldPosition;
-		//CCPoint newPosition;
-		//float oldScale;
-		//float newScale;
+
+		// Smooth Zooming
+		bool m_isSmoothZooming = false;
+
+		float m_zoomStep = 0.1f;
+
+		float m_zoomCurrent = 1.f;
+		float m_zoomTarget = 1.f;
+
+		CCPoint m_positionCurrent = { 0.f, 0.f };
+		CCPoint m_positionTarget = { 0.f, 0.f };
+
+		float m_zoomDuration = 0.5f;
+		float m_easingRate = 2.f;
+		tweenfunc::TweenType m_easingType = tweenfunc::TweenType::EaseIn;
+
 		Fields() {}
 		~Fields();
 	};
@@ -29,7 +43,7 @@ public:
 	// MyFuncs
 	void onHideUI(CCObject* sender);
 	void myUpdate(float dt);
-	void applyScroll();
+	void applyZoom(float scale, CCPoint position);
 	CCArray* objectsAtPosition(CCPoint touchPoint); // Should be in GearLevelEditorLayer I think
 	GameObject* objectAtPosition(CCPoint touchPoint);
 	GameObject* objectAtPosition(CCArray* objArrAtPosition);
@@ -56,6 +70,8 @@ public:
 	void moveObjectCall(EditCommand command);
 	void transformObjectCall(EditCommand command);
 	void resetSelectedObjectsColor();
+
+	static GearEditorUI* get();
 
 	virtual void keyDown(cocos2d::enumKeyCodes p0, double timestamp);
 	virtual void keyUp(cocos2d::enumKeyCodes p0, double timestamp);

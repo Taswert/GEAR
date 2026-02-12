@@ -1,5 +1,4 @@
 #include <chrono>
-#include <fstream>
 
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <Geode/modify/LocalLevelManager.hpp>

@@ -3,6 +3,8 @@
 #include "../features/SelectedObjectInfo.hpp"
 #include "DebugModule.hpp"
 #include "TransformObjectModule.hpp"
+#include "../classes/GearEditorUI.hpp"
+#include <imgui.h>
 
 
 const ccColor4F default_additiveSelectColor = { 0.f, 1.f, 0.f, 1.f };
@@ -62,15 +64,16 @@ void renderGeneralSettings() {
 	bool smallWarpBtns = gm->getGameVariable("0169");
 	bool autoBuildhelper = mod->getSavedValue<bool>("auto-buildhelper", false);					// Automatically applies Build helper on duplicated objects
 	bool deselectControls = mod->getSavedValue<bool>("deselect-controls", false);				// Deselects GJRotation/Scale/TransformControl, when clicking on empty space in editor
-	bool gamewindowStaticRatio = mod->getSavedValue<bool>("gamewindow-static-ratio", false);	// Game window keeps executable window ratio
-
+	bool gamewindowStaticRatio = mod->getSavedValue<bool>("gamewindow-static-ratio", false);		// Game window keeps executable window ratio
+	
 	// Playtest bools
 	bool ptMusic = gm->getGameVariable("0002");			// Plays music during playtesting
-	bool ptNoGrid = gm->getGameVariable("0079");		// Hides grid during playtesting
+	bool ptNoGrid = gm->getGameVariable("0079");			// Hides grid during playtesting
 	bool ptSmoothFix = gm->getGameVariable("0102");		// Enables smooth fix during playtesting
-	bool autoPause = gm->getGameVariable("0150");		// Pauses gameplay when starting playtest from StartPos
-	bool ignoreDamage = gm->getGameVariable("0009");    // 
+	bool autoPause = gm->getGameVariable("0150");			// Pauses gameplay when starting playtest from StartPos
+	bool ignoreDamage = gm->getGameVariable("0009");    	// 
 
+	bool zoomEasing = mod->getSavedValue<bool>("zoom-easing", false);	// Enables zoom easing
 
 
 	ImGui::SeparatorText("General Editor Settings");
@@ -197,7 +200,67 @@ void renderGeneralSettings() {
 	if (ImGui::Button("45##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 45.f;		ImGui::SameLine(0, style.ItemInnerSpacing.x);
 	ImGui::Text("Presets");
 
+	ErGui::SeparatorPlus("Zoom Settings");
+	if (ImGui::Checkbox("Zoom Easing", &zoomEasing)) 
+		isAnyItemClicked = true;
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+		ImGui::SetTooltip("Enables zoom easing.");
 
+	auto editorUI = GearEditorUI::get();
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+	ImGui::InputFloat("Duration", &editorUI->m_fields->m_zoomDuration, 0.05f, 0.2f);	
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+	ImGui::InputFloat("Easing Rate", &editorUI->m_fields->m_easingRate, 0.1f, 1.f);
+
+	const char* easingTypes[] = {
+		"Linear",
+		"Sine In",
+        "Sine Out",
+        "Sine In Out",
+        "Quad In",
+        "Quad Out",
+        "Quad In Out",
+        "Cubic In",
+        "Cubic Out",
+        "Cubic In Out",
+        "Quart In",
+        "Quart Out",
+        "Quart In Out",
+        "Quint In",
+        "Quint Out",
+        "Quint In Out",
+        "Expo In",
+        "Expo Out",
+        "Expo In Out",
+        "Circ In",
+        "Circ Out",
+        "Circ In Out",
+        "Elastic In",
+        "Elastic Out",
+        "Elastic In Out",
+        "Back In",
+        "Back Out",
+        "Back In Out",
+        "Bounce In",
+        "Bounce Out",
+        "Bounce In Out",
+		"Ease In",
+		"Ease Out",
+		"Ease In Out"
+	};
+
+	static int currentEasingType = 0;
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+	if (ImGui::Combo("Easing Type", &currentEasingType, easingTypes, IM_ARRAYSIZE(easingTypes))) {
+		isAnyItemClicked = true;
+		editorUI->m_fields->m_easingType = static_cast<tweenfunc::TweenType>(currentEasingType);
+	}
+
+	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+	if (ImGui::InputFloat("Zoom Step", &editorUI->m_fields->m_zoomStep, 0.01f, 0.1f)) {
+		if (editorUI->m_fields->m_zoomStep > 1.f) editorUI->m_fields->m_zoomStep = 1.f;
+		else if (editorUI->m_fields->m_zoomStep < 0.01f) editorUI->m_fields->m_zoomStep = 0.01f;
+	}	
 
 	ImGui::Dummy(ImVec2(10.f, 10.f));
 
@@ -226,6 +289,8 @@ void renderGeneralSettings() {
 		gm->setGameVariable("0150", autoPause);
 		gm->setGameVariable("0009", ignoreDamage);
 
+		mod->setSavedValue<bool>("zoom-easing", zoomEasing);
+
 		lel->updateOptions();
 	}
 }
@@ -239,9 +304,9 @@ void renderInterfaceSettings() {
 
 	bool triangleColorWheel = mod->getSavedValue<bool>("triangle-color-wheel", true);			//
 	bool rotateColorWheel = mod->getSavedValue<bool>("rotate-color-wheel", false);				//
-	bool hideObjectListPopup = mod->getSavedValue<bool>("hide-object-list-popup", true);		//
-	bool autoswitchToBuildMode = mod->getSavedValue<bool>("autoswitch-to-build-mode", true);	//
-	bool showLinkControls = gm->getGameVariable("0097");                                        // 
+	bool hideObjectListPopup = mod->getSavedValue<bool>("hide-object-list-popup", true);			//
+	bool autoswitchToBuildMode = mod->getSavedValue<bool>("autoswitch-to-build-mode", true);		//
+	bool showLinkControls = gm->getGameVariable("0097");														//
 	bool showZoomControls = mod->getSavedValue<bool>("show-zoom-controls", true);				// Shows zoom controls buttons on toolbox
 	bool showBindsInToolbar = mod->getSavedValue<bool>("show-binds-in-toolbar", true);			// 
 

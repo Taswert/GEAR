@@ -303,7 +303,7 @@ void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 	// --- Debug End ---
 
 
-	//ZOOM MODE - Нужно переделать
+	//ZOOM MODE - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	//if (this->m_selectedMode == 4) {
 	//	auto editorUI = GameManager::sharedState()->getEditorLayer()->m_editorUI;
 	//	float zoomMul = Mod::get()->template getSavedValue<float>("zoom-multiplier");
@@ -368,6 +368,13 @@ void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 				}
 			}
 			return CCLayer::ccTouchMoved(touch, event);
+		}
+
+
+		else if (!isSwiping) {
+			if (m_fields->m_isSmoothZooming) {
+				applyZoom(m_fields->m_zoomTarget, m_fields->m_positionTarget);
+			}
 		}
 	}
 
@@ -539,4 +546,8 @@ GameObject* GearEditorUI::objectAtPosition(CCArray* objArrAtPosition) {
 GameObject* GearEditorUI::objectAtPosition(CCPoint touchPoint) {
 	auto objArr = this->objectsAtPosition(touchPoint);
 	return objectAtPosition(objArr);
+}
+
+GearEditorUI* GearEditorUI::get() {
+	return static_cast<GearEditorUI*>(EditorUI::get());
 }

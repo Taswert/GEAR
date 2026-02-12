@@ -23,7 +23,6 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/EditColorModule.cpp
     src/modules/GameWindowModule.cpp
     src/modules/ViewModule.cpp
-    src/modules/EditorUtilsModule.cpp
     src/includes/razoomUtils.cpp
     src/modules/GlobalDockingView.cpp
     src/modules/ContextMenuModule.cpp
@@ -57,7 +56,9 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/EditObject/CountAndItemTriggers.cpp
     src/modules/EditObject/CollisionTriggers.cpp 
     src/modules/PropertiesModule.cpp
- "src/modules/EditObject/EditObjectUIComponents.cpp")
+    src/modules/EditObject/EditObjectUIComponents.cpp
+    src/includes/TweenFunctions.cpp
+    )
 
 if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     add_compile_definitions(GEAR_DEBUG)
