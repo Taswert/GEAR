@@ -11,6 +11,8 @@
 #include "../features/Hovering.hpp"
 #include "../features/Selection.hpp"
 #include "PropertiesModule.hpp"
+#include "../features/SelectedObjectInfo.hpp"
+#include "../features/ZoomToScroll.hpp"
 
 //#include <geode.custom-keybinds/include/Keybinds.hpp>
 //using namespace keybinds;
@@ -92,6 +94,7 @@ GameObject* GearEditorUI::createObject(int p0, CCPoint p1) {
 }
 
 void GearEditorUI::deselectAll() {
+	SelectedObjectInfo::deselectAll();
 	EditorUI::deselectAll();
 	ErGui::g_selectVersion++;
 }
@@ -101,12 +104,34 @@ void GearEditorUI::deselectObject(GameObject* obj) {
 	ErGui::g_selectVersion++;
 }
 
+void GearEditorUI::undoLastAction(CCObject* obj) {
+	EditorUI::undoLastAction(obj);
+	SelectedObjectInfo::undoLastAction();
+}
+
+void GearEditorUI::redoLastAction(CCObject* obj) {
+	EditorUI::redoLastAction(obj);
+	SelectedObjectInfo::redoLastAction();
+}
+
+void GearEditorUI::onDelete(CCObject* obj) {
+	EditorUI::onDelete(obj);
+	SelectedObjectInfo::onDelete();
+}
+
+void GearEditorUI::onDeleteSelected(CCObject* obj) {
+	EditorUI::onDeleteSelected(obj);
+	SelectedObjectInfo::onDeleteSelected();
+}
+
 void GearEditorUI::selectObject(GameObject * obj, bool p1) {
 	if (auto eObj = static_cast<EffectGameObject*>(obj))
 		ErGui::saveHueValues(&eObj->m_triggerTargetColor);
 
-	// orig
+	SelectedObjectInfo::selectObjectBefore();
 	EditorUI::selectObject(obj, p1);
+	SelectedObjectInfo::selectObjectAfter();
+
 	ErGui::g_selectVersion++;
 
 	// Visible Selection
@@ -121,8 +146,11 @@ void GearEditorUI::selectObject(GameObject * obj, bool p1) {
 
 void GearEditorUI::selectObjects(CCArray * objArr, bool p1) {
 	auto singleSelectedObject = this->m_selectedObject;
-
+	
+	SelectedObjectInfo::selectObjectsBefore();
 	EditorUI::selectObjects(objArr, p1);
+	SelectedObjectInfo::selectObjectsAfter();
+
 	ErGui::g_selectVersion++;
 	ErGui::groupInfoUpdate();
 
@@ -173,9 +201,13 @@ void GearEditorUI::deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUnd
 	// Maybe, just maybe, this specific if-statement should not be here... I'll find it out eventually :P
 	if (shouldDeleteObject(obj)) {
 		EditorUI::deleteObject(obj, noUndo);
-	}
-	if (this->m_selectedObjects->containsObject(obj)) {
-		this->m_selectedObjects->removeObject(obj, false);
+
+		if (this->m_selectedObjects->containsObject(obj)) {
+			this->m_selectedObjects->removeObject(obj, false);
+		}
+		if (this->m_selectedObject == obj) {
+			this->m_selectedObject = nullptr;
+		}
 	}
 }
 
@@ -194,6 +226,9 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 	ErGui::touchedDN->setZOrder(2);
 
 	auto ret = EditorUI::init(lel);
+
+	// Selected Object Info Label
+	SelectedObjectInfo::init(lel);
 
 	m_fields->m_lastUnderCursor = CCArray::create();
 	m_fields->m_lastUnderCursor->retain();
@@ -424,6 +459,7 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 			
 			auto objAtPosition = this->objectAtPosition(touchLocation);
 			if (objAtPosition != nullptr) this->deleteObjectAndRemoveFromSelected(objAtPosition, false);
+			log::info("Hi");
 			return CCLayer::ccTouchEnded(touch, event);
 		}
 
@@ -550,4 +586,32 @@ GameObject* GearEditorUI::objectAtPosition(CCPoint touchPoint) {
 
 GearEditorUI* GearEditorUI::get() {
 	return static_cast<GearEditorUI*>(EditorUI::get());
+}
+
+void GearEditorUI::applyZoom(float scale, CCPoint position) {
+	auto batchLayer = this->m_editorLayer->m_objectLayer;
+	m_fields->m_zoomCurrent = scale;
+	m_fields->m_positionCurrent = position;
+	batchLayer->setScale(scale);
+	batchLayer->setPosition(position);
+}
+
+void GearEditorUI::scrollWheel(float y, float x) {
+	if (!ZoomToScroll::scrollWheel(this, y, x)) 
+		return;
+
+	// Horizontal Scroll by holding Shift
+	if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())
+		EditorUI::scrollWheel(x, y);
+	else {
+		EditorUI::scrollWheel(y, x);
+	}
+}
+
+void GearEditorUI::myUpdate(float dt) {
+	// Zoom
+	ZoomToScroll::update(this, dt);
+
+	// Selected Object Info
+	SelectedObjectInfo::update();
 }

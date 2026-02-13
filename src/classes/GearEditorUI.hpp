@@ -32,9 +32,9 @@ public:
 		CCPoint m_positionCurrent = { 0.f, 0.f };
 		CCPoint m_positionTarget = { 0.f, 0.f };
 
-		float m_zoomDuration = 0.5f;
-		float m_easingRate = 2.f;
-		tweenfunc::TweenType m_easingType = tweenfunc::TweenType::EaseIn;
+		float m_zoomDuration = 0.15f;
+		float m_easingRate = 2.5f;
+		tweenfunc::TweenType m_easingType = tweenfunc::TweenType::EaseOut;
 
 		Fields() {}
 		~Fields();
@@ -70,6 +70,11 @@ public:
 	void moveObjectCall(EditCommand command);
 	void transformObjectCall(EditCommand command);
 	void resetSelectedObjectsColor();
+
+	void onDelete(CCObject* obj);
+	void onDeleteSelected(CCObject* obj);
+	void undoLastAction(CCObject* obj);
+    void redoLastAction(CCObject* obj);
 
 	static GearEditorUI* get();
 

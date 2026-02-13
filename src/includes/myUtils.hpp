@@ -13,15 +13,13 @@ namespace ErGui {
 	void setMaxMin(int& value, int max, int min);
 	void setMin(int& value, int min);
 
-	inline auto editorUIbottomConstrainPatch =	geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x121DD2), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }));
-	inline auto vanillaGridOpaquePatch =		geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x2dbe78), geode::ByteSpan({ 0x00 }));
-	inline auto disablSelectObjectInEditorUI1 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12337d), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));	// Disabling vanilla selections and createUndoObjects in EditorUI::ccTouchEnded
-	inline auto disablSelectObjectInEditorUI2 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1235f0), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));	// So my override will not cause any issues with rob's system
-	inline auto disablSelectObjectInEditorUI3 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123530), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
-	inline auto disablSelectObjectInEditorUI4 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123518), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
-	inline auto disablSelectObjectInEditorUI5 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x12336f), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
-	inline auto disablSelectObjectInEditorUI6 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1232bd), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
-
+	inline auto editorUIbottomConstrainPatch =	geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x123982), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI1 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1251a0), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));	// Disabling vanilla selections and createUndoObjects in EditorUI::ccTouchEnded
+	inline auto disablSelectObjectInEditorUI2 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x124e6d), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));	// So my override will not cause any issues with rob's system
+	inline auto disablSelectObjectInEditorUI3 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x124f2d), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI4 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x124f1f), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI5 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1250e0), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
+	inline auto disablSelectObjectInEditorUI6 = geode::Patch::create(reinterpret_cast<void*>(geode::base::get() + 0x1250c8), geode::ByteSpan({ 0x90, 0x90, 0x90, 0x90, 0x90 }));
 
 	void initImGuiStyling();
 

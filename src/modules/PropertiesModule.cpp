@@ -544,7 +544,7 @@ void renderObjectInfoSettings() {
 		mod->setSavedValue<bool>("soi-high-detail",		soiHighDetail);
 		mod->setSavedValue<bool>("soi-object-count",	soiObjectCount);
 		mod->setSavedValue<bool>("soi-object-type",		soiObjectType);
-		g_soiNeedsUpdate = true;
+		SelectedObjectInfo::g_soiNeedsUpdate = true;
 	}
 }
 

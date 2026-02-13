@@ -175,7 +175,6 @@ $on_mod(Loaded) {
 	ErGui::disablSelectObjectInEditorUI4->enable();
 	ErGui::disablSelectObjectInEditorUI5->enable();
 	ErGui::disablSelectObjectInEditorUI6->enable();
-	//ErGui::vanillaGridOpaquePatch->enable();
 	// DEBUG - allows to take a look on fields offsets
 	//ErGui::objectCfg = data;
 	//log::info("Offset DrawGridLayer::m_gridSize = {} bytes", offsetof(DrawGridLayer, DrawGridLayer::m_gridSize));
