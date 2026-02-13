@@ -4,7 +4,10 @@
 #include "DebugModule.hpp"
 #include "TransformObjectModule.hpp"
 #include "../classes/GearEditorUI.hpp"
+#include <Geode/binding/GJGameLevel.hpp>
+#include <Geode/binding/LocalLevelManager.hpp>
 #include <imgui.h>
+#include <minwindef.h>
 
 
 const ccColor4F default_additiveSelectColor = { 0.f, 1.f, 0.f, 1.f };
@@ -73,7 +76,12 @@ void renderGeneralSettings() {
 	bool autoPause = gm->getGameVariable("0150");			// Pauses gameplay when starting playtest from StartPos
 	bool ignoreDamage = gm->getGameVariable("0009");    	// 
 
-	bool zoomEasing = mod->getSavedValue<bool>("zoom-easing", false);	// Enables zoom easing
+	// Zoom Settings
+	bool zoomEasing = mod->getSavedValue<bool>("zoom-easing", true);
+	float zoomDuration = mod->getSavedValue<float>("zoom-duration", 0.15f);
+	float easingRate = mod->getSavedValue<float>("zoom-easingRate", 2.5f);
+	tweenfunc::TweenType easingType = static_cast<tweenfunc::TweenType>(mod->getSavedValue<int>("zoom-easingType", tweenfunc::TweenType::EaseOut));
+	float zoomStep = mod->getSavedValue<float>("zoom-step", 0.1f);
 
 
 	ImGui::SeparatorText("General Editor Settings");
@@ -205,12 +213,11 @@ void renderGeneralSettings() {
 		isAnyItemClicked = true;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 		ImGui::SetTooltip("Enables zoom easing.");
-
-	auto editorUI = GearEditorUI::get();
+	
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	ImGui::InputFloat("Duration", &editorUI->m_fields->m_zoomDuration, 0.05f, 0.2f);	
+	if (ImGui::InputFloat("Duration", &zoomDuration, 0.05f, 0.2f)) isAnyItemClicked = true;
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	ImGui::InputFloat("Easing Rate", &editorUI->m_fields->m_easingRate, 0.1f, 1.f);
+	if (ImGui::InputFloat("Easing Rate", &easingRate, 0.1f, 1.f)) isAnyItemClicked = true;
 
 	const char* easingTypes[] = {
 		"Linear",
@@ -249,17 +256,18 @@ void renderGeneralSettings() {
 		"Ease In Out"
 	};
 
-	static int currentEasingType = 0;
+	static int currentEasingType = easingType;
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
 	if (ImGui::Combo("Easing Type", &currentEasingType, easingTypes, IM_ARRAYSIZE(easingTypes))) {
 		isAnyItemClicked = true;
-		editorUI->m_fields->m_easingType = static_cast<tweenfunc::TweenType>(currentEasingType);
+		easingType = static_cast<tweenfunc::TweenType>(currentEasingType);
 	}
 
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	if (ImGui::InputFloat("Zoom Step", &editorUI->m_fields->m_zoomStep, 0.01f, 0.1f)) {
-		if (editorUI->m_fields->m_zoomStep > 1.f) editorUI->m_fields->m_zoomStep = 1.f;
-		else if (editorUI->m_fields->m_zoomStep < 0.01f) editorUI->m_fields->m_zoomStep = 0.01f;
+	if (ImGui::InputFloat("Zoom Step", &zoomStep, 0.01f, 0.1f)) {
+		isAnyItemClicked = true;
+		if (zoomStep > 1.f) zoomStep = 1.f;
+		else if (zoomStep < 0.01f) zoomStep = 0.01f;
 	}	
 
 	ImGui::Dummy(ImVec2(10.f, 10.f));
@@ -290,6 +298,10 @@ void renderGeneralSettings() {
 		gm->setGameVariable("0009", ignoreDamage);
 
 		mod->setSavedValue<bool>("zoom-easing", zoomEasing);
+		mod->setSavedValue<float>("zoom-duration", zoomDuration);
+		mod->setSavedValue<float>("zoom-easingRate", easingRate);
+		mod->setSavedValue<int>("zoom-easingType", currentEasingType);
+		mod->setSavedValue<float>("zoom-step", zoomStep);
 
 		lel->updateOptions();
 	}
@@ -687,18 +699,48 @@ void renderDebugSettings() {
 	}
 }
 
+void renderLevelBrowserSettings() {
+	ImGui::SeparatorText("Local Levels");
+	for (auto level : CCArrayExt<GJGameLevel*>(LocalLevelManager::get()->m_localLevels)) {
+		ImGui::Text("%s", level->m_levelName.c_str());
+	}
+	
+	ImGui::SeparatorText("Downloaded Levels");
+	auto levelsDict = GameLevelManager::get()->m_onlineLevels;
+
+	for (auto key : CCArrayExt<CCString*>(levelsDict->allKeys())) {
+		GJGameLevel* level = static_cast<GJGameLevel*>(levelsDict->objectForKey(key->getCString()));
+		if (!level->m_levelString.size()) continue;
+		ImGui::Text("%s", level->m_levelName.c_str());
+		// log::info("Key: {}", key);
+	}
+	// log::info("{}", levelsDict->objectForKey("93450782"));
+	// for (int i = 0; i < levelsDict->count(); i++) {
+		
+	// }
+}
+
+enum PropertiesTabs {
+	P_GENERAL,
+	P_INTERFACE,
+	P_OBJECT_INFO,
+	P_DRAWS,
+	P_DEBUG,
+	P_LEVEL_BROWSER
+};
 
 void ErGui::renderPropertiesModule() {
 	if (ErGui::showProperties) {
 		ImGui::SetNextWindowSize(ImVec2(800, 550), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Properties", &ErGui::showProperties, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking);
-		static int selectedTab = 1;
+		static PropertiesTabs selectedTab = P_GENERAL;
 		ImGui::BeginChild("Tabs", ImVec2(ImGui::GetContentRegionAvail().x * 0.25f, 0), ImGuiChildFlags_Borders);
-		if (ImGui::Selectable("General",		selectedTab == 1)) selectedTab = 1;
-		if (ImGui::Selectable("Interface",		selectedTab == 2)) selectedTab = 2;
-		if (ImGui::Selectable("Object Info",	selectedTab == 3)) selectedTab = 3;
-		if (ImGui::Selectable("Draws",			selectedTab == 4)) selectedTab = 4;
-		if (ImGui::Selectable("Debug",			selectedTab == 5)) selectedTab = 5;
+		if (ImGui::Selectable("General",			selectedTab == P_GENERAL)) selectedTab = P_GENERAL;
+		if (ImGui::Selectable("Interface",		selectedTab == P_INTERFACE)) selectedTab = P_INTERFACE;
+		if (ImGui::Selectable("Object Info",		selectedTab == P_OBJECT_INFO)) selectedTab = P_OBJECT_INFO;
+		if (ImGui::Selectable("Draws",			selectedTab == P_DRAWS)) selectedTab = P_DRAWS;
+		if (ImGui::Selectable("Debug",			selectedTab == P_DEBUG)) selectedTab = P_DEBUG;
+		if (ImGui::Selectable("Level Browser",	selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
 		ImGui::EndChild();
 
 		ImGui::SameLine();
@@ -706,20 +748,23 @@ void ErGui::renderPropertiesModule() {
 		ImGui::BeginChild("Settings", ImVec2(0, 0));
 		switch (selectedTab)
 		{
-		case 1:
+		case P_GENERAL:
 			renderGeneralSettings();
 			break;
-		case 2:
+		case P_INTERFACE:
 			renderInterfaceSettings();
 			break;
-		case 3:
+		case P_OBJECT_INFO:
 			renderObjectInfoSettings();
 			break;
-		case 4:
+		case P_DRAWS:
 			renderDrawsSettings();
 			break;
-		case 5:
+		case P_DEBUG:
 			renderDebugSettings();
+			break;
+		case P_LEVEL_BROWSER:
+			renderLevelBrowserSettings();
 			break;
 		default:
 			break;

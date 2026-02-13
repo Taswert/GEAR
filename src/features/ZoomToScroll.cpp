@@ -65,7 +65,7 @@ namespace ZoomToScroll {
 				visibleCursor = CCPoint{ vx, vy };
 			}
 
-			float scaleStep = oldScale * self->m_fields->m_zoomStep;
+			float scaleStep = oldScale * Mod::get()->getSavedValue<float>("zoom-step", 0.1f);
 			float newScale = oldScale + (p0 > 0 ? -scaleStep : scaleStep);
 			newScale = std::clamp(newScale, 0.1f, 1000.0f);
 
@@ -89,18 +89,25 @@ namespace ZoomToScroll {
 	}
 
 	void update(GearEditorUI* self, float dt) {
+		
 		// Smooth Zooming
 		if (self->m_fields->m_isSmoothZooming) {
+			auto mod = Mod::get();
+			bool zoomEasing = mod->getSavedValue<bool>("zoom-easing", true);
+			float zoomDuration = mod->getSavedValue<float>("zoom-duration", 0.15f);
+			float easingRate = mod->getSavedValue<float>("zoom-easingRate", 2.5f);
+			tweenfunc::TweenType easingType = static_cast<tweenfunc::TweenType>(mod->getSavedValue<int>("zoom-easingType", tweenfunc::TweenType::EaseOut));
+
 			// Zoom Easing is disabled
-			if (!Mod::get()->getSavedValue<bool>("zoom-easing", false)) {
+			if (!zoomEasing) {
 				self->applyZoom(self->m_fields->m_zoomTarget, self->m_fields->m_positionTarget);
 				self->m_fields->m_isSmoothZooming = false;
 			}
 
 			// There is elapsed time
-			else if (elapsedTime < self->m_fields->m_zoomDuration) {
-				float t = elapsedTime / self->m_fields->m_zoomDuration;
-				t = tweenfunc::tweenTo(t, self->m_fields->m_easingType, &self->m_fields->m_easingRate);
+			else if (elapsedTime < zoomDuration) {
+				float t = elapsedTime / zoomDuration;
+				t = tweenfunc::tweenTo(t, easingType, &easingRate);
 				self->m_fields->m_zoomCurrent = lerp(zoomStart, self->m_fields->m_zoomTarget, t);
 				self->m_fields->m_positionCurrent = lerp(positionStart, self->m_fields->m_positionTarget,t);
 				self->applyZoom(self->m_fields->m_zoomCurrent, self->m_fields->m_positionCurrent);

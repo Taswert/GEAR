@@ -2,6 +2,7 @@
 #include "GameWindowModule.hpp"
 #include "razoomUtils.hpp"
 #include "IconsMaterialDesignIcons.h"
+#include <fmt/format.h>
 
 
 namespace ErGui {
@@ -95,8 +96,10 @@ void ErGui::renderGameWindow() {
 
 	auto renderedScreen = RenderedTexture((ImTextureID)(intptr_t)ErGui::gameFrame, CCDirector::sharedDirector()->getWinSize());
 	auto textureRatio = renderedScreen.size.width / renderedScreen.size.height;
+	auto levelName = LevelEditorLayer::get()->m_level->m_levelName;
+
+	ImGui::Begin(fmt::format("{}###Game", levelName).c_str(), 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	
-	ImGui::Begin("Game", 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	auto lel = GameManager::sharedState()->m_levelEditorLayer;
 	float objectLayerX = lel->m_objectLayer->getPositionX() / lel->m_objectLayer->getScale() * -1;
 	float maxPosX = ErGui::constrainByLastObjectX ? getLastObjectXFast() : std::max(getLastObjectXFast(), 32470.f);
