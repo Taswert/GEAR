@@ -5,9 +5,8 @@
 #include "ObjectListModule.hpp"
 #include "../features/Hovering.hpp"
 
-
-//#include <geode.custom-keybinds/include/Keybinds.hpp>
-//using namespace keybinds;
+#include <geode.custom-keybinds/include/Keybinds.hpp>
+using namespace keybinds;
 
 void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 	float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
@@ -20,19 +19,19 @@ void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 		ImGui::Dummy(DummyPad);
 }
 
-//void SetTooltipWithBind(const std::string& name, const keybinds::ActionID& actionID) {
-//	if (Mod::get()->getSavedValue<bool>("show-binds-in-toolbar", true)) {
-//		std::string bindsStr;
-//		for (auto bindRef : BindManager::get()->getBindsFor(actionID)) {
-//			keybinds::Bind* bind = bindRef.data();
-//			bindsStr += bind->toString();
-//		}
-//		ImGui::SetTooltip(fmt::format("{} ({})", name, bindsStr).c_str());
-//	}
-//	else {
-//		ImGui::SetTooltip(name.c_str());
-//	}
-//}
+void SetTooltipWithBind(const std::string& name, const keybinds::ActionID& actionID) {
+	if (Mod::get()->getSavedValue<bool>("show-binds-in-toolbar", true)) {
+		std::string bindsStr;
+		for (auto bindRef : BindManager::get()->getBindsFor(actionID)) {
+			keybinds::Bind* bind = bindRef.data();
+			bindsStr += bind->toString();
+		}
+		ImGui::SetTooltip(fmt::format("{} ({})", name, bindsStr).c_str());
+	}
+	else {
+		ImGui::SetTooltip(name.c_str());
+	}
+}
 
 void ErGui::renderToolsModule1() {
 	ImGui::Begin("Tools-Module1", nullptr, ImGuiWindowFlags_NoScrollbar);
@@ -52,14 +51,14 @@ void ErGui::renderToolsModule1() {
 		editorUI->m_selectedMode = 2;
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//SetTooltipWithBind("Build Mode", "robtop.geometry-dash/build-mode");
+		SetTooltipWithBind("Build Mode", "robtop.geometry-dash/build-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	if (ImGui::Selectable(ICON_MDI_SELECTION, editorUI->m_selectedMode == 3, 0, BTN_SIZE, selectableRounding))
 		editorUI->m_selectedMode = 3;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//SetTooltipWithBind("Edit Mode", "robtop.geometry-dash/edit-mode");
+		SetTooltipWithBind("Edit Mode", "robtop.geometry-dash/edit-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -67,7 +66,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->m_selectedMode = 1;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Delete Mode (3)");
-		//SetTooltipWithBind("Delete Mode", "robtop.geometry-dash/delete-mode");
+		SetTooltipWithBind("Delete Mode", "robtop.geometry-dash/delete-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -75,7 +74,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->m_selectedMode = 4;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Observer Mode (4)");
-		//SetTooltipWithBind("View Mode", "view-mode"_spr);
+		SetTooltipWithBind("View Mode", "view-mode"_spr);
 	}
 		
 	ImGui::Separator();
@@ -94,7 +93,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Swipe (T)");
-		//SetTooltipWithBind("Swipe", "robtop.geometry-dash/toggle-swipe");
+		SetTooltipWithBind("Swipe", "robtop.geometry-dash/toggle-swipe");
 	}
 		
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -111,7 +110,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Rotation (R)");
-		//SetTooltipWithBind("Rotate", "robtop.geometry-dash/toggle-rotate");
+		SetTooltipWithBind("Rotate", "robtop.geometry-dash/toggle-rotate");
 	}	
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -122,7 +121,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Free Move (F)");
-		//SetTooltipWithBind("Free Move", "robtop.geometry-dash/toggle-free-move");
+		SetTooltipWithBind("Free Move", "robtop.geometry-dash/toggle-free-move");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -132,7 +131,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Snap (G)");
-		//SetTooltipWithBind("Snap", "robtop.geometry-dash/toggle-snap");
+		SetTooltipWithBind("Snap", "robtop.geometry-dash/toggle-snap");
 	}
 		
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -192,7 +191,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Duplicate (Ctrl+D)");
-		//SetTooltipWithBind("Duplicate", "robtop.geometry-dash/copy-paste");
+		SetTooltipWithBind("Duplicate", "robtop.geometry-dash/copy-paste");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -205,7 +204,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Delete Selected (Del)");
-		//SetTooltipWithBind("Delete Selected", "robtop.geometry-dash/delete");	
+		SetTooltipWithBind("Delete Selected", "robtop.geometry-dash/delete");	
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -214,7 +213,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Warp Selected (Ctrl+W)");
-		//SetTooltipWithBind("Warp Selected", "toggle-warp"_spr);
+		SetTooltipWithBind("Warp Selected", "toggle-warp"_spr);
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
@@ -236,7 +235,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Deselect Objects (Alt+D)");
-		//SetTooltipWithBind("Deselect Objects", "robtop.geometry-dash/deselect-all");
+		SetTooltipWithBind("Deselect Objects", "robtop.geometry-dash/deselect-all");
 	}
 
 
@@ -252,7 +251,7 @@ void ErGui::renderToolsModule1() {
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Playback");
-		//SetTooltipWithBind("Playback", "robtop.geometry-dash/playback-music");
+		SetTooltipWithBind("Playback", "robtop.geometry-dash/playback-music");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	if (ImGui::Selectable(playtestStr.c_str(), false, 0, BTN_SIZE, selectableRounding)) {
@@ -264,7 +263,7 @@ void ErGui::renderToolsModule1() {
 			ImGui::SetTooltip("Pause");
 		}
 		else {
-			//SetTooltipWithBind("Playtest", "robtop.geometry-dash/playtest");
+			SetTooltipWithBind("Playtest", "robtop.geometry-dash/playtest");
 		}
 	}
 
@@ -275,7 +274,7 @@ void ErGui::renderToolsModule1() {
 		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 			//ImGui::SetTooltip("Stop");
-			//SetTooltipWithBind("Stop", "robtop.geometry-dash/playtest");
+			SetTooltipWithBind("Stop", "robtop.geometry-dash/playtest");
 		}
 	}
 
@@ -318,14 +317,14 @@ void ErGui::renderToolsModule1() {
 			editorUI->zoomIn(nullptr);
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 			//ImGui::SetTooltip("Zoom In");
-			//SetTooltipWithBind("Zoom In", "robtop.geometry-dash/zoom-in");
+			SetTooltipWithBind("Zoom In", "robtop.geometry-dash/zoom-in");
 		}
 		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 		if (ImGui::Selectable(ICON_MDI_MAGNIFY_MINUS, false, 0, BTN_SIZE, selectableRounding))
 			editorUI->zoomOut(nullptr);
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 			//ImGui::SetTooltip("Zoom Out");
-			//SetTooltipWithBind("Zoom Out", "robtop.geometry-dash/zoom-out");
+			SetTooltipWithBind("Zoom Out", "robtop.geometry-dash/zoom-out");
 		}
 	}
 

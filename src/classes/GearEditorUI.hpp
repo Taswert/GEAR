@@ -41,7 +41,7 @@ public:
 	GameObject* objectAtPosition(CCPoint touchPoint);
 	GameObject* objectAtPosition(CCArray* objArrAtPosition);
 	void deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUndo);
-	//void registerKeybindsEventListeners();
+	void registerKeybindsEventListeners();
 	
 	// Hooks
 	bool onCreate();
@@ -71,6 +71,6 @@ public:
 
 	static GearEditorUI* get();
 
-	virtual void keyDown(cocos2d::enumKeyCodes p0, double timestamp);
-	virtual void keyUp(cocos2d::enumKeyCodes p0, double timestamp);
+	virtual void keyDown(cocos2d::enumKeyCodes p0);
+	virtual void keyUp(cocos2d::enumKeyCodes p0);
 };

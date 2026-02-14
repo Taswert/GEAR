@@ -15,8 +15,8 @@
 #include "../features/ZoomToScroll.hpp"
 #include "TweenFunctions.hpp"
 
-//#include <geode.custom-keybinds/include/Keybinds.hpp>
-//using namespace keybinds;
+#include <geode.custom-keybinds/include/Keybinds.hpp>
+using namespace keybinds;
 
 void exitEditor() { // EditorUI is already destroyed here
 	// Save Object Config
@@ -214,7 +214,7 @@ void GearEditorUI::deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUnd
 
 bool GearEditorUI::init(LevelEditorLayer * lel) {
 	// Keybinds
-	//registerKeybindsEventListeners();
+	registerKeybindsEventListeners();
 
 	// Lasso And Swipe
 	ErGui::editorUIDrawNode = CCDrawNode::create();

@@ -10,14 +10,14 @@ using namespace geode::prelude;
 
 static std::set<cocos2d::enumKeyCodes> editorUIHoldingKeys;
 
-//#include <geode.custom-keybinds/include/Keybinds.hpp>
-//using namespace keybinds;
+#include <geode.custom-keybinds/include/Keybinds.hpp>
+using namespace keybinds;
 
 void releaseEditorUIKeys() {
 	if (!editorUIHoldingKeys.empty()) {
 		auto copy = editorUIHoldingKeys;
 		for (const auto& key : copy) {
-			CCDirector::sharedDirector()->getKeyboardDispatcher()->dispatchKeyboardMSG(key, false, false, 0.0);
+			CCDirector::sharedDirector()->getKeyboardDispatcher()->dispatchKeyboardMSG(key, false, false);
 		}
 		editorUIHoldingKeys.clear();
 	}
@@ -70,7 +70,7 @@ void rotateObjectsByKey(float degrees) {
 	}
 }
 
-void GearEditorUI::keyDown(cocos2d::enumKeyCodes p0, double timestamp) {
+void GearEditorUI::keyDown(cocos2d::enumKeyCodes p0) {
 		
 	// 4 - View Mode
 	//if (p0 == cocos2d::enumKeyCodes::KEY_Four) {
@@ -106,12 +106,12 @@ void GearEditorUI::keyDown(cocos2d::enumKeyCodes p0, double timestamp) {
 
 	// todo: select all right / select all left
 	editorUIHoldingKeys.insert(p0);
-	EditorUI::keyDown(p0, timestamp);
+	EditorUI::keyDown(p0);
 }
 
-void GearEditorUI::keyUp(cocos2d::enumKeyCodes p0, double timestamp) {
+void GearEditorUI::keyUp(cocos2d::enumKeyCodes p0) {
 	editorUIHoldingKeys.erase(p0);
-	EditorUI::keyUp(p0, timestamp);
+	EditorUI::keyUp(p0);
 }
 
 void GearEditorUI::moveObjectCall(EditCommand command) {
@@ -127,294 +127,292 @@ void GearEditorUI::transformObjectCall(EditCommand command) {
 }
 
 
-//void GearEditorUI::registerKeybindsEventListeners() {
-//	// Small Rotate
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			rotateObjectsByKey(-45.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "rotate-ccw-small"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			rotateObjectsByKey(45.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "rotate-cw-small"_spr);
-//
-//
-//	// 4
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			//log::info("HIHIHI");
-//			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
-//			//log::info("BYEBYE\n");
-//		}
-//		return ListenerResult::Propagate;
-//		}, "view-mode"_spr);
-//
-//	// Ctrl + A
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			ErGui::selectAllObjects();
-//		}
-//		return ListenerResult::Propagate;
-//		}, "select-all"_spr);
-//
-//	// Ctrl + W
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			this->activateTransformControl(nullptr);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "toggle-warp"_spr);
-//
-//	// Ctrl + B
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "apply-buildhelper"_spr);
-//
-//
-//	// Ctrl + B
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "apply-buildhelper"_spr);
-//
-//
-//
-//	// Half Steps (Position)
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-up-half"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-down-half"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-left-half"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-right-half"_spr);
-//}
-//
-//$execute{
-//	// Custom keybinds
-//	auto bindManager = BindManager::get();
-//
-//	// 4
-//	bindManager->registerBindable({
-//		"view-mode"_spr,
-//		"View Mode",
-//		"Toggle the View Tab",
-//		{ Keybind::create(KEY_Four, Modifier::None) },
-//		Category::EDITOR_UI,
-//		false
-//		}, "robtop.geometry-dash/delete-mode");
-//
-//	// Shift+Q
-//	bindManager->registerBindable({
-//		"rotate-ccw-small"_spr,
-//		"Rotate CCW Small",
-//		"Rotate Object(s) 45 degrees (by Default) Counter-Clockwise",
-//		{ Keybind::create(KEY_Q, Modifier::Shift) },
-//		Category::EDITOR_MODIFY
-//		}, "robtop.geometry-dash/rotate-cw");
-//
-//	// Shift+E
-//	bindManager->registerBindable({
-//		"rotate-cw-small"_spr,
-//		"Rotate CW Small",
-//		"Rotate Object(s) 45 degrees (by Default) Clockwise",
-//		{ Keybind::create(KEY_E, Modifier::Shift) },
-//		Category::EDITOR_MODIFY
-//		}, "rotate-ccw-small"_spr);
-//
-//	// Ctrl+A
-//	bindManager->registerBindable({
-//		"select-all"_spr,
-//		"Select All",
-//		"Select all Objects",
-//		{ Keybind::create(KEY_A, Modifier::Control) },
-//		Category::EDITOR_MODIFY,
-//		false
-//		});
-//
-//	// Ctrl+W
-//	bindManager->registerBindable({
-//		"toggle-warp"_spr,
-//		"Toggle Warp",
-//		"Toggle Warp Controls",
-//		{ Keybind::create(KEY_W, Modifier::Control) },
-//		Category::EDITOR_MODIFY,
-//		false
-//		});
-//
-//	// Ctrl+B
-//	bindManager->registerBindable({
-//		"apply-buildhelper"_spr,
-//		"Apply Buildhelper",
-//		"Apply Buildhelper to selected objects",
-//		{ Keybind::create(KEY_B, Modifier::Control) },
-//		Category::EDITOR_MODIFY,
-//		false
-//		});
-//	
-//	// Half Steps: Up
-//	bindManager->registerBindable({
-//		"move-obj-up-half"_spr,
-//		"Move Object Up Half",
-//		"Move Selected Object(s) Up 0.5 Grid Size (15 units by default)",
-//		{ },
-//		Category::EDITOR_MOVE,
-//		true
-//		});
-//
-//	// Half Steps: Down
-//	bindManager->registerBindable({
-//		"move-obj-down-half"_spr,
-//		"Move Object Down Half",
-//		"Move Selected Object(s) Down 0.5 Grid Size (15 units by default)",
-//		{ },
-//		Category::EDITOR_MOVE,
-//		true
-//		});
-//
-//	// Half Steps: Left
-//	bindManager->registerBindable({
-//		"move-obj-left-half"_spr,
-//		"Move Object Left Half",
-//		"Move Selected Object(s) Left 0.5 Grid Size (15 units by default)",
-//		{ },
-//		Category::EDITOR_MOVE,
-//		true
-//		});
-//
-//	// Half Steps: Right
-//	bindManager->registerBindable({
-//		"move-obj-right-half"_spr,
-//		"Move Object Right Half",
-//		"Move Selected Object(s) Right 0.5 Grid Size (15 units by default)",
-//		{ },
-//		Category::EDITOR_MOVE,
-//		true
-//		});
-//
-//
-//
-//	// Globals
-//	// Default Steps (Position)
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			if (ErGui::posStepToKeybinds)
-//				moveObjectsByKey(0.f, ErGui::moveStep);
-//			else
-//				moveObjectsByKey(0.f, EditorUI::get()->m_gridSize);
-//		}
-//		return ListenerResult::Propagate;
-//	}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-up"));
-//
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			if (ErGui::posStepToKeybinds) 
-//				moveObjectsByKey(0.f, -ErGui::moveStep);
-//			else
-//				moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-down"));
-//
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			if (ErGui::posStepToKeybinds)
-//				moveObjectsByKey(-ErGui::moveStep, 0.f);
-//			else
-//				moveObjectsByKey(-EditorUI::get()->m_gridSize, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-left"));
-//
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			if (ErGui::posStepToKeybinds)
-//				moveObjectsByKey(ErGui::moveStep, 0.f);
-//			else
-//				moveObjectsByKey(EditorUI::get()->m_gridSize, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-right"));
-//
-//
-//	// Small Steps (Position)
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			moveObjectsByKey(0.f, 2.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-up-small"));
-//
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			moveObjectsByKey(0.f, -2.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-down-small"));
-//
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			moveObjectsByKey(-2.f, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-left-small"));
-//
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			moveObjectsByKey(2.f, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-right-small"));
-//
-//
-//	// Rotation
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			if (ErGui::rotStepToKeybinds)
-//				rotateObjectsByKey(-ErGui::rotationStep);
-//			else
-//				rotateObjectsByKey(-90.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/rotate-ccw"));
-//
-//	new EventListener(+[](InvokeBindEvent* event) {
-//		if (event->isDown() && EditorUI::get()) {
-//			if (ErGui::rotStepToKeybinds)
-//				rotateObjectsByKey(ErGui::rotationStep);
-//			else
-//				rotateObjectsByKey(90.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/rotate-cw"));
-//
-//}
+void GearEditorUI::registerKeybindsEventListeners() {
+	// Small Rotate
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			rotateObjectsByKey(-45.f);
+		}
+		return ListenerResult::Propagate;
+		}, "rotate-ccw-small"_spr);
+
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			rotateObjectsByKey(45.f);
+		}
+		return ListenerResult::Propagate;
+		}, "rotate-cw-small"_spr);
+
+
+	// 4
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
+		}
+		return ListenerResult::Propagate;
+		}, "view-mode"_spr);
+
+	// Ctrl + A
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			ErGui::selectAllObjects();
+		}
+		return ListenerResult::Propagate;
+		}, "select-all"_spr);
+
+	// Ctrl + W
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			this->activateTransformControl(nullptr);
+		}
+		return ListenerResult::Propagate;
+		}, "toggle-warp"_spr);
+
+	// Ctrl + B
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+		}
+		return ListenerResult::Propagate;
+		}, "apply-buildhelper"_spr);
+
+
+	// Ctrl + B
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+		}
+		return ListenerResult::Propagate;
+		}, "apply-buildhelper"_spr);
+
+
+
+	// Half Steps (Position)
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-up-half"_spr);
+
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-down-half"_spr);
+
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-left-half"_spr);
+
+	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
+		if (event->isDown()) {
+			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, "move-obj-right-half"_spr);
+}
+
+$execute{
+	// Custom keybinds
+	auto bindManager = BindManager::get();
+
+	// 4
+	bindManager->registerBindable({
+		"view-mode"_spr,
+		"View Mode",
+		"Toggle the View Tab",
+		{ Keybind::create(KEY_Four, Modifier::None) },
+		Category::EDITOR_UI,
+		false
+		}, "robtop.geometry-dash/delete-mode");
+
+	// Shift+Q
+	bindManager->registerBindable({
+		"rotate-ccw-small"_spr,
+		"Rotate CCW Small",
+		"Rotate Object(s) 45 degrees (by Default) Counter-Clockwise",
+		{ Keybind::create(KEY_Q, Modifier::Shift) },
+		Category::EDITOR_MODIFY
+		}, "robtop.geometry-dash/rotate-cw");
+
+	// Shift+E
+	bindManager->registerBindable({
+		"rotate-cw-small"_spr,
+		"Rotate CW Small",
+		"Rotate Object(s) 45 degrees (by Default) Clockwise",
+		{ Keybind::create(KEY_E, Modifier::Shift) },
+		Category::EDITOR_MODIFY
+		}, "rotate-ccw-small"_spr);
+
+	// Ctrl+A
+	bindManager->registerBindable({
+		"select-all"_spr,
+		"Select All",
+		"Select all Objects",
+		{ Keybind::create(KEY_A, Modifier::Control) },
+		Category::EDITOR_MODIFY,
+		false
+		});
+
+	// Ctrl+W
+	bindManager->registerBindable({
+		"toggle-warp"_spr,
+		"Toggle Warp",
+		"Toggle Warp Controls",
+		{ Keybind::create(KEY_W, Modifier::Control) },
+		Category::EDITOR_MODIFY,
+		false
+		});
+
+	// Ctrl+B
+	bindManager->registerBindable({
+		"apply-buildhelper"_spr,
+		"Apply Buildhelper",
+		"Apply Buildhelper to selected objects",
+		{ Keybind::create(KEY_B, Modifier::Control) },
+		Category::EDITOR_MODIFY,
+		false
+		});
+	
+	// Half Steps: Up
+	bindManager->registerBindable({
+		"move-obj-up-half"_spr,
+		"Move Object Up Half",
+		"Move Selected Object(s) Up 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
+
+	// Half Steps: Down
+	bindManager->registerBindable({
+		"move-obj-down-half"_spr,
+		"Move Object Down Half",
+		"Move Selected Object(s) Down 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
+
+	// Half Steps: Left
+	bindManager->registerBindable({
+		"move-obj-left-half"_spr,
+		"Move Object Left Half",
+		"Move Selected Object(s) Left 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
+
+	// Half Steps: Right
+	bindManager->registerBindable({
+		"move-obj-right-half"_spr,
+		"Move Object Right Half",
+		"Move Selected Object(s) Right 0.5 Grid Size (15 units by default)",
+		{ },
+		Category::EDITOR_MOVE,
+		true
+		});
+
+
+
+	// Globals
+	// Default Steps (Position)
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			if (ErGui::posStepToKeybinds)
+				moveObjectsByKey(0.f, ErGui::moveStep);
+			else
+				moveObjectsByKey(0.f, EditorUI::get()->m_gridSize);
+		}
+		return ListenerResult::Propagate;
+	}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-up"));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			if (ErGui::posStepToKeybinds) 
+				moveObjectsByKey(0.f, -ErGui::moveStep);
+			else
+				moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-down"));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			if (ErGui::posStepToKeybinds)
+				moveObjectsByKey(-ErGui::moveStep, 0.f);
+			else
+				moveObjectsByKey(-EditorUI::get()->m_gridSize, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-left"));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			if (ErGui::posStepToKeybinds)
+				moveObjectsByKey(ErGui::moveStep, 0.f);
+			else
+				moveObjectsByKey(EditorUI::get()->m_gridSize, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-right"));
+
+
+	// Small Steps (Position)
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			moveObjectsByKey(0.f, 2.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-up-small"));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			moveObjectsByKey(0.f, -2.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-down-small"));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			moveObjectsByKey(-2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-left-small"));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			moveObjectsByKey(2.f, 0.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/move-obj-right-small"));
+
+
+	// Rotation
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			if (ErGui::rotStepToKeybinds)
+				rotateObjectsByKey(-ErGui::rotationStep);
+			else
+				rotateObjectsByKey(-90.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/rotate-ccw"));
+
+	new EventListener(+[](InvokeBindEvent* event) {
+		if (event->isDown() && EditorUI::get()) {
+			if (ErGui::rotStepToKeybinds)
+				rotateObjectsByKey(ErGui::rotationStep);
+			else
+				rotateObjectsByKey(90.f);
+		}
+		return ListenerResult::Propagate;
+		}, InvokeBindFilter(nullptr, "robtop.geometry-dash/rotate-cw"));
+
+}

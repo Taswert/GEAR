@@ -1,11 +1,11 @@
 {
-	"geode": "5.0.0-alpha.2",
+	"geode": "4.10.0",
 	"gd": {
-		"win": "2.2081"
+		"win": "2.2074"
 	},
 	"id": "taswert.gear",
 	"name": "GEAR",
-	"version": "v1.1.0-beta.1",
+	"version": "v1.0.0-beta.10",
 	"developers": [ "Taswert", "RaZooM", "Pololak", "RainixGD" ],
 	"description": "Reimagine your Editor UI with ImGui",
 	"links": {
@@ -61,9 +61,10 @@
 		"utility"
 	],
 	"dependencies": {
-		"geode.node-ids": ">=1.22.0-beta.1",
-		"alphalaneous.object_popup_api": ">=v1.0.7-beta.1",
-		"cvolton.level-id-api": ">=v2.0.0-beta.1"
+		"geode.node-ids": ">=1.20.1",
+		"alphalaneous.object_popup_api": ">=v1.0.3",
+		"cvolton.level-id-api": ">=v1.2.0",
+		"geode.custom-keybinds": ">=v1.11.0"
 	},
 	"incompatibilities": {
 		"hjfod.betteredit": {

@@ -724,6 +724,7 @@ void renderLevelBrowserSettings() {
 	}
 	
 	ImGui::SeparatorText("Downloaded Levels");
+	ImGui::Text("Coming Soon...");
 	auto levelsDict = GameLevelManager::get()->m_onlineLevels;
 
 	for (auto key : CCArrayExt<CCString*>(levelsDict->allKeys())) {
@@ -769,7 +770,7 @@ void ErGui::renderPropertiesModule() {
 		if (ImGui::Selectable("Object Info",		selectedTab == P_OBJECT_INFO)) selectedTab = P_OBJECT_INFO;
 		if (ImGui::Selectable("Draws",			selectedTab == P_DRAWS)) selectedTab = P_DRAWS;
 		if (ImGui::Selectable("Debug",			selectedTab == P_DEBUG)) selectedTab = P_DEBUG;
-		if (ImGui::Selectable("Level Browser",	selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
+		// if (ImGui::Selectable("Level Browser",	selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
 		ImGui::EndChild();
 
 		ImGui::SameLine();
@@ -792,9 +793,9 @@ void ErGui::renderPropertiesModule() {
 		case P_DEBUG:
 			renderDebugSettings();
 			break;
-		case P_LEVEL_BROWSER:
-			renderLevelBrowserSettings();
-			break;
+		// case P_LEVEL_BROWSER:
+			// renderLevelBrowserSettings();
+			// break;
 		default:
 			break;
 		}

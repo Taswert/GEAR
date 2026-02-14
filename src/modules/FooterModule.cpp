@@ -18,7 +18,7 @@ void ErGui::renderFooter() {
 	auto lel = LevelEditorLayer::get();
 	
 	//Time + Level Length
-	float tfp = lel->m_drawGridLayer->timeForPos({ getLastObjectXFast() + 340.f, 0 }, 0, 0, 0, 0, 0, 0);	// Crash Potential / DO NOT ABBREVIATE THIS.
+	float tfp = lel->m_drawGridLayer->timeForPos({ getLastObjectXFast() + 340.f, 0 }, 0, 0, 0, 0, 0, 0);	// Crash Potential
 	int minutes = tfp / 60;
 	float seconds = std::fmodf(tfp, 60.f);
 	std::string timeStr;
