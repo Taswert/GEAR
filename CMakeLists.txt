@@ -57,6 +57,8 @@ add_library(${PROJECT_NAME} SHARED
     src/modules/EditObject/CollisionTriggers.cpp 
     src/modules/PropertiesModule.cpp
     src/modules/EditObject/EditObjectUIComponents.cpp
+    src/modules/EditObject/AnimatedObjects.cpp
+    src/modules/EditObject/CollectibleObjects.cpp
     src/includes/TweenFunctions.cpp
     )
 

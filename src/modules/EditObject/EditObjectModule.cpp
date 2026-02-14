@@ -17,6 +17,8 @@
 #include "TimeAndKeyframeTriggers.hpp"
 #include "CountAndItemTriggers.hpp"
 #include "CollisionTriggers.hpp"
+#include "CollectibleObjects.hpp"
+#include "AnimatedObjects.hpp"
 
 using namespace ErGui;
 
@@ -162,5 +164,8 @@ void ErGui::setupTriggersSettings() {
 
 	// CollisionTriggers.hpp
 	mapCollisionTriggers();
+
+	mapCollectibleObjects();
+	mapAnimatedObjects();
 }
 

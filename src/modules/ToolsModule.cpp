@@ -80,8 +80,9 @@ void ErGui::renderToolsModule1() {
 		
 	ImGui::Separator();
 	
-	bool swipeBool = editorUI->m_swipeEnabled;
+	bool swipeBool = gameManager->getGameVariable("0003");
 	if (ImGui::Selectable(ICON_MDI_GESTURE_TAP_HOLD, &swipeBool, 0, BTN_SIZE, selectableRounding)) {
+		gameManager->setGameVariable("0003", swipeBool);
 		editorUI->m_swipeEnabled = swipeBool;
 
 		if (isLassoEnabled && editorUI->m_swipeEnabled) {
@@ -114,8 +115,9 @@ void ErGui::renderToolsModule1() {
 	}	
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	bool freeMoveBool = editorUI->m_freeMoveEnabled;
+	bool freeMoveBool = gameManager->getGameVariable("0004");
 	if (ImGui::Selectable(ICON_MDI_CURSOR_MOVE, &freeMoveBool, 0, BTN_SIZE, selectableRounding)) {
+		gameManager->setGameVariable("0004", freeMoveBool);
 		editorUI->m_freeMoveEnabled = freeMoveBool;
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
