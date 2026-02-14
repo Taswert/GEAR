@@ -10,6 +10,7 @@ void ErGui::renderDebugModule() {
 		ImGui::Text("ErGui::showProperties: %d", ErGui::showProperties);
 		ImGui::Text("Is Zooming: %d", GearEditorUI::get()->m_fields->m_isSmoothZooming);
 		ImGui::Text("Zoom Scale: %.3f", EditorUI::get()->m_editorLayer->m_objectLayer->getScale());
+		ImGui::Text("Selected Object address: %p", EditorUI::get()->m_selectedObject);
 		ImGui::End();
 	}
 }

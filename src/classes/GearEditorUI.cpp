@@ -13,6 +13,7 @@
 #include "PropertiesModule.hpp"
 #include "../features/SelectedObjectInfo.hpp"
 #include "../features/ZoomToScroll.hpp"
+#include "TweenFunctions.hpp"
 
 //#include <geode.custom-keybinds/include/Keybinds.hpp>
 //using namespace keybinds;
@@ -252,12 +253,6 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 
 	lel->addChild(hideUIMenu);
 
-
-	//this->m_fields->oldPosition = this->m_editorLayer->m_objectLayer->getPosition();
-	//this->m_fields->newPosition = this->m_fields->oldPosition;
-	//this->m_fields->oldScale = this->m_editorLayer->m_objectLayer->getScale();
-	//this->m_fields->newScale = this->m_fields->oldScale;
-
 	this->schedule(schedule_selector(GearEditorUI::myUpdate));
 
 	return ret;
@@ -459,7 +454,6 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 			
 			auto objAtPosition = this->objectAtPosition(touchLocation);
 			if (objAtPosition != nullptr) this->deleteObjectAndRemoveFromSelected(objAtPosition, false);
-			log::info("Hi");
 			return CCLayer::ccTouchEnded(touch, event);
 		}
 
@@ -518,10 +512,12 @@ CCArray* GearEditorUI::objectsAtPosition(CCPoint touchPoint) {
 
 				auto objHb = ErGui::getObjectHitbox(obj);
 				auto objHbConverted = CCRect({ (objHb.origin.x - cameraPos.x) / cameraScale, (objHb.origin.y - cameraPos.y) / cameraScale }, objHb.size / cameraScale);
+				objHbConverted.size.width = std::abs(objHbConverted.size.width);
+				objHbConverted.size.height = std::abs(objHbConverted.size.height);
 				bool check1 = ErGui::isHitboxAtPoint(touchConverted, objHbConverted);
-				//log::info("CHECK: {}", check1);
-				//log::info("TOUCH: {}", touchConverted);
-				//log::info("HITBOX: {}", objHbConverted);
+				// log::info("CHECK: {}", check1);
+				// log::info("TOUCH: {}", touchConverted);
+				// log::info("HITBOX: {}", objHbConverted);
 				auto playbackMode = lel->m_playbackMode;
 				if (check1 && ErGui::selectFilterRealization(obj) && playbackMode != PlaybackMode::Playing &&
 					(obj->m_editorLayer == lel->m_currentLayer || (obj->m_editorLayer2 == lel->m_currentLayer && obj->m_editorLayer2 != 0) || lel->m_currentLayer == -1)

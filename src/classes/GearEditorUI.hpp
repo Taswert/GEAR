@@ -24,17 +24,10 @@ public:
 		// Smooth Zooming
 		bool m_isSmoothZooming = false;
 
-		float m_zoomStep = 0.1f;
-
 		float m_zoomCurrent = 1.f;
 		float m_zoomTarget = 1.f;
-
 		CCPoint m_positionCurrent = { 0.f, 0.f };
 		CCPoint m_positionTarget = { 0.f, 0.f };
-
-		float m_zoomDuration = 0.15f;
-		float m_easingRate = 2.5f;
-		tweenfunc::TweenType m_easingType = tweenfunc::TweenType::EaseOut;
 
 		Fields() {}
 		~Fields();

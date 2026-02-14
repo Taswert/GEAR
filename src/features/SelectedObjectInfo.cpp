@@ -144,7 +144,7 @@ namespace SelectedObjectInfo {
 
 				// Scale
 				if (soiScale) {
-					selectedInfoString += "Scale: " + std::format("{:.2f}", obj->getScale()) + "\n";
+					selectedInfoString += "Scale: " + std::format("{:.2f}", obj->m_scaleX) + "\n";
 				}
 
 				// Colors

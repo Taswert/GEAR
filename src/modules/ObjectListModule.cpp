@@ -322,7 +322,7 @@ void ErGui::renderObjectList() {
 	}
 	
 	static ImGuiTextFilter filter;
-	filter.Draw();
+	filter.Draw("Search Objects");
 	
 	ImGui::InputFloat("Button Size", &buttonSizeValue);
 	ImVec2 buttonSize(buttonSizeValue, buttonSizeValue);
