@@ -138,7 +138,7 @@ void ErGui::renderToolsModule1() {
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	
 	bool autoBuildHelperBool = Mod::get()->getSavedValue<bool>("auto-buildhelper", false);
-	if (ImGui::Selectable(ICON_MDI_WRENCH, &autoBuildHelperBool, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_AUTO_FIX, &autoBuildHelperBool, 0, BTN_SIZE, selectableRounding)) {
 		Mod::get()->setSavedValue<bool>("auto-buildhelper", autoBuildHelperBool);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {

@@ -2,6 +2,7 @@
 #include "CustomImGuiWidgets.hpp"
 #include "../features/SelectedObjectInfo.hpp"
 #include "DebugModule.hpp"
+#include "Geode/cocos/support/zip_support/ZipUtils.h"
 #include "TransformObjectModule.hpp"
 #include "../classes/GearEditorUI.hpp"
 #include <Geode/binding/GJGameLevel.hpp>
@@ -80,7 +81,7 @@ void renderGeneralSettings() {
 	bool zoomEasing = mod->getSavedValue<bool>("zoom-easing", true);
 	float zoomDuration = mod->getSavedValue<float>("zoom-duration", 0.15f);
 	float easingRate = mod->getSavedValue<float>("zoom-easingRate", 2.5f);
-	tweenfunc::TweenType easingType = static_cast<tweenfunc::TweenType>(mod->getSavedValue<int>("zoom-easingType", tweenfunc::TweenType::EaseOut));
+	int easingType = mod->getSavedValue<int>("zoom-easingType", tweenfunc::TweenType::EaseOut);
 	float zoomStep = mod->getSavedValue<float>("zoom-step", 0.1f);
 
 
@@ -256,11 +257,9 @@ void renderGeneralSettings() {
 		"Ease In Out"
 	};
 
-	static int currentEasingType = easingType;
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	if (ImGui::Combo("Easing Type", &currentEasingType, easingTypes, IM_ARRAYSIZE(easingTypes))) {
+	if (ImGui::Combo("Easing Type", &easingType, easingTypes, IM_ARRAYSIZE(easingTypes))) {
 		isAnyItemClicked = true;
-		easingType = static_cast<tweenfunc::TweenType>(currentEasingType);
 	}
 
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
@@ -276,6 +275,12 @@ void renderGeneralSettings() {
 		mod->setSavedValue<bool>("auto-buildhelper", false);
 		mod->setSavedValue<bool>("deselect-controls", false);
 		mod->setSavedValue<bool>("gamewindow-static-ratio", false);
+
+		mod->setSavedValue<bool>("zoom-easing", true);
+		mod->setSavedValue<float>("zoom-duration", 0.15f);
+		mod->setSavedValue<float>("zoom-easingRate", 2.5f);
+		mod->setSavedValue<int>("zoom-easingType", static_cast<int>(tweenfunc::TweenType::EaseOut));
+		mod->setSavedValue<float>("zoom-step", 0.1f);
 		});
 	if (ImGui::Button("Reset to Default")) {
 		ImGui::OpenPopup("Confirm Reset");
@@ -300,7 +305,7 @@ void renderGeneralSettings() {
 		mod->setSavedValue<bool>("zoom-easing", zoomEasing);
 		mod->setSavedValue<float>("zoom-duration", zoomDuration);
 		mod->setSavedValue<float>("zoom-easingRate", easingRate);
-		mod->setSavedValue<int>("zoom-easingType", currentEasingType);
+		mod->setSavedValue<int>("zoom-easingType", easingType);
 		mod->setSavedValue<float>("zoom-step", zoomStep);
 
 		lel->updateOptions();
@@ -701,8 +706,21 @@ void renderDebugSettings() {
 
 void renderLevelBrowserSettings() {
 	ImGui::SeparatorText("Local Levels");
+	auto lel = LevelEditorLayer::get();
+	int i = 0;
 	for (auto level : CCArrayExt<GJGameLevel*>(LocalLevelManager::get()->m_localLevels)) {
 		ImGui::Text("%s", level->m_levelName.c_str());
+		ImGui::SameLine(300.f);
+		if (ImGui::Button(fmt::format("Load Level##{}", i).c_str())) {
+			ErGui::getFakePauseLayer()->saveLevel();
+			lel->removeAllObjects();
+			
+			std::string levelString = ZipUtils::decompressString(level->m_levelString, false, 0);
+			// log::info("Loading level: {}", levelString.c_str());
+			lel->createObjectsFromSetup(levelString);
+			lel->m_level = level;
+		}
+		i++;
 	}
 	
 	ImGui::SeparatorText("Downloaded Levels");
@@ -712,6 +730,17 @@ void renderLevelBrowserSettings() {
 		GJGameLevel* level = static_cast<GJGameLevel*>(levelsDict->objectForKey(key->getCString()));
 		if (!level->m_levelString.size()) continue;
 		ImGui::Text("%s", level->m_levelName.c_str());
+		ImGui::SameLine(300.f);
+		if (ImGui::Button(fmt::format("Load Level##{}", i).c_str())) {
+			ErGui::getFakePauseLayer()->saveLevel();
+			lel->removeAllObjects();
+
+			std::string levelString = ZipUtils::decompressString(level->m_levelString, false, 0);
+			// log::info("Loading level: {}", levelString.c_str());
+			lel->createObjectsFromSetup(levelString);
+			lel->m_level = level;
+		}
+		i++;
 		// log::info("Key: {}", key);
 	}
 	// log::info("{}", levelsDict->objectForKey("93450782"));
