@@ -41,7 +41,7 @@ public:
 	GameObject* objectAtPosition(CCPoint touchPoint);
 	GameObject* objectAtPosition(CCArray* objArrAtPosition);
 	void deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUndo);
-	//void registerKeybindsEventListeners();
+	void registerKeybindsEventListeners();
 	
 	// Hooks
 	bool onCreate();
@@ -60,7 +60,7 @@ public:
 	void deselectAll();
 	void deselectObject(GameObject* obj);
 	void scrollWheel(float y, float x);
-	void moveObjectCall(EditCommand command);
+	CCPoint moveForCommand(EditCommand command);
 	void transformObjectCall(EditCommand command);
 	void resetSelectedObjectsColor();
 

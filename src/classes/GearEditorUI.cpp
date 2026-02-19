@@ -1,6 +1,7 @@
 #include "GearEditorUI.hpp"
 #include "GearControls.hpp"
 
+#include "Geode/platform/windows.hpp"
 #include "ObjectCategories.hpp"
 
 #include "ObjectListModule.hpp"
@@ -214,8 +215,8 @@ void GearEditorUI::deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUnd
 
 bool GearEditorUI::init(LevelEditorLayer * lel) {
 	// Keybinds
-	//registerKeybindsEventListeners();
-
+	registerKeybindsEventListeners();
+	
 	// Lasso And Swipe
 	ErGui::editorUIDrawNode = CCDrawNode::create();
 	lel->m_objectParent->addChild(ErGui::editorUIDrawNode);

@@ -69,7 +69,7 @@ namespace ErGui {
 
 	const float INPUT_ITEM_WIDTH = 160.f;
 	const float SHORT_INPUT_ITEM_WIDTH = 120.f;
-	const float FIRST_ELEMENT_SAMELINE_SPACING = 72.f;
+	const float FIRST_ELEMENT_SAMELINE_SPACING = 85.f;
 	inline CCDrawNode* touchedDN = nullptr;
 	inline CCPoint touchedDNFirstPoint = { 0.f, 0.f };
 	inline bool dbgTDN = false;
@@ -89,9 +89,4 @@ namespace ErGui {
 	inline std::optional<CCRect> selectRect;
 
 	inline CCPoint beginTouchLocation;
-
-	inline float moveStep = 30.f;
-	inline float rotationStep = 90.f;
-	inline float scaleStep = 0.5f;
-	inline float skewStep = 15.f;
 };

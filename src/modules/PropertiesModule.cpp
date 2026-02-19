@@ -2,7 +2,10 @@
 #include "CustomImGuiWidgets.hpp"
 #include "../features/SelectedObjectInfo.hpp"
 #include "DebugModule.hpp"
+#include "Geode/cocos/robtop/keyboard_dispatcher/CCKeyboardDelegate.h"
 #include "Geode/cocos/support/zip_support/ZipUtils.h"
+#include "Geode/loader/SettingV3.hpp"
+#include "Geode/utils/Keyboard.hpp"
 #include "TransformObjectModule.hpp"
 #include "../classes/GearEditorUI.hpp"
 #include <Geode/binding/GJGameLevel.hpp>
@@ -84,6 +87,14 @@ void renderGeneralSettings() {
 	int easingType = mod->getSavedValue<int>("zoom-easingType", tweenfunc::TweenType::EaseOut);
 	float zoomStep = mod->getSavedValue<float>("zoom-step", 0.1f);
 
+	// Steps
+	float moveStep = 		mod->getSavedValue<float>("move-step", 30.f);
+	float rotStep = 		mod->getSavedValue<float>("rot-step", 90.f);
+	float scaleStep = 		mod->getSavedValue<float>("scale-step", 0.5f);
+	float skewStep = 		mod->getSavedValue<float>("skew-step", 15.f);
+	bool moveStepToBind = 	mod->getSavedValue<bool>("move-step-to-bind", false);
+	bool rotStepToBind = 	mod->getSavedValue<bool>("rot-step-to-bind", false);
+
 
 	ImGui::SeparatorText("General Editor Settings");
 	if (ImGui::Checkbox("Start Optimisation", &startOptimisation)) 
@@ -156,57 +167,57 @@ void renderGeneralSettings() {
 	const float INPUT_FLOAT_WIDTH = 30.f * 7.f + style.ItemSpacing.x * 6.f;
 	// position
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	ImGui::InputFloat("MoveStep", &ErGui::moveStep, 1.f);
-	if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 0.5f;	ImGui::SameLine();
-	if (ImGui::Button("2##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 2.f;		ImGui::SameLine();
-	if (ImGui::Button("7.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 7.5f;	ImGui::SameLine();
-	if (ImGui::Button("10##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 10.f;		ImGui::SameLine();
-	if (ImGui::Button("15##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 15.f;		ImGui::SameLine();
-	if (ImGui::Button("30##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 30.f;		ImGui::SameLine();
-	if (ImGui::Button("150##MoveStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::moveStep = 150.f;	ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::InputFloat("MoveStep", &moveStep, 1.f);
+	if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) 	{ moveStep = 0.5f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("2##MoveStepPreset", ImVec2({ 30.f, 0.f }))) 		{ moveStep = 2.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("7.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) 	{ moveStep = 7.5f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("10##MoveStepPreset", ImVec2({ 30.f, 0.f }))) 		{ moveStep = 10.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("15##MoveStepPreset", ImVec2({ 30.f, 0.f }))) 		{ moveStep = 15.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("30##MoveStepPreset", ImVec2({ 30.f, 0.f }))) 		{ moveStep = 30.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("150##MoveStepPreset", ImVec2({ 30.f, 0.f }))) 	{ moveStep = 150.f;	isAnyItemClicked = true; }	ImGui::SameLine(0, style.ItemInnerSpacing.x);
 	ImGui::Text("Presets");
-	ImGui::Checkbox("Apply steps to Keybinds##MOVE", &ErGui::posStepToKeybinds);
+	if (ImGui::Checkbox("Apply steps to Keybinds##MOVE", &moveStepToBind)) isAnyItemClicked = true;
 	
 	ImGui::Dummy({0.f, 5.f});
 
 	// rotation
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	ImGui::InputFloat("RotStep", &ErGui::rotationStep, 1.f);
-	if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 1.f;		ImGui::SameLine();
-	if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 10.f;	ImGui::SameLine();
-	if (ImGui::Button("15##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 15.f;	ImGui::SameLine();
-	if (ImGui::Button("30##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 30.f;	ImGui::SameLine();
-	if (ImGui::Button("45##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 45.f;	ImGui::SameLine();
-	if (ImGui::Button("90##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 90.f;	ImGui::SameLine();
-	if (ImGui::Button("180##RotateStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::rotationStep = 180.f;	ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::InputFloat("RotStep", &rotStep, 1.f);
+	if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) 	{ rotStep = 1.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) 	{ rotStep = 10.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("15##RotateStepPreset", ImVec2({ 30.f, 0.f }))) 	{ rotStep = 15.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("30##RotateStepPreset", ImVec2({ 30.f, 0.f }))) 	{ rotStep = 30.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("45##RotateStepPreset", ImVec2({ 30.f, 0.f }))) 	{ rotStep = 45.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("90##RotateStepPreset", ImVec2({ 30.f, 0.f }))) 	{ rotStep = 90.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("180##RotateStepPreset", ImVec2({ 30.f, 0.f }))) 	{ rotStep = 180.f;	isAnyItemClicked = true; }	ImGui::SameLine(0, style.ItemInnerSpacing.x);
 	ImGui::Text("Presets");
-	ImGui::Checkbox("Apply steps to Keybinds##ROTATE", &ErGui::rotStepToKeybinds);
+	if (ImGui::Checkbox("Apply steps to Keybinds##ROTATE", &rotStepToBind)) isAnyItemClicked = true;
 
 	ImGui::Dummy({ 0.f, 5.f });
 
 	// scale
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	ImGui::InputFloat("ScaleStep", &ErGui::scaleStep, 0.25f);
-	if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.01f;	ImGui::SameLine();
-	if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.05f;	ImGui::SameLine();
-	if (ImGui::Button("0.1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.1f;		ImGui::SameLine();
-	if (ImGui::Button("0.25##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.25f;	ImGui::SameLine();
-	if (ImGui::Button("0.5##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 0.5f;		ImGui::SameLine();
-	if (ImGui::Button("1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 1.f;			ImGui::SameLine();
-	if (ImGui::Button("2##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::scaleStep = 2.f;			ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
+	if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) 	{ scaleStep = 0.01f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) 	{ scaleStep = 0.05f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("0.1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) 	{ scaleStep = 0.1f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("0.25##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) 	{ scaleStep = 0.25f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("0.5##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) 	{ scaleStep = 0.5f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("1##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) 		{ scaleStep = 1.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("2##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) 		{ scaleStep = 2.f;	isAnyItemClicked = true; }	ImGui::SameLine(0, style.ItemInnerSpacing.x);
 	ImGui::Text("Presets");
 	
 	ImGui::Dummy({ 0.f, 5.f });
 
 	// skew
 	ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
-	ImGui::InputFloat("SkewStep", &ErGui::skewStep, 1.f);
-	if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 1.f;		ImGui::SameLine();
-	if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 5.f;		ImGui::SameLine();
-	if (ImGui::Button("10##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 10.f;		ImGui::SameLine();
-	if (ImGui::Button("15##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 15.f;		ImGui::SameLine();
-	if (ImGui::Button("30##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 30.f;		ImGui::SameLine();
-	if (ImGui::Button("45##SkewStepPreset", ImVec2({ 30.f, 0.f }))) ErGui::skewStep = 45.f;		ImGui::SameLine(0, style.ItemInnerSpacing.x);
+	ImGui::InputFloat("SkewStep", &skewStep, 1.f);
+	if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f })))  { skewStep = 1.f;		isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f })))  { skewStep = 5.f;		isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("10##SkewStepPreset", ImVec2({ 30.f, 0.f }))) { skewStep = 10.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("15##SkewStepPreset", ImVec2({ 30.f, 0.f }))) { skewStep = 15.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("30##SkewStepPreset", ImVec2({ 30.f, 0.f }))) { skewStep = 30.f;	isAnyItemClicked = true; }	ImGui::SameLine();
+	if (ImGui::Button("45##SkewStepPreset", ImVec2({ 30.f, 0.f }))) { skewStep = 45.f;	isAnyItemClicked = true; }	ImGui::SameLine(0, style.ItemInnerSpacing.x);
 	ImGui::Text("Presets");
 
 	ErGui::SeparatorPlus("Zoom Settings");
@@ -281,6 +292,13 @@ void renderGeneralSettings() {
 		mod->setSavedValue<float>("zoom-easingRate", 2.5f);
 		mod->setSavedValue<int>("zoom-easingType", static_cast<int>(tweenfunc::TweenType::EaseOut));
 		mod->setSavedValue<float>("zoom-step", 0.1f);
+
+		mod->setSavedValue<float>("move-step", 30.f);
+		mod->setSavedValue<float>("rot-step", 90.f);
+		mod->setSavedValue<float>("scale-step", 0.5f);
+		mod->setSavedValue<float>("skew-step", 15.f);
+		mod->setSavedValue<bool>("move-step-to-bind", false);
+		mod->setSavedValue<bool>("rot-step-to-bind", false);
 		});
 	if (ImGui::Button("Reset to Default")) {
 		ImGui::OpenPopup("Confirm Reset");
@@ -307,6 +325,14 @@ void renderGeneralSettings() {
 		mod->setSavedValue<float>("zoom-easingRate", easingRate);
 		mod->setSavedValue<int>("zoom-easingType", easingType);
 		mod->setSavedValue<float>("zoom-step", zoomStep);
+
+		// Steps
+		mod->setSavedValue<float>("move-step", moveStep);
+		mod->setSavedValue<float>("rot-step", rotStep);
+		mod->setSavedValue<float>("scale-step", scaleStep);
+		mod->setSavedValue<float>("skew-step", skewStep);
+		mod->setSavedValue<bool>("move-step-to-bind", moveStepToBind);
+		mod->setSavedValue<bool>("rot-step-to-bind", rotStepToBind);
 
 		lel->updateOptions();
 	}
@@ -457,23 +483,17 @@ void renderObjectInfoSettings() {
 
 	ImGui::BeginDisabled();
 	float testFloat = 0.f;
-	ImGui::Text("Position");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##XPos", &testFloat);
+	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Position##XPos", &testFloat);
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##YPos", &testFloat);
+	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##YPos", &testFloat);
 
-	ImGui::Text("Scale");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x);
-	ErGui::BetterDragFloat("##Scale", &testFloat);
+	ErGui::DragFloat("Scale##Scale", &testFloat);
 
-	ImGui::Text("Opacity");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x);
-	ErGui::BetterDragFloat("##Opacity", &testFloat);
+	ErGui::DragFloat("Opacity##Opacity", &testFloat);
 	
 	ImGui::Text("Color");
 	ImGui::EndDisabled();
@@ -723,6 +743,7 @@ void renderLevelBrowserSettings() {
 		i++;
 	}
 	
+	// Buggy af
 	ImGui::SeparatorText("Downloaded Levels");
 	auto levelsDict = GameLevelManager::get()->m_onlineLevels;
 
@@ -749,13 +770,70 @@ void renderLevelBrowserSettings() {
 	// }
 }
 
+void renderKeybindsSettings() {
+	auto mod = Mod::get();
+
+	// I think, I am doing this not by the inteded way...
+	bool foundKeybinds = false;
+	for (auto str : mod->getSettingKeys()) {
+		if (str == "keybinds-title") {
+			foundKeybinds = true;
+			continue;
+		}
+
+		if (!foundKeybinds) continue;
+
+
+		auto setting = mod->getSetting(str);
+		ImGui::Text(setting->getDisplayName().c_str());
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
+		ImGui::SetTooltip(setting->getDescription()->c_str());
+		ImGui::SameLine(200.f);
+
+		std::string keybindsStr = "";
+		std::vector<geode::Keybind> keybindVector = mod->getSettingValue<std::vector<geode::Keybind>>(str);
+		for (Keybind keybind : keybindVector) {
+			keybindsStr.append(keybind.toString());
+			// Keep this for better times, cause now it's just doesn't work
+		}
+		ImGui::Text(keybindsStr.c_str());
+
+		ImGui::SameLine(300.f);
+
+		// Oh, sooo, what should I do here???
+		// Pretty funny situation here, huh
+		if (ImGui::BeginPopupModal("Set Keybind")) {
+			// geode::KeyboardInputData // KeybindSettingV3 // cocos2d::enumKeyCodes // Keybind //
+			for (ImGuiKey key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_NamedKey_END; static_cast<ImGuiKey>(key+1)) {
+				if (!ImGui::IsKeyPressed(key)) continue;
+			}
+			ImGui::Text("Press any key or combination to set a new keybind.");
+			// ImGui::Text("New keybind: %s", );
+			if (ImGui::Button("Save")) {
+				//
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel")) {
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+		if (ImGui::Button("Set")) {
+			ImGui::OpenPopup("Set Keybind");
+		}
+	}
+}
+
 enum PropertiesTabs {
 	P_GENERAL,
 	P_INTERFACE,
 	P_OBJECT_INFO,
 	P_DRAWS,
-	P_DEBUG,
-	P_LEVEL_BROWSER
+	P_KEYBINDS,
+	P_LEVEL_BROWSER,
+	P_DEBUG
 };
 
 void ErGui::renderPropertiesModule() {
@@ -765,11 +843,12 @@ void ErGui::renderPropertiesModule() {
 		static PropertiesTabs selectedTab = P_GENERAL;
 		ImGui::BeginChild("Tabs", ImVec2(ImGui::GetContentRegionAvail().x * 0.25f, 0), ImGuiChildFlags_Borders);
 		if (ImGui::Selectable("General",			selectedTab == P_GENERAL)) selectedTab = P_GENERAL;
-		if (ImGui::Selectable("Interface",		selectedTab == P_INTERFACE)) selectedTab = P_INTERFACE;
+		if (ImGui::Selectable("Interface",			selectedTab == P_INTERFACE)) selectedTab = P_INTERFACE;
 		if (ImGui::Selectable("Object Info",		selectedTab == P_OBJECT_INFO)) selectedTab = P_OBJECT_INFO;
-		if (ImGui::Selectable("Draws",			selectedTab == P_DRAWS)) selectedTab = P_DRAWS;
-		if (ImGui::Selectable("Debug",			selectedTab == P_DEBUG)) selectedTab = P_DEBUG;
-		if (ImGui::Selectable("Level Browser",	selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
+		if (ImGui::Selectable("Draws",				selectedTab == P_DRAWS)) selectedTab = P_DRAWS;
+		if (ImGui::Selectable("Keybinds",			selectedTab == P_KEYBINDS)) selectedTab = P_KEYBINDS;
+		if (ImGui::Selectable("Level Browser",		selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
+		if (ImGui::Selectable("Debug",				selectedTab == P_DEBUG)) selectedTab = P_DEBUG;
 		ImGui::EndChild();
 
 		ImGui::SameLine();
@@ -789,11 +868,14 @@ void ErGui::renderPropertiesModule() {
 		case P_DRAWS:
 			renderDrawsSettings();
 			break;
-		case P_DEBUG:
-			renderDebugSettings();
+		case P_KEYBINDS:
+			renderKeybindsSettings();
 			break;
 		case P_LEVEL_BROWSER:
 			renderLevelBrowserSettings();
+			break;
+		case P_DEBUG:
+			renderDebugSettings();
 			break;
 		default:
 			break;

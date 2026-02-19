@@ -113,7 +113,7 @@ void ErGui::renderGameWindow() {
 		sliderWidth = minWidth;
 
 	ImGui::SetNextItemWidth(sliderWidth);
-	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX))
+	if (ImGui::SliderFloat("##LevelPositionSliderX", &objectLayerX, -30.f, maxPosX, "X: %.3f"))
 		lel->m_objectLayer->setPositionX(objectLayerX * -1 * lel->m_objectLayer->getScale());
 
 	ImGui::SameLine();
@@ -154,7 +154,7 @@ void ErGui::renderGameWindow() {
 	float maxPosY = ErGui::constrainByLastObjectY ? getLastObjectYFast() : std::max(getLastObjectYFast(), 29800.f);
 
 	ImGui::SetNextItemWidth(sliderWidth);
-	if (ImGui::SliderFloat("##LevelPositionSliderY", &objectLayerY, 0.f, maxPosY))
+	if (ImGui::SliderFloat("##LevelPositionSliderY", &objectLayerY, 0.f, maxPosY, "Y: %.3f"))
 		lel->m_objectLayer->setPositionY(objectLayerY * -1 * lel->m_objectLayer->getScale());
 
 	ImGui::SameLine();

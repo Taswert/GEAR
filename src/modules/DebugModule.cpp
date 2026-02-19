@@ -11,6 +11,7 @@ void ErGui::renderDebugModule() {
 		ImGui::Text("Is Zooming: %d", GearEditorUI::get()->m_fields->m_isSmoothZooming);
 		ImGui::Text("Zoom Scale: %.3f", EditorUI::get()->m_editorLayer->m_objectLayer->getScale());
 		ImGui::Text("Selected Object address: %p", EditorUI::get()->m_selectedObject);
+		ImGui::Text("Pointer to member m_positionX: %p", &GameObject::m_positionX);
 		ImGui::End();
 	}
 }

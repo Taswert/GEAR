@@ -1,3 +1,4 @@
+#include <Geode/Enums.hpp>
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/modify/CCEGLView.hpp>
 #include <imgui.h>
@@ -6,12 +7,10 @@
 #include "../classes/GearEditorUI.hpp"
 #include "../modules/TransformObjectModule.hpp"
 #include "../modules/PropertiesModule.hpp"
+#include <Geode/loader/SettingV3.hpp>
 using namespace geode::prelude;
 
 static std::set<cocos2d::enumKeyCodes> editorUIHoldingKeys;
-
-//#include <geode.custom-keybinds/include/Keybinds.hpp>
-//using namespace keybinds;
 
 void releaseEditorUIKeys() {
 	if (!editorUIHoldingKeys.empty()) {
@@ -44,6 +43,9 @@ void moveObjectsByKey(float x, float y) {
 		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 			editorUI->moveObject(obj, { x, y });
 		}
+
+		auto tc = editorUI->m_transformControl;
+		tc->setPosition({tc->getPositionX() + x, tc->getPositionY() + y});
 	}
 }
 
@@ -67,44 +69,14 @@ void rotateObjectsByKey(float degrees) {
 				obj->setRotationY(rotY);
 			}
 		}
+
+		auto tc = editorUI->m_transformControl;
+		tc->setRotation(tc->getRotation() + degrees);
+		tc->updateButtons(false, false);
 	}
 }
 
 void GearEditorUI::keyDown(cocos2d::enumKeyCodes p0, double timestamp) {
-		
-	// 4 - View Mode
-	//if (p0 == cocos2d::enumKeyCodes::KEY_Four) {
-	//	GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
-	//	return EditorUI::keyDown(p0);
-	//}
-
-	// 5 - some mode?
-	//if (p0 == cocos2d::enumKeyCodes::KEY_Five) {
-	//	GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 5;
-	//}
-
-	// Ctrl + A - Select All
-	//if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_A) {
-	//	ErGui::selectAllObjects();
-	//	return EditorUI::keyDown(p0);
-	//}
-
-	// Ctrl + B - Build Helper
-	//if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_B) {
-	//	ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
-	//	return EditorUI::keyDown(p0);
-	//}
-
-	// Ctrl + W - Warp
-	//if (CCDirector::sharedDirector()->getKeyboardDispatcher()->getControlKeyPressed() && p0 == cocos2d::enumKeyCodes::KEY_W) {
-	//	this->activateTransformControl(nullptr);
-	//	log::info("Warped");
-	//	return EditorUI::keyDown(p0);
-	//}
-
-	
-
-	// todo: select all right / select all left
 	editorUIHoldingKeys.insert(p0);
 	EditorUI::keyDown(p0, timestamp);
 }
@@ -114,10 +86,11 @@ void GearEditorUI::keyUp(cocos2d::enumKeyCodes p0, double timestamp) {
 	EditorUI::keyUp(p0, timestamp);
 }
 
-void GearEditorUI::moveObjectCall(EditCommand command) {
+CCPoint GearEditorUI::moveForCommand(EditCommand command) {
 	// So, let's cancel this call for my keybinds. I HOPE this will not cause aaaany bugs.
-	//EditorUI::moveObjectCall(EditCommand command);
-	return;
+	// P.S. It indeed caused some bugs, such as Editor Sound not working, but now it works pretty well.
+	//auto ret = EditorUI::moveForCommand(command);
+	return CCPoint(0.f, 0.f);
 }
 
 void GearEditorUI::transformObjectCall(EditCommand command) {
@@ -127,97 +100,195 @@ void GearEditorUI::transformObjectCall(EditCommand command) {
 }
 
 
-//void GearEditorUI::registerKeybindsEventListeners() {
-//	// Small Rotate
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			rotateObjectsByKey(-45.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "rotate-ccw-small"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			rotateObjectsByKey(45.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "rotate-cw-small"_spr);
-//
-//
-//	// 4
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			//log::info("HIHIHI");
-//			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
-//			//log::info("BYEBYE\n");
-//		}
-//		return ListenerResult::Propagate;
-//		}, "view-mode"_spr);
-//
-//	// Ctrl + A
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			ErGui::selectAllObjects();
-//		}
-//		return ListenerResult::Propagate;
-//		}, "select-all"_spr);
-//
-//	// Ctrl + W
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			this->activateTransformControl(nullptr);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "toggle-warp"_spr);
-//
-//	// Ctrl + B
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "apply-buildhelper"_spr);
-//
-//
-//	// Ctrl + B
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "apply-buildhelper"_spr);
-//
-//
-//
-//	// Half Steps (Position)
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-up-half"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-down-half"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-left-half"_spr);
-//
-//	this->addEventListener<InvokeBindFilter>([this](InvokeBindEvent* event) {
-//		if (event->isDown()) {
-//			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
-//		}
-//		return ListenerResult::Propagate;
-//		}, "move-obj-right-half"_spr);
-//}
+void GearEditorUI::registerKeybindsEventListeners() {
+	// todo: select all right / select all left
+
+	// 4
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "view-mode"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			GameManager::sharedState()->getEditorLayer()->m_editorUI->m_selectedMode = 4;
+		}
+	});
+
+	// Ctrl + A
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "select-all"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			ErGui::selectAllObjects();
+		}
+	});
+
+	// Ctrl + W
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "toggle-warp"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			this->activateTransformControl(nullptr);
+		}
+	});
+
+	// Ctrl + B
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "apply-buildhelper"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			ErGui::getFakePauseLayer()->onBuildHelper(nullptr);
+		}
+	});
+
+
+	// Half Move Steps
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-up-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-down-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
+		}
+	});
+	
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-left-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-right-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
+		}
+	});
+
+
+	// Move Steps
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-up"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			auto posStepToKeybinds = Mod::get()->getSavedValue<bool>("move-step-to-bind", false);
+			auto moveStep = Mod::get()->getSavedValue<float>("move-step", 30.f);
+			
+			if (posStepToKeybinds)
+				moveObjectsByKey(0.f, moveStep);
+			else
+				moveObjectsByKey(0.f, EditorUI::get()->m_gridSize);
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-down"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			auto posStepToKeybinds = Mod::get()->getSavedValue<bool>("move-step-to-bind", false);
+			auto moveStep = Mod::get()->getSavedValue<float>("move-step", 30.f);
+
+			if (posStepToKeybinds) 
+				moveObjectsByKey(0.f, -moveStep);
+			else
+				moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize);
+		}
+	});
+	
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-left"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			auto posStepToKeybinds = Mod::get()->getSavedValue<bool>("move-step-to-bind", false);
+			auto moveStep = Mod::get()->getSavedValue<float>("move-step", 30.f);
+
+			if (posStepToKeybinds) 
+				moveObjectsByKey(-moveStep, 0.f);
+			else
+				moveObjectsByKey(-EditorUI::get()->m_gridSize, 0.f);
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-right"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			auto posStepToKeybinds = Mod::get()->getSavedValue<bool>("move-step-to-bind", false);
+			auto moveStep = Mod::get()->getSavedValue<float>("move-step", 30.f);
+
+			if (posStepToKeybinds) 
+				moveObjectsByKey(moveStep, 0.f);
+			else
+				moveObjectsByKey(EditorUI::get()->m_gridSize, 0.f);
+		}
+	});
+
+
+	// Small Move Steps
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-up-small"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(0.f, 2.f);
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-down-small"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(0.f, -2.f);
+		}
+	});
+	
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-left-small"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(-2.f, 0.f);
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-right-small"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			moveObjectsByKey(2.f, 0.f);
+		}
+	});
+
+
+	// Rotation
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "rotate-ccw"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			auto rotStepToKeybinds = Mod::get()->getSavedValue<bool>("rot-step-to-bind", false);
+			auto rotationStep = Mod::get()->getSavedValue<float>("rot-step", 90.f);
+			if (rotStepToKeybinds)
+				rotateObjectsByKey(-rotationStep);
+			else {
+				auto objArr = getSelectedObjects();
+				auto obj = static_cast<GameObject*>(getSelectedObjects()->objectAtIndex(0));
+				if (objArr->count() == 1) {
+					transformObject(obj, EditCommand::RotateCCW, false);
+				}
+				else {
+					rotateObjectsByKey(-90.f);
+				}
+			}
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "rotate-cw"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			auto rotStepToKeybinds = Mod::get()->getSavedValue<bool>("rot-step-to-bind", false);
+			auto rotationStep = Mod::get()->getSavedValue<float>("rot-step", 90.f);
+			if (rotStepToKeybinds)
+				rotateObjectsByKey(rotationStep);
+			else {
+				auto objArr = getSelectedObjects();
+				auto obj = static_cast<GameObject*>(getSelectedObjects()->objectAtIndex(0));
+				if (objArr->count() == 1) {
+					transformObject(obj, EditCommand::RotateCW, false);
+				}
+				else {
+					rotateObjectsByKey(90.f);
+				}
+			}
+		}
+	});
+	
+
+	// Small Rotate
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "rotate-ccw-small"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			//rotateObjects(getSelectedObjects(), -45.f, getRotationPivotPoint()); // GeometryDash.exe + 0x6c1aa8 - Pivot Point
+			rotateObjectsByKey(-45.f);
+		}
+	});
+
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "rotate-cw-small"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down) {
+			//rotateObjects(getSelectedObjects(), 45.f, getRotationPivotPoint());
+			rotateObjectsByKey(45.f);
+		}
+	});
+}
 //
 //$execute{
 //	// Custom keybinds

@@ -176,20 +176,16 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 
 		
 		if (!eObj->m_lockToCameraX && !eObj->m_lockToPlayerX) {
-			ImGui::Text("Move X");
-			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-			if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##MoveX", &xStep, 1.f, 10.f, "%.2f")) {
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+			if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Move X", &xStep, 1.f, 10.f, "%.2f")) {
 				eObj->m_moveOffset.x = xStep * modStep;
 				auto field = eObj->m_moveOffset.x;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.x, field, EnhancedTriggerObject);
 			}
 		}
 		else {
-			ImGui::Text("Mod X");
-			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-			if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##Mod X", &eObj->m_moveModX, 0.1f, 0.5f, "%.3f", 0.1f)) {
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+			if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Mod X", &eObj->m_moveModX, 0.1f, 0.5f, "%.3f", 0.1f)) {
 				auto field = eObj->m_moveModX;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModX, field, EnhancedTriggerObject);
 			}
@@ -219,20 +215,16 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (!eObj->m_lockToCameraY && !eObj->m_lockToPlayerY) {
-			ImGui::Text("Move Y");
-			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-			if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##MoveY", &yStep, 1.f, 10.f, "%.2f")) {
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+			if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "Move Y", &yStep, 1.f, 10.f, "%.2f")) {
 				eObj->m_moveOffset.y = yStep * modStep;
 				auto field = eObj->m_moveOffset.y;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.y, field, EnhancedTriggerObject);
 			}
 		}
 		else {
-			ImGui::Text("Mod Y");
-			ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-			ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-			if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f", 0.1f)) {
+			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+			if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f", 0.1f)) {
 				auto field = eObj->m_moveModY;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveModY, field, EnhancedTriggerObject);
 			}
@@ -509,10 +501,8 @@ void drawAlphaSettings(GameObject* obj, CCArray* objArr) {
 	drawComponentGroupID(eObj, objArr, "Group ID");
 
 	ImGui::SeparatorText("Core Settings");
-	ImGui::Text("Opacity");
-	ImGui::SameLine(80.f);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat("##Opacity", &eObj->m_opacity, 0.1f, 0.5f, "%.2f", 0.05f, 0.f, 1.f, ImGuiSliderFlags_ClampZeroRange)) {
+	if (ErGui::DragFloat("Opacity", &eObj->m_opacity, 0.1f, 0.5f, "%.2f", 0.05f, 0.f, 1.f, ImGuiSliderFlags_ClampZeroRange)) {
 		auto opacity = eObj->m_opacity;
 		if (opacity < 0.f) opacity = 0.f;
 		if (opacity > 1.f) opacity = 1.f;
@@ -747,10 +737,8 @@ void drawAnimateSettings(GameObject* obj, CCArray* objArr) {
 
 	drawComponentGroupID(eObj, objArr, "Group ID");
 
-	ImGui::Text("Animation ID");
-	ImGui::SameLine(80.f);
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragInt("##AnimationID", &eObj->m_animationID, 1, 5, "%d", 1, 0, 9, ImGuiSliderFlags_ClampZeroRange)) {
+	if (ErGui::DragInt("Animation ID", &eObj->m_animationID, 1, 5, "%d", 1, 0, 9, ImGuiSliderFlags_ClampZeroRange)) {
 		auto animationID = eObj->m_animationID;
 		if (animationID < 0) eObj->m_animationID = 0;
 		if (animationID > 9) eObj->m_animationID = 9;
@@ -825,7 +813,7 @@ void drawRandomSettings(GameObject* obj, CCArray* objArr) {
 	drawComponentGroupID(eObj, objArr, "Group ID 1", "Group ID 2");
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat("Chance", &eObj->m_duration, 1.f, 5.f, "%.0f%%", 1.f, 0.f, 100.f)) {
+	if (ErGui::DragFloat("Chance", &eObj->m_duration, 1.f, 5.f, "%.0f%%", 1.f, 0.f, 100.f)) {
 		auto chance = eObj->m_duration;
 		if (chance < 0.f) eObj->m_duration = 0.f;
 		if (chance > 100.f) eObj->m_duration = 100.f;
@@ -848,52 +836,42 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 
 	SeparatorPlus("Position");
 
-	ImGui::Text("Offset");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat(ImVec4(255, 66, 66, 255), "##Offset X", &eObj->m_offset.x)) {
+	if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Offset##Offset X", &eObj->m_offset.x)) {
 		float offsetX = eObj->m_offset.x;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.x, offsetX, SpawnParticleGameObject);
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat(ImVec4(66, 66, 255, 255), "##Offset Y", &eObj->m_offset.y)) {
+	if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##Offset Y", &eObj->m_offset.y)) {
 		float offsetY = eObj->m_offset.y;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.y, offsetY, SpawnParticleGameObject);
 	}
 
-	ImGui::Text("OffVar");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
-
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat(ImVec4(175, 50, 50, 255), "##OffVar X", &eObj->m_offsetVariance.x)) {
+	if (ErGui::DragFloat(ImVec4(175, 50, 50, 255), "OffVar##OffVar X", &eObj->m_offsetVariance.x)) {
 		float offVarX = eObj->m_offsetVariance.x;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.x, offVarX, SpawnParticleGameObject);
 	}
 	
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat(ImVec4(50, 74, 178, 255), "##OffVar Y", &eObj->m_offsetVariance.y)) {
+	if (ErGui::DragFloat(ImVec4(50, 74, 178, 255), "##OffVar Y", &eObj->m_offsetVariance.y)) {
 		float offVarY = eObj->m_offsetVariance.y;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.y, offVarY, SpawnParticleGameObject);
 	}
 
-	SeparatorPlus("Rotatation");
+	SeparatorPlus("Rotation");
 
-	ImGui::Text("RotateDir");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat("##RotatateDir", &eObj->m_rotation)) {
+	if (ErGui::DragFloat("RotateDir", &eObj->m_rotation)) {
 		float rotateDir = eObj->m_rotation;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_rotation, rotateDir, SpawnParticleGameObject);
 	}
 
 
-	ImGui::Text("RotateVar");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat("##RotationVar", &eObj->m_rotationVariance)) {
+	if (ErGui::DragFloat("Rotate Var", &eObj->m_rotationVariance)) {
 		float rotationVar = eObj->m_rotationVariance;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_rotationVariance, rotationVar, SpawnParticleGameObject);
 	}
@@ -905,18 +883,14 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 
 	SeparatorPlus("Scale");
 
-	ImGui::Text("Scale");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat("##Scale", &eObj->m_scale, 1.0f, 5.0f, "%.2f", 0.1f)) {
+	if (ErGui::DragFloat("Scale", &eObj->m_scale, 1.0f, 5.0f, "%.2f", 0.1f)) {
 		float scale = eObj->m_scale;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_scale, scale, SpawnParticleGameObject);
 	}
 
-	ImGui::Text("ScaleVar");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat("##ScaleVar", &eObj->m_scaleVariance, 1.0f, 5.0f, "%.2f", 0.1f)) {
+	if (ErGui::DragFloat("ScaleVar", &eObj->m_scaleVariance, 1.0f, 5.0f, "%.2f", 0.1f)) {
 		float scaleVar = eObj->m_scaleVariance;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_scaleVariance, scaleVar, SpawnParticleGameObject);
 	}
@@ -939,7 +913,7 @@ void drawTimeWarp(GameObject* obj, CCArray* objArr) {
 	auto eObj = static_cast<EffectGameObject*>(obj);
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragFloat("Time Modifier", &eObj->m_timeWarpTimeMod, 0.1f, 0.5f, "%.2f", 0.05f, .1f, 2.f)) {
+	if (ErGui::DragFloat("Time Modifier", &eObj->m_timeWarpTimeMod, 0.1f, 0.5f, "%.2f", 0.05f, .1f, 2.f)) {
 		auto time = eObj->m_timeWarpTimeMod;
 		if (time < 0.1f) eObj->m_timeWarpTimeMod = 0.1f;
 		if (time > 2.f) eObj->m_timeWarpTimeMod = 2.f;

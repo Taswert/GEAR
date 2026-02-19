@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.0-alpha.2",
+	"geode": "5.0.0-beta.3",
 	"gd": {
 		"win": "2.2081"
 	},
@@ -50,6 +50,160 @@
 				"big-arrows": false,
 				"arrow-step": 1
 			}
+		},
+
+		"keybinds-title": {
+            "name": "Keybinds",
+            "type": "title"
+        },
+		"view-mode": {
+			"type": "keybind",
+			"name": "View Mode",
+			"default": "Four",
+			"category": "editor",
+			"description": "Toggle the View Tab"
+		},
+		
+		"select-all": {
+			"type": "keybind",
+			"name": "Select All",
+			"default": "Ctrl+A",
+			"category": "editor",
+			"description": "Select all Objects"
+		},
+		"toggle-warp": {
+			"type": "keybind",
+			"name": "Toggle Warp",
+			"default": "Ctrl+W",
+			"category": "editor",
+			"description": "Toggle Warp Controls"
+		},
+		"apply-buildhelper": {
+			"type": "keybind",
+			"name": "Apply Buildhelper",
+			"default": "Ctrl+B",
+			"category": "editor",
+			"description": "Apply Buildhelper to selected objects"
+		},
+
+
+		"move-obj-up": {
+			"type": "keybind",
+			"name": "Move Object Up",
+			"default": "W",
+			"category": "editor",
+			"description": "Move Selected Object(s) Up (30 units by default)"
+		},
+		"move-obj-down": {
+			"type": "keybind",
+			"name": "Move Object Down",
+			"default": "S",
+			"category": "editor",
+			"description": "Move Selected Object(s) Down (30 units by default)"
+		},
+		"move-obj-left": {
+			"type": "keybind",
+			"name": "Move Object Left",
+			"default": "A",
+			"category": "editor",
+			"description": "Move Selected Object(s) Left (30 units by default)"
+		},
+		"move-obj-right": {
+			"type": "keybind",
+			"name": "Move Object Right",
+			"default": "D",
+			"category": "editor",
+			"description": "Move Selected Object(s) Right (30 units by default)"
+		},
+
+
+		"move-obj-up-small": {
+			"type": "keybind",
+			"name": "Move Object Up Small",
+			"default": "Shift+W",
+			"category": "editor",
+			"description": "Move Selected Object(s) Up 2 units"
+		},
+		"move-obj-down-small": {
+			"type": "keybind",
+			"name": "Move Object Down Small",
+			"default": "Shift+S",
+			"category": "editor",
+			"description": "Move Selected Object(s) Down 2 units"
+		},
+		"move-obj-left-small": {
+			"type": "keybind",
+			"name": "Move Object Left Small",
+			"default": "Shift+A",
+			"category": "editor",
+			"description": "Move Selected Object(s) Left 2 units"
+		},
+		"move-obj-right-small": {
+			"type": "keybind",
+			"name": "Move Object Right Small",
+			"default": "Shift+D",
+			"category": "editor",
+			"description": "Move Selected Object(s) Right 2 units"
+		},
+
+
+		"move-obj-up-half": {
+			"type": "keybind",
+			"name": "Move Object Up Half",
+			"default": "",
+			"category": "editor",
+			"description": "Move Selected Object(s) Up 0.5 Grid Size (15 units by default)"
+		},
+		"move-obj-down-half": {
+			"type": "keybind",
+			"name": "Move Object Down Half",
+			"default": "",
+			"category": "editor",
+			"description": "Move Selected Object(s) Down 0.5 Grid Size (15 units by default)"
+		},
+		"move-obj-left-half": {
+			"type": "keybind",
+			"name": "Move Object Left Half",
+			"default": "",
+			"category": "editor",
+			"description": "Move Selected Object(s) Left 0.5 Grid Size (15 units by default)"
+		},
+		"move-obj-right-half": {
+			"type": "keybind",
+			"name": "Move Object Right Half",
+			"default": "",
+			"category": "editor",
+			"description": "Move Selected Object(s) Right 0.5 Grid Size (15 units by default)"
+		},
+
+
+		"rotate-ccw": {
+			"type": "keybind",
+			"name": "Rotate Object CCW",
+			"default": "Q",
+			"category": "editor",
+			"description": "Rotate Object(s) 90 degrees (by Default) Counter-Clockwise"
+		},
+		"rotate-cw": {
+			"type": "keybind",
+			"name": "Rotate Object CW",
+			"default": "E",
+			"category": "editor",
+			"description": "Rotate Object(s) 90 degrees (by Default) Clockwise"
+		},
+		"rotate-ccw-small": {
+			"type": "keybind",
+			"name": "Rotate CCW Small",
+			"default": "Shift+Q",
+			"category": "editor",
+			"description": "Rotate Object(s) 45 degrees (by Default) Counter-Clockwise"
+		},
+		"rotate-cw-small": {
+			"type": "keybind",
+			"name": "Rotate CW Small",
+			"default": "Shift+E",
+			"category": "editor",
+			"description": "Rotate Object(s) 45 degrees (by Default) Clockwise"
 		}
 	},
 	"tags": [

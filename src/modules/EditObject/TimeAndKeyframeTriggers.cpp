@@ -75,20 +75,16 @@ void drawKeyframeSettings(GameObject* obj, CCArray* objArr) {
 
 	ImGui::SeparatorText("Extended Settings");
 	
-	ImGui::Text("Key Group");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::BetterDragInt("##KeyframeGroup", &kObj->m_keyframeGroup)) {
+	if (ErGui::DragInt("Key Group", &kObj->m_keyframeGroup)) {
 		// Uh, I guess it's fine just like that, lol
 		lel->refreshKeyframeAnims();
 	}
 
-	ImGui::Text("Key Index");
-	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
 	int oldIndex = kObj->m_keyframeIndex;
 	int maxIndex = 0;
-	if (ErGui::BetterDragInt("##KeyframeIndex", &kObj->m_keyframeIndex)) {
+	if (ErGui::DragInt("Key Index", &kObj->m_keyframeIndex)) {
 		// but this abomination...
 		std::unordered_map<int, KeyframeGameObject*> currentGroupKeyframes;
 		int currentGroup = kObj->m_keyframeGroup;

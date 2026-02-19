@@ -4,6 +4,7 @@
 #include "GearIcons.hpp"
 #include "ObjectListModule.hpp"
 #include "../features/Hovering.hpp"
+#include <imgui.h>
 
 
 //#include <geode.custom-keybinds/include/Keybinds.hpp>
@@ -20,19 +21,19 @@ void SameLineInWindow(float nextButtonSize, ImVec2 DummyPad) {
 		ImGui::Dummy(DummyPad);
 }
 
-//void SetTooltipWithBind(const std::string& name, const keybinds::ActionID& actionID) {
-//	if (Mod::get()->getSavedValue<bool>("show-binds-in-toolbar", true)) {
-//		std::string bindsStr;
-//		for (auto bindRef : BindManager::get()->getBindsFor(actionID)) {
-//			keybinds::Bind* bind = bindRef.data();
-//			bindsStr += bind->toString();
-//		}
-//		ImGui::SetTooltip(fmt::format("{} ({})", name, bindsStr).c_str());
-//	}
-//	else {
-//		ImGui::SetTooltip(name.c_str());
-//	}
-//}
+void SetTooltipWithBind(const std::string& name, const char* actionID) {
+	if (Mod::get()->getSavedValue<bool>("show-binds-in-toolbar", true)) {
+		std::string keybindsStr;
+		std::vector<geode::Keybind> keybindVector = Mod::get()->getSettingValue<std::vector<geode::Keybind>>(actionID);
+		for (Keybind keybind : keybindVector) {
+			keybindsStr.append(keybind.toString());
+		}
+		ImGui::SetTooltip(fmt::format("{} ({})", name, keybindsStr).c_str());
+	}
+	else {
+		ImGui::SetTooltip(name.c_str());
+	}
+}
 
 void ErGui::renderToolsModule1() {
 	ImGui::Begin("Tools-Module1", nullptr, ImGuiWindowFlags_NoScrollbar);
@@ -43,27 +44,27 @@ void ErGui::renderToolsModule1() {
 
 	const ImVec2 BTN_SIZE = ImVec2(24.f, 30.f);
 	const ImVec2 DUMMY_PAD = ImVec2(0.f, 2.f);
-	const float selectableRounding = ImGui::GetStyle().FrameRounding;
+	const float SELECTABLE_ROUNDING = ImGui::GetStyle().FrameRounding;
 
 	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
 	
 
-	if (ImGui::Selectable(ICON_MDI_BRUSH, editorUI->m_selectedMode == 2, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_BRUSH, editorUI->m_selectedMode == 2, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->m_selectedMode = 2;
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//SetTooltipWithBind("Build Mode", "robtop.geometry-dash/build-mode");
+		// SetTooltipWithBind("Build Mode", "robtop.geometry-dash/build-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_MDI_SELECTION, editorUI->m_selectedMode == 3, 0, BTN_SIZE, selectableRounding))
+	if (ImGui::Selectable(ICON_MDI_SELECTION, editorUI->m_selectedMode == 3, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 		editorUI->m_selectedMode = 3;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//SetTooltipWithBind("Edit Mode", "robtop.geometry-dash/edit-mode");
+		// SetTooltipWithBind("Edit Mode", "robtop.geometry-dash/edit-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_MDI_DELETE, editorUI->m_selectedMode == 1, 0, BTN_SIZE, selectableRounding))
+	if (ImGui::Selectable(ICON_MDI_DELETE, editorUI->m_selectedMode == 1, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 		editorUI->m_selectedMode = 1;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Delete Mode (3)");
@@ -71,17 +72,17 @@ void ErGui::renderToolsModule1() {
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_MDI_EYE, editorUI->m_selectedMode == 4, 0, BTN_SIZE, selectableRounding))
+	if (ImGui::Selectable(ICON_MDI_EYE, editorUI->m_selectedMode == 4, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 		editorUI->m_selectedMode = 4;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 		//ImGui::SetTooltip("Observer Mode (4)");
-		//SetTooltipWithBind("View Mode", "view-mode"_spr);
+		SetTooltipWithBind("View Mode", "view-mode");
 	}
 		
 	ImGui::Separator();
 	
 	bool swipeBool = gameManager->getGameVariable("0003");
-	if (ImGui::Selectable(ICON_MDI_GESTURE_TAP_HOLD, &swipeBool, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_GESTURE_TAP_HOLD, &swipeBool, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		gameManager->setGameVariable("0003", swipeBool);
 		editorUI->m_swipeEnabled = swipeBool;
 
@@ -100,7 +101,7 @@ void ErGui::renderToolsModule1() {
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	bool rotationBool = gameManager->getGameVariable("0007");
-	if (ImGui::Selectable(ICON_MDI_ROTATE_RIGHT, &rotationBool, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_ROTATE_RIGHT, &rotationBool, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		gameManager->setGameVariable("0007", rotationBool);
 		if (rotationBool) {
 			editorUI->toggleSpecialEditButtons();
@@ -116,7 +117,7 @@ void ErGui::renderToolsModule1() {
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	bool freeMoveBool = gameManager->getGameVariable("0004");
-	if (ImGui::Selectable(ICON_MDI_CURSOR_MOVE, &freeMoveBool, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_CURSOR_MOVE, &freeMoveBool, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		gameManager->setGameVariable("0004", freeMoveBool);
 		editorUI->m_freeMoveEnabled = freeMoveBool;
 	}
@@ -127,7 +128,7 @@ void ErGui::renderToolsModule1() {
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
 	bool snapBool = gameManager->getGameVariable("0008");
-	if (ImGui::Selectable(ICON_MDI_AXIS_ARROW, &snapBool, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_AXIS_ARROW, &snapBool, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		gameManager->setGameVariable("0008", snapBool);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -138,7 +139,7 @@ void ErGui::renderToolsModule1() {
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	
 	bool autoBuildHelperBool = Mod::get()->getSavedValue<bool>("auto-buildhelper", false);
-	if (ImGui::Selectable(ICON_MDI_AUTO_FIX, &autoBuildHelperBool, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_AUTO_FIX, &autoBuildHelperBool, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		Mod::get()->setSavedValue<bool>("auto-buildhelper", autoBuildHelperBool);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -156,7 +157,7 @@ void ErGui::renderToolsModule1() {
 	ImGui::BeginDisabled(selectedObject == nullptr);
 	ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { 0.70f, 0.75f });
 	
-	if (ImGui::Selectable(ICON_GEAR_COPY_VALUES, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_GEAR_COPY_VALUES, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onCopyState(nullptr);
 		//LevelEditorLayer::get()->copyObjectState(selectedObject);
 	}
@@ -169,14 +170,14 @@ void ErGui::renderToolsModule1() {
 
 	ImGui::BeginDisabled((selectedObject == nullptr && selectedObjects->count() == 0) || copyStateObj == nullptr);
 
-	if (ImGui::Selectable(ICON_GEAR_PASTE_VALUES, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_GEAR_PASTE_VALUES, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onPasteState(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Paste State");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_GEAR_PASTE_COLOR, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_GEAR_PASTE_COLOR, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onPasteColor(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
@@ -187,7 +188,7 @@ void ErGui::renderToolsModule1() {
 
 
 	ImGui::Separator();
-	if (ImGui::Selectable(ICON_MDI_CONTENT_DUPLICATE, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_CONTENT_DUPLICATE, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onDuplicate(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -196,7 +197,7 @@ void ErGui::renderToolsModule1() {
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_MDI_DELETE_FOREVER, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_DELETE_FOREVER, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		if (editorUI->m_selectedObject) {
 			editorUI->deleteObject(editorUI->m_selectedObject, false);
 			editorUI->deselectAll();
@@ -209,7 +210,7 @@ void ErGui::renderToolsModule1() {
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_MDI_VECTOR_SQUARE, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_VECTOR_SQUARE, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->activateTransformControl(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -218,7 +219,7 @@ void ErGui::renderToolsModule1() {
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_MDI_RESIZE, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_RESIZE, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		if (editorUI->m_scaleControl->isVisible()) {
 			editorUI->deactivateScaleControl();
 		}
@@ -230,7 +231,7 @@ void ErGui::renderToolsModule1() {
 		ImGui::SetTooltip("Scale Transform");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 
-	if (ImGui::Selectable(ICON_MDI_SELECTION_OFF, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_SELECTION_OFF, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->createUndoSelectObject(false);
 		editorUI->deselectAll();
 	}
@@ -245,9 +246,17 @@ void ErGui::renderToolsModule1() {
 	auto mode = editorUI->m_editorLayer->m_playbackMode;
 	std::string playtestStr = ICON_MDI_PLAY; //ICON_MDI_PLAY
 	if (mode == PlaybackMode::Playing) playtestStr = ICON_MDI_PAUSE; //ICON_MDI_PAUSE
-
-
-	if (ImGui::Selectable(ICON_MDI_MUSIC_NOTE, false, 0, BTN_SIZE, selectableRounding)) {
+	
+	bool ignoreDamage = gameManager->getGameVariable("0009");
+	if (ImGui::Selectable(ICON_MDI_SQUARE_OPACITY, &ignoreDamage, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
+		gameManager->setGameVariable("0009", ignoreDamage);
+		LevelEditorLayer::get()->updateOptions();
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		ImGui::SetTooltip("Ignore Damage");
+	}
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_MUSIC_NOTE, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onPlayback(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -255,7 +264,7 @@ void ErGui::renderToolsModule1() {
 		//SetTooltipWithBind("Playback", "robtop.geometry-dash/playback-music");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
-	if (ImGui::Selectable(playtestStr.c_str(), false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(playtestStr.c_str(), false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onPlaytest(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -270,7 +279,7 @@ void ErGui::renderToolsModule1() {
 
 	if (mode == PlaybackMode::Playing || mode == PlaybackMode::Paused) {
 		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
-		if (ImGui::Selectable(ICON_MDI_STOP, false, 0, BTN_SIZE, selectableRounding)) {
+		if (ImGui::Selectable(ICON_MDI_STOP, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 			editorUI->onStopPlaytest(nullptr);
 		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -282,7 +291,7 @@ void ErGui::renderToolsModule1() {
 	ImGui::Separator();
 
 	bool showLinkControls = gameManager->getGameVariable("0097");
-	if (ImGui::Selectable(ICON_MDI_LINK_LOCK, &showLinkControls, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_LINK_LOCK, &showLinkControls, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		gameManager->setGameVariable("0097", showLinkControls);
 		LevelEditorLayer::get()->updateOptions();
 	}
@@ -292,13 +301,13 @@ void ErGui::renderToolsModule1() {
 
 	ImGui::BeginDisabled(!showLinkControls);
 
-	if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_LINK, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onGroupSticky(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Link Selected");
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
-	if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE, selectableRounding)) {
+	if (ImGui::Selectable(ICON_MDI_LINK_OFF, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 		editorUI->onUngroupSticky(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
@@ -314,14 +323,14 @@ void ErGui::renderToolsModule1() {
 	if (geode::Mod::get()->getSavedValue<bool>("show-zoom-controls", true)) {
 		ImGui::Separator();
 
-		if (ImGui::Selectable(ICON_MDI_MAGNIFY_PLUS, false, 0, BTN_SIZE, selectableRounding))
+		if (ImGui::Selectable(ICON_MDI_MAGNIFY_PLUS, false, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 			editorUI->zoomIn(nullptr);
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 			//ImGui::SetTooltip("Zoom In");
 			//SetTooltipWithBind("Zoom In", "robtop.geometry-dash/zoom-in");
 		}
 		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
-		if (ImGui::Selectable(ICON_MDI_MAGNIFY_MINUS, false, 0, BTN_SIZE, selectableRounding))
+		if (ImGui::Selectable(ICON_MDI_MAGNIFY_MINUS, false, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 			editorUI->zoomOut(nullptr);
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
 			//ImGui::SetTooltip("Zoom Out");
@@ -509,9 +518,9 @@ void ErGui::renderToolsModule2() {
 		}
 		case 3: //Edit
 		{
-			const float selectableRounding = ImGui::GetStyle().FrameRounding;
+			const float SELECTABLE_ROUNDING = ImGui::GetStyle().FrameRounding;
 
-			if (ImGui::Selectable(ICON_MDI_LASSO, isLassoEnabled, 0, BTN_SIZE, selectableRounding)) {
+			if (ImGui::Selectable(ICON_MDI_LASSO, isLassoEnabled, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
 				if (isLassoEnabled && editorUI->m_swipeEnabled) {
 					//GameManager::sharedState()->setGameVariable("0003", true);
 					//lassoPatch->enable();
@@ -532,17 +541,17 @@ void ErGui::renderToolsModule2() {
 
 			int selectMode = Mod::get()->getSavedValue<int>("select-mode", 1);
 
-			if (ImGui::Selectable(ICON_GEAR_ADDITIVE_MODE, selectMode == 1, 0, BTN_SIZE, selectableRounding))
+			if (ImGui::Selectable(ICON_GEAR_ADDITIVE_MODE, selectMode == 1, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 				selectMode = 1;
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 				ImGui::SetTooltip("Additive Mode");
 			ImGui::SameLine();
-			if (ImGui::Selectable(ICON_GEAR_SUBTRACTIVE_MODE, selectMode == 2, 0, BTN_SIZE, selectableRounding))
+			if (ImGui::Selectable(ICON_GEAR_SUBTRACTIVE_MODE, selectMode == 2, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 				selectMode = 2;
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 				ImGui::SetTooltip("Subtractive Mode");
 			ImGui::SameLine();
-			if (ImGui::Selectable(ICON_GEAR_INTERSECTIVE_MODE, selectMode == 3, 0, BTN_SIZE, selectableRounding))
+			if (ImGui::Selectable(ICON_GEAR_INTERSECTIVE_MODE, selectMode == 3, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 				selectMode = 3;
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
 				ImGui::SetTooltip("Intersective Mode");
