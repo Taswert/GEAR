@@ -117,13 +117,6 @@ void GearEditorUI::registerKeybindsEventListeners() {
 		}
 	});
 
-	// Ctrl + W
-	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "toggle-warp"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-		if (down && !repeat) {
-			this->activateTransformControl(nullptr);
-		}
-	});
-
 	// Ctrl + B
 	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "apply-buildhelper"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 		if (down && !repeat) {

@@ -44,13 +44,15 @@ namespace ErGui {
 		return result;
 	}
 
-	bool DragFloat(const char* label, float* v, float step, float step_fast, const char* format, float v_speed, float v_min, float v_max, ImGuiSliderFlags flags) {
+	bool DragFloat(const char* label, float* v, float step, float step_fast, const char* format, float v_speed, float v_min, float v_max, ImGuiSliderFlags flags, bool isMixed) {
 		const float button_size = ImGui::GetFrameHeight();
 		bool value_changed = false;
 		auto style = ImGui::GetStyle();
 
 		auto p_step = step > 0.0f ? &step : NULL;
 		auto p_step_fast = step_fast > 0.0f ? &step_fast : NULL;
+
+		const char* finalFormat = isMixed ? "Mixed Values" : format;
 
 		ImGui::BeginGroup();
 		ImGui::PushID(label);
@@ -62,7 +64,7 @@ namespace ErGui {
 		}
 
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
-		if (ImGui::DragFloat("##DragFloat", v, v_speed, v_min, v_max, format, flags)) {
+		if (ImGui::DragFloat("##DragFloat", v, v_speed, v_min, v_max, finalFormat, flags)) {
 			value_changed = true;
 		}
 
@@ -96,13 +98,15 @@ namespace ErGui {
 	}
 
 	// Draws DragFloat with a colored side
-	bool DragFloat(ImVec4 color, const char* label, float* v, float step, float step_fast, const char* format, float v_speed, float v_min, float v_max, ImGuiSliderFlags flags) {
+	bool DragFloat(ImVec4 color, const char* label, float* v, float step, float step_fast, const char* format, float v_speed, float v_min, float v_max, ImGuiSliderFlags flags, bool isMixed) {
 		const float button_size = ImGui::GetFrameHeight();
 		bool value_changed = false;
 		auto style = ImGui::GetStyle();
 
 		auto p_step = step > 0.0f ? &step : NULL;
 		auto p_step_fast = step_fast > 0.0f ? &step_fast : NULL;
+
+		const char* finalFormat = isMixed ? "Mixed Values" : format;
 
 		ImGui::BeginGroup();
 		ImGui::PushID(label);
@@ -114,7 +118,7 @@ namespace ErGui {
 		}
 
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
-		if (ImGui::DragFloat("##DragFloat", v, v_speed, v_min, v_max, format, flags)) {
+		if (ImGui::DragFloat("##DragFloat", v, v_speed, v_min, v_max, finalFormat, flags)) {
 			value_changed = true;
 		}
 
@@ -160,13 +164,15 @@ namespace ErGui {
 		return value_changed;
 	}
 
-	bool DragInt(const char* label, int* v, int step, int step_fast, const char* format, float v_speed, int v_min, int v_max, ImGuiSliderFlags flags) {
+	bool DragInt(const char* label, int* v, int step, int step_fast, const char* format, float v_speed, int v_min, int v_max, ImGuiSliderFlags flags, bool isMixed) {
 		const float button_size = ImGui::GetFrameHeight();
 		bool value_changed = false;
 		auto style = ImGui::GetStyle();
 
 		auto p_step = step > 0 ? &step : NULL;
 		auto p_step_fast = step_fast > 0 ? &step_fast : NULL;
+
+		const char* finalFormat = isMixed ? "Mixed Values" : format;
 
 		ImGui::BeginGroup();
 		ImGui::PushID(label);
@@ -178,7 +184,7 @@ namespace ErGui {
 		}
 
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
-		if (ImGui::DragInt("##DragInt", v, v_speed, v_min, v_max, format, flags)) {
+		if (ImGui::DragInt("##DragInt", v, v_speed, v_min, v_max, finalFormat, flags)) {
 			value_changed = true;
 		}
 
@@ -211,13 +217,15 @@ namespace ErGui {
 		return value_changed;
 	}
 
-	bool DragInt(ImVec4 color, const char* label, int* v, int step, int step_fast, const char* format, float v_speed, int v_min, int v_max, ImGuiSliderFlags flags) {
+	bool DragInt(ImVec4 color, const char* label, int* v, int step, int step_fast, const char* format, float v_speed, int v_min, int v_max, ImGuiSliderFlags flags, bool isMixed) {
 		const float button_size = ImGui::GetFrameHeight();
 		bool value_changed = false;
 		auto style = ImGui::GetStyle();
 
 		auto p_step = step > 0 ? &step : NULL;
 		auto p_step_fast = step_fast > 0 ? &step_fast : NULL;
+
+		const char* finalFormat = isMixed ? "Mixed Values" : format;
 
 		ImGui::BeginGroup();
 		ImGui::PushID(label);
@@ -229,7 +237,7 @@ namespace ErGui {
 		}
 
 		ImGui::SetNextItemWidth(std::max<float>(1.0f, ImGui::CalcItemWidth() - (button_size + style.ItemInnerSpacing.x) * 2));
-		if (ImGui::DragInt("##DragInt", v, v_speed, v_min, v_max, format, flags)) {
+		if (ImGui::DragInt("##DragInt", v, v_speed, v_min, v_max, finalFormat, flags)) {
 			value_changed = true;
 		}
 

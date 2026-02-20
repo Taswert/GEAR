@@ -53,6 +53,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->m_selectedMode = 2;
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		ImGui::SetTooltip("Build Mode (1)");
 		// SetTooltipWithBind("Build Mode", "robtop.geometry-dash/build-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -60,6 +61,7 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_MDI_SELECTION, editorUI->m_selectedMode == 3, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 		editorUI->m_selectedMode = 3;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		ImGui::SetTooltip("Edit Mode (2)");
 		// SetTooltipWithBind("Edit Mode", "robtop.geometry-dash/edit-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -67,7 +69,7 @@ void ErGui::renderToolsModule1() {
 	if (ImGui::Selectable(ICON_MDI_DELETE, editorUI->m_selectedMode == 1, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 		editorUI->m_selectedMode = 1;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Delete Mode (3)");
+		ImGui::SetTooltip("Delete Mode (3)");
 		//SetTooltipWithBind("Delete Mode", "robtop.geometry-dash/delete-mode");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -94,7 +96,7 @@ void ErGui::renderToolsModule1() {
 		}
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Swipe (T)");
+		ImGui::SetTooltip("Swipe (T)");
 		//SetTooltipWithBind("Swipe", "robtop.geometry-dash/toggle-swipe");
 	}
 		
@@ -111,7 +113,7 @@ void ErGui::renderToolsModule1() {
 		}
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Rotation (R)");
+		ImGui::SetTooltip("Rotation (R)");
 		//SetTooltipWithBind("Rotate", "robtop.geometry-dash/toggle-rotate");
 	}	
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -122,7 +124,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->m_freeMoveEnabled = freeMoveBool;
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Free Move (F)");
+		ImGui::SetTooltip("Free Move (F)");
 		//SetTooltipWithBind("Free Move", "robtop.geometry-dash/toggle-free-move");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -132,7 +134,7 @@ void ErGui::renderToolsModule1() {
 		gameManager->setGameVariable("0008", snapBool);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Snap (G)");
+		ImGui::SetTooltip("Snap (G)");
 		//SetTooltipWithBind("Snap", "robtop.geometry-dash/toggle-snap");
 	}
 		
@@ -192,7 +194,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->onDuplicate(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Duplicate (Ctrl+D)");
+		ImGui::SetTooltip("Duplicate (Ctrl+D)");
 		//SetTooltipWithBind("Duplicate", "robtop.geometry-dash/copy-paste");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -205,7 +207,7 @@ void ErGui::renderToolsModule1() {
 		else if (editorUI->m_selectedObjects->count() > 0) editorUI->onDeleteSelected(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Delete Selected (Del)");
+		ImGui::SetTooltip("Delete Selected (Del)");
 		//SetTooltipWithBind("Delete Selected", "robtop.geometry-dash/delete");	
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -214,7 +216,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->activateTransformControl(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Warp Selected (Ctrl+W)");
+		ImGui::SetTooltip("Warp Selected (Ctrl+T)");
 		//SetTooltipWithBind("Warp Selected", "toggle-warp"_spr);
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -236,7 +238,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->deselectAll();
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Deselect Objects (Alt+D)");
+		ImGui::SetTooltip("Deselect Objects (Alt+D)");
 		//SetTooltipWithBind("Deselect Objects", "robtop.geometry-dash/deselect-all");
 	}
 
@@ -260,7 +262,7 @@ void ErGui::renderToolsModule1() {
 		editorUI->onPlayback(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip("Playback");
+		ImGui::SetTooltip("Playback");
 		//SetTooltipWithBind("Playback", "robtop.geometry-dash/playback-music");
 	}
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
@@ -268,13 +270,13 @@ void ErGui::renderToolsModule1() {
 		editorUI->onPlaytest(nullptr);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		//ImGui::SetTooltip(mode == PlaybackMode::Playing ? "Pause" : "Playtest");
-		if (mode == PlaybackMode::Playing) {
-			ImGui::SetTooltip("Pause");
-		}
-		else {
+		ImGui::SetTooltip(mode == PlaybackMode::Playing ? "Pause" : "Playtest");
+		// if (mode == PlaybackMode::Playing) {
+			// ImGui::SetTooltip("Pause");
+		// }
+		// else {
 			//SetTooltipWithBind("Playtest", "robtop.geometry-dash/playtest");
-		}
+		// }
 	}
 
 	if (mode == PlaybackMode::Playing || mode == PlaybackMode::Paused) {
@@ -283,7 +285,7 @@ void ErGui::renderToolsModule1() {
 			editorUI->onStopPlaytest(nullptr);
 		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-			//ImGui::SetTooltip("Stop");
+			ImGui::SetTooltip("Stop");
 			//SetTooltipWithBind("Stop", "robtop.geometry-dash/playtest");
 		}
 	}
@@ -326,14 +328,14 @@ void ErGui::renderToolsModule1() {
 		if (ImGui::Selectable(ICON_MDI_MAGNIFY_PLUS, false, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 			editorUI->zoomIn(nullptr);
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-			//ImGui::SetTooltip("Zoom In");
+			ImGui::SetTooltip("Zoom In");
 			//SetTooltipWithBind("Zoom In", "robtop.geometry-dash/zoom-in");
 		}
 		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 		if (ImGui::Selectable(ICON_MDI_MAGNIFY_MINUS, false, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 			editorUI->zoomOut(nullptr);
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-			//ImGui::SetTooltip("Zoom Out");
+			ImGui::SetTooltip("Zoom Out");
 			//SetTooltipWithBind("Zoom Out", "robtop.geometry-dash/zoom-out");
 		}
 	}

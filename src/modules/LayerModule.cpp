@@ -1,4 +1,5 @@
 ﻿#include "LayerModule.hpp"
+#include <imgui.h>
 #include <imgui_internal.h>
 #include <algorithm>
 #include <Geode/Geode.hpp>
@@ -379,7 +380,7 @@ void ErGui::renderLayerModule() {
                 else {
                     ImGui::Text("%s", layer.name.c_str());
                 }
-
+                
                 // double click - change
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
                     layer.isEditingName = true;

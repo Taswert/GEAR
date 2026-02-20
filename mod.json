@@ -71,13 +71,6 @@
 			"category": "editor",
 			"description": "Select all Objects"
 		},
-		"toggle-warp": {
-			"type": "keybind",
-			"name": "Toggle Warp",
-			"default": "Ctrl+W",
-			"category": "editor",
-			"description": "Toggle Warp Controls"
-		},
 		"apply-buildhelper": {
 			"type": "keybind",
 			"name": "Apply Buildhelper",
