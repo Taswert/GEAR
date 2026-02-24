@@ -12,12 +12,12 @@ namespace ErGui {
         PropertyType newValue = obj->*fieldPtr;
         bool isMixed = false;
         // Should remake it, so it would not cause nay lags
-        for (auto objInArr : CCArrayExt<GameObjectType*>(objArr)) {
-            if (objInArr->*fieldPtr != newValue) {
-                isMixed = true;
-                break;
-            }
-        }
+        // for (auto objInArr : CCArrayExt<GameObjectType*>(objArr)) {
+        //     if (objInArr->*fieldPtr != newValue) {
+        //         isMixed = true;
+        //         break;
+        //     }
+        // }
 
         if (widgetFunc(&newValue, isMixed)) {
             obj->*fieldPtr = newValue;
@@ -29,4 +29,33 @@ namespace ErGui {
         }
         return false;
     }
+
+
+    template<typename GameObjectType, typename PropertyType, typename WidgetFunc>
+    bool syncObjectGroupProperty(CCArray* objArr, PropertyType* maxValue, PropertyType* minValue, PropertyType GameObjectType::*fieldPtr, WidgetFunc widgetFunc) {
+        PropertyType newMaxValue = *maxValue; // Custom Type / MaxValue
+        std::string valueFormat = 
+            *maxValue != *minValue ? 
+            fmt::format("{} .. {}", *minValue, *maxValue) :
+            fmt::format("{}", *maxValue);
+        if (widgetFunc(&newMaxValue, valueFormat)) {
+            PropertyType delta = newMaxValue - *maxValue;
+
+            for (auto obj : CCArrayExt<GameObjectType*>(objArr)) {
+                obj->*fieldPtr += delta;
+            }
+
+            // in place of groupInfoUpdate()
+            *maxValue += delta;
+            *minValue += delta;
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+    
 }
+

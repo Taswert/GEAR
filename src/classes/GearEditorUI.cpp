@@ -15,6 +15,7 @@
 #include "../features/SelectedObjectInfo.hpp"
 #include "../features/ZoomToScroll.hpp"
 #include "TweenFunctions.hpp"
+#include <Geode/binding/GJTransformControl.hpp>
 
 //#include <geode.custom-keybinds/include/Keybinds.hpp>
 //using namespace keybinds;
@@ -108,11 +109,19 @@ void GearEditorUI::deselectObject(GameObject* obj) {
 
 void GearEditorUI::undoLastAction(CCObject* obj) {
 	EditorUI::undoLastAction(obj);
+	if (this->m_transformControl && this->m_transformControl->isVisible()) {
+		this->m_transformControl->setPosition(getGroupCenter(getSelectedObjects(), false));
+		this->m_transformControl->refreshControl();
+	}
 	SelectedObjectInfo::undoLastAction();
 }
 
 void GearEditorUI::redoLastAction(CCObject* obj) {
 	EditorUI::redoLastAction(obj);
+	if (this->m_transformControl && this->m_transformControl->isVisible()) {
+		this->m_transformControl->setPosition(getGroupCenter(getSelectedObjects(), false));
+		this->m_transformControl->refreshControl();
+	}
 	SelectedObjectInfo::redoLastAction();
 }
 

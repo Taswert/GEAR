@@ -119,6 +119,11 @@ namespace ZoomToScroll {
 				self->applyZoom(self->m_fields->m_zoomTarget, self->m_fields->m_positionTarget);
 				self->m_fields->m_isSmoothZooming = false;
 			}
+
+			auto tc = self->m_transformControl;
+			if (tc && tc->isVisible()) {
+				tc->scaleButtons(1.f / self->m_fields->m_zoomTarget);
+			}
 		}
 	}
 }

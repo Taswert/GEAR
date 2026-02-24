@@ -177,10 +177,10 @@ void renderStackTool() {
 		ImGui::Separator();
 
 		ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-		ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Position##XOffsetStack", &stackXOffset, 1.f, 5.f, "%.2f");
+		ErGui::DragFloat("Position##XOffsetStack", &stackXOffset, 1.f, 5.f, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-		ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##YOffsetStack", &stackYOffset, 1.f, 5.f, "%.2f");
+		ErGui::DragFloat("##YOffsetStack", &stackYOffset, 1.f, 5.f, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 
 		ImGui::Separator();
 
@@ -189,10 +189,10 @@ void renderStackTool() {
 		ErGui::DragFloat("Rotation##RotationStack", &stackRotate, 1.f, 5.f, "%.2f");
 
 		ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-		ErGui::DragFloat(ImVec4(255, 66, 66, 255), "X/Y##XRotationStack", &stackXRotate, 1.f, 5.f, "%.2f");
+		ErGui::DragFloat("X/Y##XRotationStack", &stackXRotate, 1.f, 5.f, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-		ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##YRotationStack", &stackYRotate, 1.f, 5.f, "%.2f");
+		ErGui::DragFloat("##YRotationStack", &stackYRotate, 1.f, 5.f, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 
 		ImGui::Separator();
 
@@ -201,10 +201,10 @@ void renderStackTool() {
 		ErGui::DragFloat("Scale##ScaleStack", &stackScale, 0.1f, 0.5f, "%.2f", 0.1f);
 
 		ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-		ErGui::DragFloat(ImVec4(255, 66, 66, 255), "X/Y##XScaleStack", &stackXScale, 0.1f, 0.5f, "%.2f", 0.1f);
+		ErGui::DragFloat("X/Y##XScaleStack", &stackXScale, 0.1f, 0.5f, "%.2f", 0.1f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-		ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##YScaleStack", &stackYScale, 0.1f, 0.5f, "%.2f", 0.1f);
+		ErGui::DragFloat("##YScaleStack", &stackYScale, 0.1f, 0.5f, "%.2f", 0.1f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 
 		ImGui::Separator();
 
@@ -320,13 +320,12 @@ void renderForObject(GameObject* obj) {
 		ImGui::EndPopup();
 	}
 	else if (moveStepPopupClosed) {
-		log::info("Saving move steps...");
 		moveStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("move-step", moveStep);
 	}
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Position##PosX", &posX, moveStep, moveStep * 5, "%.2f");
+	ErGui::DragFloat("Position##PosX", &posX, moveStep, moveStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 	if (ImGui::IsItemActive()) {
 		isActive = true;
 	}
@@ -335,7 +334,7 @@ void renderForObject(GameObject* obj) {
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##PosY", &posY, moveStep, moveStep * 5, "%.2f");
+	ErGui::DragFloat("##PosY", &posY, moveStep, moveStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 	if (ImGui::IsItemActive()) {
 		isActive = true;
 	}
@@ -381,7 +380,6 @@ void renderForObject(GameObject* obj) {
 		ImGui::EndPopup();
 	}
 	else if (rotStepPopupClosed) {
-		log::info("Saving rotation steps...");
 		rotStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("rot-step", rotationStep);
 	}
@@ -422,14 +420,14 @@ void renderForObject(GameObject* obj) {
 
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "X / Y##RotX", &rotX, rotationStep, rotationStep * 5, "%.2f")) isChanging = true;
+	if (ErGui::DragFloat("X / Y##RotX", &rotX, rotationStep, rotationStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255))) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("RotationStepPopup");
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##RotY", &rotY, rotationStep, rotationStep * 5, "%.2f")) isChanging = true;
+	if (ErGui::DragFloat("##RotY", &rotY, rotationStep, rotationStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255))) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("RotationStepPopup");
@@ -472,7 +470,6 @@ void renderForObject(GameObject* obj) {
 		ImGui::EndPopup();
 	}
 	else if (scaleStepPopupClosed) {
-		log::info("Saving scale steps...");
 		scaleStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("scale-step", scaleStep);
 	}
@@ -520,14 +517,14 @@ void renderForObject(GameObject* obj) {
 	isChanging = false;
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "X / Y##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f)) isChanging = true;
+	if (ErGui::DragFloat("X / Y##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255))) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("ScaleStepPopup");
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f)) isChanging = true;
+	if (ErGui::DragFloat("##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255))) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("ScaleStepPopup");
@@ -573,7 +570,6 @@ void renderForObject(GameObject* obj) {
 		ImGui::EndPopup();
 	}
 	else if (skewStepPopupClosed) {
-		log::info("Saving skew steps...");
 		skewStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("skew-step", skewStep);
 	}
@@ -589,14 +585,14 @@ void renderForObject(GameObject* obj) {
 	float oldSkewY = skewY;
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Skew##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
+	ErGui::DragFloat("Skew##SkewX", &skewX, skewStep, skewStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("SkewStepPopup");
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
+	ErGui::DragFloat("##SkewY", &skewY, skewStep, skewStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("SkewStepPopup");
@@ -716,21 +712,20 @@ void renderForArray(CCArray* objArr) {
 		ImGui::EndPopup();
 	}
 	else if (moveStepPopupClosed) {
-		log::info("Saving move steps...");
 		moveStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("move-step", moveStep);
 	}
 
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Position##PosX", &groupCenter.x, moveStep, moveStep * 5, "%.2f");
+	ErGui::DragFloat("Position##PosX", &groupCenter.x, moveStep, moveStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("MoveStepPopup");
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##PosY", &groupCenter.y, moveStep, moveStep * 5, "%.2f");
+	ErGui::DragFloat("##PosY", &groupCenter.y, moveStep, moveStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("MoveStepPopup");
@@ -774,7 +769,6 @@ void renderForArray(CCArray* objArr) {
 		ImGui::EndPopup();
 	}
 	else if (rotStepPopupClosed) {
-		log::info("Saving rotation steps...");
 		rotStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("rot-step", rotationStep);
 	}
@@ -792,14 +786,14 @@ void renderForArray(CCArray* objArr) {
 
 	// -- XY Rotation
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "X / Y##RotationX", &rotationX, rotationStep, rotationStep * 5, "%.2f");
+	ErGui::DragFloat("X / Y##RotationX", &rotationX, rotationStep, rotationStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("RotStepPopup");
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##RotationY", &rotationY, rotationStep, rotationStep * 5, "%.2f");
+	ErGui::DragFloat("##RotationY", &rotationY, rotationStep, rotationStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("RotStepPopup");
@@ -858,7 +852,6 @@ void renderForArray(CCArray* objArr) {
 		ImGui::EndPopup();
 	}
 	else if (scaleStepPopupClosed) {
-		log::info("Saving scale steps...");
 		scaleStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("scale-step", scaleStep);
 	}
@@ -876,14 +869,14 @@ void renderForArray(CCArray* objArr) {
 
 	// -- XY Scale
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "X / Y##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f);
+	ErGui::DragFloat("X / Y##ScaleX", &scaleX, scaleStep, scaleStep * 5, "%.2f", 0.01f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("ScaleStepPopup");
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f);
+	ErGui::DragFloat("##ScaleY", &scaleY, scaleStep, scaleStep * 5, "%.2f", 0.01f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("ScaleStepPopup");
@@ -981,20 +974,19 @@ void renderForArray(CCArray* objArr) {
 		ImGui::EndPopup();
 	}
 	else if (skewStepPopupClosed) {
-		log::info("Saving skew steps...");
 		skewStepPopupClosed = false;
 		Mod::get()->setSavedValue<float>("skew-step", skewStep);
 	}
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Skew##SkewX", &skewX, skewStep, skewStep * 5, "%.2f");
+	ErGui::DragFloat("Skew##SkewX", &skewX, skewStep, skewStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("SkewStepPopup");
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##SkewY", &skewY, skewStep, skewStep * 5, "%.2f");
+	ErGui::DragFloat("##SkewY", &skewY, skewStep, skewStep * 5, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("SkewStepPopup");

@@ -10,16 +10,16 @@
 //
 
 
-// Можно было бы хукнуть кнчн каждый выход из окна изменения триггера и там сравнивать изменившиеся значения объектов. 
-// Мол, если какой-то объект изменился, то делать тогда анду команду, но чёт хзхзхзхз
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. 
+// пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 //
-// Вообще, придётся в любом случае почти на каждый имгуй инпут херачить анду комманду. 
-// Можно и хер забить на ванильные окна гдшки и делать ЧИСТО под имгуй.
+// пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. 
+// пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.
 // 
-// Ладно, попробуем пока самый дефолт, допустим изменение слоя у объекта.
+// пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 //
 
-// НЕ ТРОГАТЬ ДО РЕЛИЗА.
+// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
 
 ErGui::EnhancedUndoObject* ErGui::EnhancedUndoObject::create(GameObject* obj, EnhancedUndoCommand command) {
 	EnhancedUndoObject* ret = new EnhancedUndoObject;
@@ -136,65 +136,65 @@ void enhancedUndoActionForArray(ErGui::EnhancedUndoObject* eUndoObject) {
 	}
 }
 
-class $modify(EditorUI) {
-	void undoLastAction(CCObject * p0) {
-		if (this->m_editorLayer->m_undoObjects->count() == 0) return;
+// class $modify(EditorUI) {
+// 	void undoLastAction(CCObject * p0) {
+// 		if (this->m_editorLayer->m_undoObjects->count() == 0) return;
 
-		auto undoObject = static_cast<UndoObject*>(this->m_editorLayer->m_undoObjects->lastObject());
-		int commandNumber = static_cast<int>(undoObject->m_command);
-		if (commandNumber < 7)
-			EditorUI::undoLastAction(p0);
-		else {
-			auto eUndoObject = static_cast<ErGui::EnhancedUndoObject*>(undoObject);
-			auto obj = eUndoObject->m_objectCopy->m_object;
-			auto objArr = eUndoObject->m_objects;
+// 		auto undoObject = static_cast<UndoObject*>(this->m_editorLayer->m_undoObjects->lastObject());
+// 		int commandNumber = static_cast<int>(undoObject->m_command);
+// 		if (commandNumber < 7)
+// 			EditorUI::undoLastAction(p0);
+// 		else {
+// 			auto eUndoObject = static_cast<ErGui::EnhancedUndoObject*>(undoObject);
+// 			auto obj = eUndoObject->m_objectCopy->m_object;
+// 			auto objArr = eUndoObject->m_objects;
 
-			if (obj) {
-				enhancedUndoActionForObject(eUndoObject);
-				this->m_editorLayer->m_redoObjects->addObject(eUndoObject);
-				eUndoObject->m_redo = true;
-				this->m_editorLayer->m_undoObjects->removeLastObject();
-			}
-			else if (objArr && objArr->count() > 0) {
-				enhancedUndoActionForArray(eUndoObject);
-				this->m_editorLayer->m_redoObjects->addObject(eUndoObject);
-				eUndoObject->m_redo = true;
-				this->m_editorLayer->m_undoObjects->removeLastObject();
-			}
-		}
-	}
+// 			if (obj) {
+// 				enhancedUndoActionForObject(eUndoObject);
+// 				this->m_editorLayer->m_redoObjects->addObject(eUndoObject);
+// 				eUndoObject->m_redo = true;
+// 				this->m_editorLayer->m_undoObjects->removeLastObject();
+// 			}
+// 			else if (objArr && objArr->count() > 0) {
+// 				enhancedUndoActionForArray(eUndoObject);
+// 				this->m_editorLayer->m_redoObjects->addObject(eUndoObject);
+// 				eUndoObject->m_redo = true;
+// 				this->m_editorLayer->m_undoObjects->removeLastObject();
+// 			}
+// 		}
+// 	}
 
-	void redoLastAction(CCObject * p0) {
-		if (this->m_editorLayer->m_redoObjects->count() == 0) return;
+// 	void redoLastAction(CCObject * p0) {
+// 		if (this->m_editorLayer->m_redoObjects->count() == 0) return;
 
-		auto undoObject = static_cast<UndoObject*>(this->m_editorLayer->m_redoObjects->lastObject());
-		int commandNumber = static_cast<int>(undoObject->m_command);
-		if (commandNumber < 7)
-			EditorUI::redoLastAction(p0);
-		else {
-			auto eUndoObject = static_cast<ErGui::EnhancedUndoObject*>(undoObject);
-			switch (static_cast<ErGui::EnhancedUndoCommand>(commandNumber))
-			{
-			case ErGui::EnhancedUndoCommand::ObjectState: {
-				ErGui::CopyEGMState newState;
-				newState.copyState(eUndoObject->m_objectCopy->m_object);
-				eUndoObject->m_copyState.pasteState(eUndoObject->m_objectCopy->m_object);
-				eUndoObject->m_copyState = newState;
-				break;
-			}
-			case ErGui::EnhancedUndoCommand::LevelValues:
-				// todo
-				break;
-			case ErGui::EnhancedUndoCommand::EditorValues:
-				// todo
-				break;
-			default:
-				break;
-			}
+// 		auto undoObject = static_cast<UndoObject*>(this->m_editorLayer->m_redoObjects->lastObject());
+// 		int commandNumber = static_cast<int>(undoObject->m_command);
+// 		if (commandNumber < 7)
+// 			EditorUI::redoLastAction(p0);
+// 		else {
+// 			auto eUndoObject = static_cast<ErGui::EnhancedUndoObject*>(undoObject);
+// 			switch (static_cast<ErGui::EnhancedUndoCommand>(commandNumber))
+// 			{
+// 			case ErGui::EnhancedUndoCommand::ObjectState: {
+// 				ErGui::CopyEGMState newState;
+// 				newState.copyState(eUndoObject->m_objectCopy->m_object);
+// 				eUndoObject->m_copyState.pasteState(eUndoObject->m_objectCopy->m_object);
+// 				eUndoObject->m_copyState = newState;
+// 				break;
+// 			}
+// 			case ErGui::EnhancedUndoCommand::LevelValues:
+// 				// todo
+// 				break;
+// 			case ErGui::EnhancedUndoCommand::EditorValues:
+// 				// todo
+// 				break;
+// 			default:
+// 				break;
+// 			}
 
-			this->m_editorLayer->m_undoObjects->addObject(eUndoObject);
-			eUndoObject->m_redo = false;
-			this->m_editorLayer->m_redoObjects->removeLastObject();
-		}
-	}
-};
+// 			this->m_editorLayer->m_undoObjects->addObject(eUndoObject);
+// 			eUndoObject->m_redo = false;
+// 			this->m_editorLayer->m_redoObjects->removeLastObject();
+// 		}
+// 	}
+// };

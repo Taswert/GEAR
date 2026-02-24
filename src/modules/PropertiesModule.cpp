@@ -484,10 +484,10 @@ void renderObjectInfoSettings() {
 	ImGui::BeginDisabled();
 	float testFloat = 0.f;
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Position##XPos", &testFloat);
+	ErGui::DragFloat("Position##XPos", &testFloat, 1, 5, "%.3f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255));
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-	ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##YPos", &testFloat);
+	ErGui::DragFloat("##YPos", &testFloat, 1, 5, "%.3f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255));
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x);
 	ErGui::DragFloat("Scale##Scale", &testFloat);

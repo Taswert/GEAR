@@ -28,10 +28,10 @@ namespace ErGui {
 	inline int maxZOrder;
 	inline int minZLayer;
 	inline int maxZLayer;
-	inline int minEnterChannel;
-	inline int maxEnterChannel;
-	inline int minMaterial;
-	inline int maxMaterial;
+	inline short minEnterChannel;
+	inline short maxEnterChannel;
+	inline short minMaterial;
+	inline short maxMaterial;
 
 	inline int minOrderValue;
 	inline int maxOrderValue;

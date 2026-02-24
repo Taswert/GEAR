@@ -2,6 +2,8 @@
 #include "CustomImGuiWidgets.hpp"
 #include "AdvancedUndoRedo.hpp"
 #include "LayerModule.hpp"
+#include "ObjectProperty.hpp"
+#include "myUtils.hpp"
 using namespace ErGui;
 
 const char* layerTypeItems[] = {
@@ -31,12 +33,14 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 	}
 
 	if (ImGui::CollapsingHeader("Groups Settings")) {
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("ID Offset", &groupOffset);
-		setMaxMin(groupOffset, 9999, 1);
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("GroupID", &chosenGroupEGM);
-		setMaxMin(chosenGroupEGM, 9999, 1);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("ID Offset", &groupOffset)) {
+			setMaxMin(groupOffset, 9999, 1);
+		}
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("GroupID", &chosenGroupEGM)) {
+			setMaxMin(chosenGroupEGM, 9999, 1);
+		}
 
 
 		bool addGroupCheck = true;
@@ -189,14 +193,13 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		int el1 = obj->m_editorLayer;
 		int oldEl1 = el1;
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("##EditorL1", &el1);
-		setMin(el1, 0);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("EditorL1", &el1)) {
+			setMin(el1, 0);
+		}
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL1")) el1 = lel->m_currentLayer;
 		ImGui::SetItemTooltip("Set to current Editor Layer");
-		ImGui::SameLine();
-		ImGui::Text("EditorL1");
 		if (el1 < 0) el1 = 0;
 		if (oldEl1 != obj->m_editorLayer2)	ErGui::LAYER_STATE.layers[oldEl1].objCount--;
 		if (el1 != obj->m_editorLayer2)		ErGui::LAYER_STATE.layers[el1].objCount++;
@@ -205,63 +208,53 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 
 		int el2 = obj->m_editorLayer2;
 		int oldEl2 = el2;
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("##EditorL2", &el2);
-		setMin(el2, 0);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("EditorL2", &el2)) {
+			setMin(el2, 0);
+		}
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL2")) el2 = lel->m_currentLayer;
 		ImGui::SetItemTooltip("Set to current Editor Layer");
-		ImGui::SameLine();
-		ImGui::Text("EditorL2");
 		if (el2 < 0) el2 = 0;
 		if (oldEl2 != obj->m_editorLayer && oldEl2 != 0)	ErGui::LAYER_STATE.layers[oldEl2].objCount--;
 		if (el2 != obj->m_editorLayer && el2 != 0)			ErGui::LAYER_STATE.layers[el2].objCount++;
 		obj->m_editorLayer2 = el2;
 
 
-		std::string zOrderStr;
+		std::string zOrdFormat;
 		int zord = obj->m_zOrder;
-		if (zord == 0)
-			zOrderStr = fmt::format("Z-Order ({})", obj->m_defaultZOrder);
-		else
-			zOrderStr = "Z-Order";
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt(zOrderStr.c_str(), &zord);
-		obj->m_zOrder = zord;
-		obj->m_updateParents = 1;
+		if (zord == 0) zOrdFormat = fmt::format("{} ({})", zord, obj->m_defaultZOrder);
+		else zOrdFormat = "%d";
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("Z-Order", &zord, 1, 5, zOrdFormat.c_str())) {
+			obj->m_zOrder = zord;
+			obj->m_updateParents = 1;
+		}
 	}
 
 	if (ImGui::CollapsingHeader("Extra")) {
-		int enterChnl = obj->m_enterChannel;
-		ImGui::InputInt("Enter Channel", &enterChnl);
-		obj->m_enterChannel = enterChnl;
-
-		int material = obj->m_objectMaterial;
-		ImGui::InputInt("Material", &material);
-		obj->m_objectMaterial = material;
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ErGui::DragInt("Enter Channel", &obj->m_enterChannel);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		ErGui::DragInt("Material", &obj->m_objectMaterial);
 
 		//if (typeinfo_cast<EffectGameObject*>(obj)) ImGui::Text("ControlID: %d", static_cast<EffectGameObject*>(obj)->m_controlID);
 		if (typeinfo_cast<EffectGameObject*>(obj)) {
 			auto egObj = static_cast<EffectGameObject*>(obj);
 
-			int ordVal = egObj->m_ordValue;
-			ImGui::InputInt("Order Value", &ordVal);
-			setMin(ordVal, 0);
-			egObj->m_ordValue = ordVal;
+			if (ErGui::DragInt("Order Value", &egObj->m_ordValue)) {
+				setMin(egObj->m_ordValue, 0);
+			}
 
-			int chnlVal = egObj->m_channelValue;
-			ImGui::InputInt("Channel", &chnlVal);
-			setMin(chnlVal, 0);
-			egObj->m_channelValue = chnlVal;
-
-			int ctrlId = egObj->m_controlID;
-			ImGui::InputInt("ControlID", &ctrlId);
-			egObj->m_controlID = ctrlId;
-		}
-		ImGui::Text("MainColorID: %d", obj->m_activeMainColorID);
-		ImGui::Text("DetailColorID: %d", obj->m_activeDetailColorID);
-		if (ImGui::Button("Anim")) {
+			if (ErGui::DragInt("Channel", &egObj->m_channelValue)) {
+				setMin(egObj->m_channelValue, 0);
+			}
 			
+			ErGui::DragInt("Control ID", &egObj->m_controlID);
+		}
+		ImGui::Text("Main Color ID: %d", obj->m_activeMainColorID);
+		ImGui::Text("Detail Color ID: %d", obj->m_activeDetailColorID);
+		if (ImGui::Button("Anim")) { // I don't know what this thing does even after a year of development.
 			lel->m_editorUI->createNewKeyframeAnim();
 		}
 	}
@@ -358,19 +351,6 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::Text("Inner Section: %d", obj->m_innerSectionIndex);
 		ImGui::Text("Outer Section: %d", obj->m_outerSectionIndex);
 	}
-
-	// in an imgui window somewhere...
-	//ImGui::PushFont(iconFont);
-	//ImGui::Text(ICON_MDI_BLACK_MESA "  Paint"); // use string literal concatenation
-	// outputs a paint brush icon and 'Paint' as a string.
-
-
-	//ImGui::Text(ICON_MDI_BLACK_MESA);
-	//ImGui::PopFont();
-
-
-
-	//ImGui::Checkbox("")
 }
 
 void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
@@ -378,23 +358,27 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		copyStateObject.pasteState(objArr);
 	}
 
+	// I need to make some documentation, and tooltips for this
 	if (ImGui::CollapsingHeader("Advanced ReGroup")) {
 		static int regroupStart = 1;	// Initial group (where it starts before regroup)
 		static int regroupEnd = 9999;	// Initial group (where it ends before regroup)
 		static int regroupFrom = 1;		// Regrouped Offset (where it would start after regroup)
 		static bool regroupOnlyFree = false;
 
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("Regroup Start", &regroupStart);
-		setMaxMin(regroupStart, 9999, 1);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("Regroup Start", &regroupStart)) {
+			setMaxMin(regroupStart, 9999, 1);
+		}
 
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("Regroup End", &regroupEnd);
-		setMaxMin(regroupEnd, 9999, 1);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("Regroup End", &regroupEnd)) {
+			setMaxMin(regroupEnd, 9999, 1);
+		}
 
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("Regroup From", &regroupFrom);
-		setMaxMin(regroupFrom, 9999, 1);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("Regroup From", &regroupFrom)) {
+			setMaxMin(regroupFrom, 9999, 1);
+		}
 
 		ImGui::Checkbox("Only Free Groups", &regroupOnlyFree);
 
@@ -473,12 +457,14 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 	}
 
 	if (ImGui::CollapsingHeader("Groups Settings")) {
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("ID Offset", &groupOffset);
-		setMaxMin(groupOffset, 9999, 1);
-		ImGui::PushItemWidth(150.0f);
-		ImGui::InputInt("GroupID", &chosenGroupEGM);
-		setMaxMin(chosenGroupEGM, 9999, 1);
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("ID Offset", &groupOffset)) {
+			setMaxMin(groupOffset, 9999, 1);
+		}
+		ImGui::SetNextItemWidth(INPUT_ITEM_WIDTH);
+		if (ErGui::DragInt("GroupID", &chosenGroupEGM)) {
+			setMaxMin(chosenGroupEGM, 9999, 1);
+		}
 
 
 		if (ImGui::Button("Add##EGM-ADDGROUP")) {
@@ -679,6 +665,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		ImGui::PopStyleVar();
 
 		auto currentLayer = lel->m_currentLayer;
+		// Why did I make this awful widget
 		if (int delta = deltaInputIntImproved("EditorL1", maxEl1, minEl1, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				int oldEl = obj->m_editorLayer;
@@ -697,6 +684,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			}
 			groupInfoUpdate();
 		}
+
 		ImGui::SameLine();
 		if (ImGui::Button("CL##EditorL1")) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
@@ -718,6 +706,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		}
 		ImGui::SetItemTooltip("Set to current Editor Layer");
 
+		// Why did I make this awful widget x2
 		if (int delta = deltaInputIntImproved("EditorL2", maxEl2, minEl2, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				int oldEl = obj->m_editorLayer2;
@@ -757,7 +746,7 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 		}
 		ImGui::SetItemTooltip("Set to current Editor Layer");
 
-
+		// Why did I make this awful widget x3
 		if (int delta = deltaInputIntImproved("Z-Order", maxZOrder, minZOrder, 1)) {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				int oldOrder = obj->m_zOrder;
@@ -784,19 +773,15 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 
 	if (ImGui::CollapsingHeader("Extra")) {
 
-		if (int delta = deltaInputIntImproved("Enter Channel", maxEnterChannel, minEnterChannel, 1)) {
-			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_enterChannel += delta;
-			}
-			groupInfoUpdate();
-		}
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		syncObjectGroupProperty(objArr, &maxEnterChannel, &minEnterChannel, &GameObject::m_enterChannel, [](short* newMaxValue, std::string valueFormat){
+			return ErGui::DragInt("Enter Channel", newMaxValue, 1, 5, valueFormat.c_str());
+		});
 
-		if (int delta = deltaInputIntImproved("Material", maxMaterial, minMaterial, 1)) {
-			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
-				obj->m_objectMaterial += delta;
-			}
-			groupInfoUpdate();
-		}
+		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
+		syncObjectGroupProperty(objArr, &maxMaterial, &minMaterial, &GameObject::m_objectMaterial, [](short* newMaxValue, std::string valueFormat){
+			return ErGui::DragInt("Material", newMaxValue, 1, 5, valueFormat.c_str());
+		});
 
 		if (firstEgObj) {
 			minOrderValue = firstEgObj->m_ordValue;
@@ -806,6 +791,12 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 			minControlID = firstEgObj->m_controlID;
 			maxControlID = firstEgObj->m_controlID;
 
+			// FUCK
+			// syncObjectGroupProperty(objArr, &maxOrderValue, &minOrderValue, &EffectGameObject::m_ordValue, [](short* newMaxValue, std::string valueFormat){
+			// 	return ErGui::DragInt("Order Value", newMaxValue, 1, 5, valueFormat.c_str());
+			// });
+
+			// Why did I make this awful widget x4
 			if (int delta = deltaInputIntImproved("Order Value", maxOrderValue, minOrderValue, 1)) {
 				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
 					if (egObj) {
@@ -815,6 +806,8 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				}
 				groupInfoUpdate();
 			}
+
+			// Why did I make this awful widget x5
 			if (int delta = deltaInputIntImproved("Channel Value", maxChannel, minChannel, 1)) {
 				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
 					if (egObj) {
@@ -824,6 +817,8 @@ void renderForArray(CCArray* objArr, LevelEditorLayer* lel) {
 				}
 				groupInfoUpdate();
 			}
+
+			// Why did I make this awful widget x6
 			if (int delta = deltaInputIntImproved("ControlID", maxControlID, minControlID, 1)) {
 				for (auto egObj : CCArrayExt<EffectGameObject*>(objArr)) {
 					if (egObj) {

@@ -188,7 +188,7 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 
 			// }
 
-			if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Move X", &xStep, 1.f, 10.f, "%.2f")) {
+			if (ErGui::DragFloat("Move X", &xStep, 1.f, 10.f, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255))) {
 				eObj->m_moveOffset.x = xStep * modStep;
 				auto field = eObj->m_moveOffset.x;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.x, field, EffectGameObject);
@@ -197,7 +197,7 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		else {
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			syncObjectProperty(objArr, eObj, &EffectGameObject::m_moveModX, [](float* modX, bool isMixed){
-				return ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Mod X", modX, 0.1f, 0.5f, "%.3f", 0.1f, 0.f, 0.f, 0, isMixed);
+				return ErGui::DragFloat("Mod X", modX, 0.1f, 0.5f, "%.3f", 0.1f, 0.f, 0.f, 0, isMixed, ImVec4(255, 66, 66, 255));
 			});
 
 			// if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Mod X", &eObj->m_moveModX, 0.1f, 0.5f, "%.3f", 0.1f)) {
@@ -231,7 +231,7 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 		if (!eObj->m_lockToCameraY && !eObj->m_lockToPlayerY) {
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
-			if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "Move Y", &yStep, 1.f, 10.f, "%.2f")) {
+			if (ErGui::DragFloat("Move Y", &yStep, 1.f, 10.f, "%.2f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255))) {
 				eObj->m_moveOffset.y = yStep * modStep;
 				auto field = eObj->m_moveOffset.y;
 				APPLY_FIELDS_TO_OTHER_TRIGGERS(m_moveOffset.y, field, EffectGameObject);
@@ -240,7 +240,7 @@ void drawMoveSettings(GameObject* obj, CCArray* objArr) {
 		else {
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			syncObjectProperty(objArr, eObj, &EffectGameObject::m_moveModY, [](float* modY, bool isMixed){
-				return ErGui::DragFloat(ImVec4(66, 66, 255, 255), "Mod Y", modY, 0.1f, 0.5f, "%.3f", 0.1f, 0.f, 0.f, 0, isMixed);
+				return ErGui::DragFloat("Mod Y", modY, 0.1f, 0.5f, "%.3f", 0.1f, 0.f, 0.f, 0, isMixed, ImVec4(66, 66, 255, 255));
 			});
 			// if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "Mod Y", &eObj->m_moveModY, 0.1f, 0.5f, "%.3f", 0.1f)) {
 			// 	auto field = eObj->m_moveModY;
@@ -854,26 +854,26 @@ void drawSpawnParticleSettings(GameObject* obj, CCArray* objArr) {
 	SeparatorPlus("Position");
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(255, 66, 66, 255), "Offset##Offset X", &eObj->m_offset.x)) {
+	if (ErGui::DragFloat("Offset##Offset X", &eObj->m_offset.x, 1, 5, "%.3f", 1.f, 0.f, 0.f, 0, false, ImVec4(255, 66, 66, 255))) {
 		float offsetX = eObj->m_offset.x;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.x, offsetX, SpawnParticleGameObject);
 	}
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(66, 66, 255, 255), "##Offset Y", &eObj->m_offset.y)) {
+	if (ErGui::DragFloat("##Offset Y", &eObj->m_offset.y, 1, 5, "%.3f", 1.f, 0.f, 0.f, 0, false, ImVec4(66, 66, 255, 255))) {
 		float offsetY = eObj->m_offset.y;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offset.y, offsetY, SpawnParticleGameObject);
 	}
 
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(175, 50, 50, 255), "OffVar##OffVar X", &eObj->m_offsetVariance.x)) {
+	if (ErGui::DragFloat("OffVar##OffVar X", &eObj->m_offsetVariance.x, 1, 5, "%.3f", 1.f, 0.f, 0.f, 0, false, ImVec4(175, 50, 50, 255))) {
 		float offVarX = eObj->m_offsetVariance.x;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.x, offVarX, SpawnParticleGameObject);
 	}
 	
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH);
-	if (ErGui::DragFloat(ImVec4(50, 74, 178, 255), "##OffVar Y", &eObj->m_offsetVariance.y)) {
+	if (ErGui::DragFloat("##OffVar Y", &eObj->m_offsetVariance.y, 1, 5, "%.3f", 1.f, 0.f, 0.f, 0, false, ImVec4(50, 74, 178, 255))) {
 		float offVarY = eObj->m_offsetVariance.y;
 		APPLY_FIELDS_TO_OTHER_TRIGGERS(m_offsetVariance.y, offVarY, SpawnParticleGameObject);
 	}
