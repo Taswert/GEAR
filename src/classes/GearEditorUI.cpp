@@ -15,6 +15,8 @@
 #include "../features/SelectedObjectInfo.hpp"
 #include "../features/ZoomToScroll.hpp"
 #include "TweenFunctions.hpp"
+#include "myUtils.hpp"
+#include <Geode/Enums.hpp>
 #include <Geode/binding/GJTransformControl.hpp>
 
 //#include <geode.custom-keybinds/include/Keybinds.hpp>
@@ -109,19 +111,13 @@ void GearEditorUI::deselectObject(GameObject* obj) {
 
 void GearEditorUI::undoLastAction(CCObject* obj) {
 	EditorUI::undoLastAction(obj);
-	if (this->m_transformControl && this->m_transformControl->isVisible()) {
-		this->m_transformControl->setPosition(getGroupCenter(getSelectedObjects(), false));
-		this->m_transformControl->refreshControl();
-	}
+	this->updateTransformControl();
 	SelectedObjectInfo::undoLastAction();
 }
 
 void GearEditorUI::redoLastAction(CCObject* obj) {
 	EditorUI::redoLastAction(obj);
-	if (this->m_transformControl && this->m_transformControl->isVisible()) {
-		this->m_transformControl->setPosition(getGroupCenter(getSelectedObjects(), false));
-		this->m_transformControl->refreshControl();
-	}
+	this->updateTransformControl();
 	SelectedObjectInfo::redoLastAction();
 }
 
@@ -300,21 +296,21 @@ bool GearEditorUI::ccTouchBegan(CCTouch* touch, CCEvent* event) {
 	);
 
 	//FREE MOVE CONDITION
-	if (this->m_editorLayer->objectAtPosition(touchConverted) && this->m_freeMoveEnabled) {
+	if (this->m_editorLayer->objectAtPosition(touchConverted) && this->m_freeMoveEnabled)
 		ErGui::isFreeMoveAndObjectTouching = true;
-	}
-	else {
-		ErGui::isFreeMoveAndObjectTouching = false;
+	else ErGui::isFreeMoveAndObjectTouching = false;		
 
-		// --- Lasso And VanillaSwipe ccTouchBegan / void
-		if (this->m_selectedMode == 3 && (m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed())) {
+	m_fields->m_wasShifting = this->m_selectedMode == 3 && CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed();
+	
+	// --- Lasso And VanillaSwipe ccTouchBegan / void
+	if (!ErGui::isFreeMoveAndObjectTouching || m_fields->m_wasShifting) {
+		if (this->m_selectedMode == 3 && (m_swipeEnabled || m_fields->m_wasShifting)) {
 			ErGui::ccTouchBegan_LassoAndVanillaSwipe(this, touch);
 		}
 	}
 
 	return EditorUI::ccTouchBegan(touch, event);
 }
-
 
 void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 	auto lel = LevelEditorLayer::get();
@@ -379,13 +375,17 @@ void GearEditorUI::ccTouchMoved(CCTouch* touch, CCEvent* event) {
 	}
 	
 
+	// Checking, so if user go to the other editor mode, selection will reset
+	if (this->m_selectedMode != 3)
+		m_fields->m_wasShifting = false;
+
 	// Not Free moving object and not touching controls
-	if (!ErGui::isFreeMoveAndObjectTouching && !someControlTouched) {
+	if ((!ErGui::isFreeMoveAndObjectTouching || m_fields->m_wasShifting) && !someControlTouched) {
 		ccColor4F selectionFillColor = Mod::get()->getSavedValue<bool>("fill-selection-zone", false) ?
 			ccColor4F{ lassoColor.r - lassoColor.r / 1.3f, lassoColor.g - lassoColor.g / 1.3f, lassoColor.b - lassoColor.b / 1.3f, 0.1f } :
 			ccColor4F{ 0, 0, 0, 0 };
 
-		bool isSwiping = m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed();
+		bool isSwiping = m_swipeEnabled || m_fields->m_wasShifting;
 
 		// --- Lasso ccTouchMoved
 		if (this->m_selectedMode == 3 && ErGui::isLassoEnabled && isSwiping) {
@@ -471,11 +471,14 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 	}
 
 	// Editor Selected Mode = Edit
-	if (!ErGui::isFreeMoveAndObjectTouching && this->m_selectedMode == 3) {
+	if (this->m_selectedMode == 3) {
 
 		if (ErGui::ccTouchEnded_Selection(this, touch)) {
+			m_fields->m_wasShifting = false;
 			return EditorUI::ccTouchEnded(touch, event);
 		}
+
+		m_fields->m_wasShifting = false;
 
 		// Disable Rotation/Scale/Transform controls when clicked on empty space
 		if (Mod::get()->getSavedValue<bool>("deselect-controls", false)) {
@@ -485,10 +488,8 @@ void GearEditorUI::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 			transformControl->setVisible(false);
 		}
 
-			
 		return EditorUI::ccTouchEnded(touch, event);
 	}
-
 
 	EditorUI::ccTouchEnded(touch, event);
 }

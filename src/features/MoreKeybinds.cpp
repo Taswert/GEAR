@@ -47,6 +47,7 @@ void moveObjectsByKey(float x, float y) {
 
 		auto tc = editorUI->m_transformControl;
 		tc->setPosition({tc->getPositionX() + x, tc->getPositionY() + y});
+		tc->refreshControl();
 	}
 }
 
@@ -72,8 +73,17 @@ void rotateObjectsByKey(float degrees) {
 		}
 
 		auto tc = editorUI->m_transformControl;
-		tc->setRotation(tc->getRotation() + degrees);
+		
+		// decompiled
+		auto rotY = tc->m_rotationY;
+		degrees += rotY;
+		if (rotY != degrees) {
+			tc->m_rotationY = degrees;
+			editorUI->m_transformState.m_transformRotationY = degrees;
+		}
 		tc->updateButtons(false, false);
+		editorUI->updateTransformControl();
+		// tc->updateButtons(false, false);
 	}
 }
 

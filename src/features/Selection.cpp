@@ -199,7 +199,7 @@ bool ErGui::ccTouchEnded_Selection(GearEditorUI* editorUI, CCTouch* touch) {
 	// --- Selection Begin ---
 	auto lel = LevelEditorLayer::get();
 	auto currentLayer = lel->m_currentLayer;
-	bool swiping = editorUI->m_swipeEnabled || CCDirector::sharedDirector()->getKeyboardDispatcher()->getShiftKeyPressed();
+	bool swiping = editorUI->m_swipeEnabled || GearEditorUI::get()->m_fields->m_wasShifting;
 
 	// --- Lasso ccTouchEnded
 	if (ErGui::editorUISwipePoints.size() > 2 && ErGui::isLassoEnabled && swiping) {

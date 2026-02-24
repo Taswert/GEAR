@@ -14,6 +14,7 @@ void ErGui::renderDebugModule() {
 		ImGui::Text("Selected Object address: %p", EditorUI::get()->m_selectedObject);
 		ImGui::Text("Pointer to member m_positionX: %p", &GameObject::m_positionX);
 		ImGui::Text("F2 is %s", ImGui::IsKeyDown(ImGuiKey::ImGuiKey_F2) ? "Pressed" : "Not Pressed"); // why are you not working ughh
+		ImGui::Text(fmt::format("m_wasShifting: {}", GearEditorUI::get()->m_fields->m_wasShifting).c_str());
 		ImGui::End();
 	}
 }

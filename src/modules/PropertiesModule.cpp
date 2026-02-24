@@ -846,8 +846,8 @@ void ErGui::renderPropertiesModule() {
 		if (ImGui::Selectable("Interface",			selectedTab == P_INTERFACE)) selectedTab = P_INTERFACE;
 		if (ImGui::Selectable("Object Info",		selectedTab == P_OBJECT_INFO)) selectedTab = P_OBJECT_INFO;
 		if (ImGui::Selectable("Draws",				selectedTab == P_DRAWS)) selectedTab = P_DRAWS;
-		if (ImGui::Selectable("Keybinds",			selectedTab == P_KEYBINDS)) selectedTab = P_KEYBINDS;
-		if (ImGui::Selectable("Level Browser",		selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
+		// if (ImGui::Selectable("Keybinds",			selectedTab == P_KEYBINDS)) selectedTab = P_KEYBINDS;
+		// if (ImGui::Selectable("Level Browser",		selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
 		if (ImGui::Selectable("Debug",				selectedTab == P_DEBUG)) selectedTab = P_DEBUG;
 		ImGui::EndChild();
 

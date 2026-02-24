@@ -1,5 +1,6 @@
 #include "myUtils.hpp"
 #include "../modules/ToolsModule.hpp"
+#include <Geode/binding/GJTransformState.hpp>
 #include <Geode/modify/GameObject.hpp>
 #include "SelectFilterModule.hpp"
 
@@ -12,7 +13,7 @@ namespace ErGui {
 			const cocos2d::CCPoint& pi = polygon[i];
 			const cocos2d::CCPoint& pj = polygon[j];
 
-			// Проверяем пересечение луча, идущего вправо от pt, со стороной многоугольника
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ pt, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			if (((pi.y > pt.y) != (pj.y > pt.y)) &&
 				(pt.x < (pj.x - pi.x) * (pt.y - pi.y) / (pj.y - pi.y) + pi.x))
 			{
@@ -135,7 +136,10 @@ namespace ErGui {
 
 	// Change to advanced undo/redo later.
 	void addObjectToUndoList(GameObject* obj, UndoCommand command) {
-		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::create(obj, command));
+
+		UndoObject* undoObject = UndoObject::create(obj, command);
+
+		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(undoObject);
 		GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
 	}
 
@@ -146,7 +150,10 @@ namespace ErGui {
 			copyObjArr->addObject(objCopy);
 			//objCopy->resetObject();
 		}
-		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(UndoObject::createWithArray(copyObjArr, command));
+
+		auto undoObject = UndoObject::createWithArray(copyObjArr, command);
+
+		GameManager::sharedState()->getEditorLayer()->m_undoObjects->addObject(undoObject);
 		GameManager::sharedState()->getEditorLayer()->m_redoObjects->removeAllObjects();
 	}
 

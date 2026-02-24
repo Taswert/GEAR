@@ -352,9 +352,10 @@ void renderForObject(GameObject* obj) {
 	if (dPosX || dPosY) {
 		auto rc = editorUI->m_rotationControl;
 		rc->setPosition({ rc->getPositionX() + dPosX, rc->getPositionY() + dPosY });
+		editorUI->moveObject(obj, { dPosX, dPosY });
 		auto tc = editorUI->m_transformControl;
 		tc->setPosition({tc->getPositionX() + dPosX, tc->getPositionY() + dPosY});
-		editorUI->moveObject(obj, { dPosX, dPosY });
+		tc->refreshControl();
 	}
 
 	// Reseting, so it would not cause any mistakes in undo list
@@ -408,8 +409,8 @@ void renderForObject(GameObject* obj) {
 		obj->setRotationX(std::fmod(rotX + rot - oldRot, 360));
 		obj->setRotationY(std::fmod(rotY + rot - oldRot, 360));
 
-		auto tc = editorUI->m_transformControl;
-		tc->setRotation(tc->getRotation() + rot - oldRot);
+		// auto tc = editorUI->m_transformControl;
+		// tc->setRotation(tc->getRotation() + rot - oldRot);
 		
 		// Updating object hitbox
 		obj->updateStartValues();
@@ -741,11 +742,13 @@ void renderForArray(CCArray* objArr) {
 	if (posXDelta || posYDelta) {
 		auto rc = editorUI->m_rotationControl;
 		rc->setPosition({ rc->getPositionX() + posXDelta, rc->getPositionY() + posYDelta });
-		auto tc = editorUI->m_transformControl;
-		tc->setPosition({tc->getPositionX() + posXDelta, tc->getPositionY() + posYDelta});
 		for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 			editorUI->moveObject(obj, { posXDelta, posYDelta });
 		}
+
+		auto tc = editorUI->m_transformControl;
+		tc->setPosition({tc->getPositionX() + posXDelta, tc->getPositionY() + posYDelta});
+		tc->refreshControl();
 	}
 
 	isActive = false;
@@ -810,8 +813,8 @@ void renderForArray(CCArray* objArr) {
 	float rotDeltaX = rotationX - oldRotationX;
 	float rotDeltaY = rotationY - oldRotationY;
 	if (rotDelta || rotDeltaX || rotDeltaY) {
-		auto tc = editorUI->m_transformControl;
-		tc->setRotation(tc->getRotation() + rotDelta);
+		// auto tc = editorUI->m_transformControl;
+		// tc->setRotation(tc->getRotation() + rotDelta);
 		if (!rotateObjectsPositionSnap && rotDelta)
 			lel->m_editorUI->rotateObjects(objArr, rotDelta, { 0, 0 });
 		else {

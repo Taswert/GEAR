@@ -11,7 +11,6 @@ I mean, I really just don't know what to say here. The mod is so big, you just n
 
 <cg>**Requirements**</c>
 - <c-FCE5AD>N</c><c-FCDFB9>o</c><c-FDDAC6>d</c><c-FED5D3>e</c> <c-FFC7DB>I</c><c-FFBED6>D</c><c-FFB5D1>s</c> by Geode Team
-- Custom <c-FBD3D2>K</c><c-EACED2>e</c><c-DAC9D2>y</c><c-CAC4D2>b</c><c-BABFD2>i</c><c-AABAD2>n</c><c-9AB5D2>d</c><c-8AB0D2>s</c> by Geode Team
 - Object Popup API by Alphalaneous
 - Editor Level ID API by Cvolton
 

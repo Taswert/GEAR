@@ -29,6 +29,8 @@ public:
 		CCPoint m_positionCurrent = { 0.f, 0.f };
 		CCPoint m_positionTarget = { 0.f, 0.f };
 
+		bool m_wasShifting = false;
+
 		Fields() {}
 		~Fields();
 	};
