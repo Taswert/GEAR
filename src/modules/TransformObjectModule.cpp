@@ -354,8 +354,10 @@ void renderForObject(GameObject* obj) {
 		rc->setPosition({ rc->getPositionX() + dPosX, rc->getPositionY() + dPosY });
 		editorUI->moveObject(obj, { dPosX, dPosY });
 		auto tc = editorUI->m_transformControl;
-		tc->setPosition({tc->getPositionX() + dPosX, tc->getPositionY() + dPosY});
-		tc->refreshControl();
+		if (tc && tc->isVisible()) {
+			tc->setPosition({tc->getPositionX() + dPosX, tc->getPositionY() + dPosY});
+			tc->refreshControl();
+		}
 	}
 
 	// Reseting, so it would not cause any mistakes in undo list
@@ -747,8 +749,10 @@ void renderForArray(CCArray* objArr) {
 		}
 
 		auto tc = editorUI->m_transformControl;
-		tc->setPosition({tc->getPositionX() + posXDelta, tc->getPositionY() + posYDelta});
-		tc->refreshControl();
+		if (tc && tc->isVisible()) {
+			tc->setPosition({tc->getPositionX() + posXDelta, tc->getPositionY() + posYDelta});
+			tc->refreshControl();
+		}
 	}
 
 	isActive = false;

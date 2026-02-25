@@ -1,11 +1,11 @@
 {
-	"geode": "5.0.0-beta.3",
+	"geode": "5.0.1",
 	"gd": {
 		"win": "2.2081"
 	},
 	"id": "taswert.gear",
 	"name": "GEAR",
-	"version": "v1.1.0-beta.1",
+	"version": "v1.1.0-beta.2",
 	"developers": [ "Taswert", "RaZooM", "Pololak", "RainixGD" ],
 	"description": "Reimagine your Editor UI with ImGui",
 	"links": {
