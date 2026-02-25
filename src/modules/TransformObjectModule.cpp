@@ -355,8 +355,8 @@ void renderForObject(GameObject* obj) {
 		editorUI->moveObject(obj, { dPosX, dPosY });
 		auto tc = editorUI->m_transformControl;
 		if (tc && tc->isVisible()) {
-			tc->setPosition({tc->getPositionX() + dPosX, tc->getPositionY() + dPosY});
-			tc->refreshControl();
+			editorUI->updateTransformControl();
+			tc->updateButtons(false, false);
 		}
 	}
 
@@ -408,11 +408,21 @@ void renderForObject(GameObject* obj) {
 
 	if (isChanging) {
 		rot = std::fmod(rot, 360);
-		obj->setRotationX(std::fmod(rotX + rot - oldRot, 360));
-		obj->setRotationY(std::fmod(rotY + rot - oldRot, 360));
 
-		// auto tc = editorUI->m_transformControl;
-		// tc->setRotation(tc->getRotation() + rot - oldRot);
+		auto degreesX = std::fmod(rotX + rot - oldRot, 360);
+		auto degreesY = std::fmod(rotY + rot - oldRot, 360);
+		obj->setRotationX(degreesX);
+		obj->setRotationY(degreesY);
+
+		auto tc = editorUI->m_transformControl;
+		auto rotY = tc->m_rotationY;
+		degreesX += rotY;
+		if (rotY != degreesX) {
+			tc->m_rotationY = degreesX;
+			editorUI->m_transformState.m_transformRotationY = degreesX;
+		}
+		tc->updateButtons(false, false);
+		editorUI->updateTransformControl();
 		
 		// Updating object hitbox
 		obj->updateStartValues();
@@ -750,8 +760,12 @@ void renderForArray(CCArray* objArr) {
 
 		auto tc = editorUI->m_transformControl;
 		if (tc && tc->isVisible()) {
-			tc->setPosition({tc->getPositionX() + posXDelta, tc->getPositionY() + posYDelta});
-			tc->refreshControl();
+			editorUI->updateTransformControl();
+			// Maybe I am gonna make my own version of updateTransformControl, cause for some reason, the one above doesn't want
+			// for skew buttons to move at all... Why?
+			// auto skewSlider1 = static_cast<CCSprite*>(tc->m_warpSprites->objectAtIndex(9));
+			// skewSlider1->setPosition({skewSlider1->getPositionX() + posXDelta, skewSlider1->getPositionY() + posYDelta, });
+			tc->updateButtons(false, false);
 		}
 	}
 
@@ -831,11 +845,21 @@ void renderForArray(CCArray* objArr) {
 
 				obj->setRotationX(rotX);
 				obj->setRotationY(rotY);
-
+				
 				// Updating object hitbox
 				obj->updateStartValues();
 			}
 		}
+
+		auto tc = editorUI->m_transformControl;
+		auto rotY = tc->m_rotationY;
+		rotDeltaX += rotY;
+		if (rotY != rotDeltaX) {
+			tc->m_rotationY = rotDeltaX;
+			editorUI->m_transformState.m_transformRotationY = rotDeltaX;
+		}
+		tc->updateButtons(false, false);
+		editorUI->updateTransformControl();
 	}
 
 	isActive = false;

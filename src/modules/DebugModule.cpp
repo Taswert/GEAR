@@ -1,4 +1,5 @@
 #include "DebugModule.hpp"
+#include "Geode/cocos/sprite_nodes/CCSprite.h"
 #include "PropertiesModule.hpp"
 #include "../classes/GearEditorUI.hpp"
 #include <imgui.h>
@@ -15,6 +16,23 @@ void ErGui::renderDebugModule() {
 		ImGui::Text("Pointer to member m_positionX: %p", &GameObject::m_positionX);
 		ImGui::Text("F2 is %s", ImGui::IsKeyDown(ImGuiKey::ImGuiKey_F2) ? "Pressed" : "Not Pressed"); // why are you not working ughh
 		ImGui::Text(fmt::format("m_wasShifting: {}", GearEditorUI::get()->m_fields->m_wasShifting).c_str());
+
+		ImGui::Text("--TS--");
+		GJTransformControl* tc = EditorUI::get()->m_transformControl;
+		auto ts = EditorUI::get()->m_transformState;
+		ImGui::Text(fmt::format("m_transformSkewX: {}, {}", ts.m_transformSkewX.x, ts.m_transformSkewX.y).c_str());
+		ImGui::Text(fmt::format("m_transformSkewY: {}, {}", ts.m_transformSkewY.x, ts.m_transformSkewY.y).c_str());
+		ImGui::Text(fmt::format("m_transformPosition: {}, {}", ts.m_transformPosition.x, ts.m_transformPosition.y).c_str());
+		ImGui::Text(fmt::format("m_transformRotation: {}", ts.m_transformRotation).c_str());
+		ImGui::Text(fmt::format("m_angleX/Y: {}, {}", ts.m_angleX, ts.m_angleY).c_str());
+		ImGui::Text(fmt::format("m_transformScaleX/Y: {}, {}", ts.m_transformScaleX, ts.m_transformScaleY).c_str());
+
+		ImGui::Text("--TC--");
+		int i = 0;
+		for (auto warpButton : CCArrayExt<CCSprite*>(tc->m_warpSprites)) {
+			ImGui::Text(fmt::format("warpButton {}: {} / {}", i, warpButton->getPositionX(), warpButton->getPositionY()).c_str());
+			i++;
+		}
 		ImGui::End();
 	}
 }
