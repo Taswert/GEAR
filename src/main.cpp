@@ -9,6 +9,7 @@
 
 #include <IconsMaterialDesignIcons.h>
 #include <GearIcons.hpp>
+#include "Geode/platform/cplatform.h"
 #include "modules/EditGroupModule.hpp"
 #include "modules/SelectFilterModule.hpp"
 #include "modules/TransformObjectModule.hpp"
@@ -169,12 +170,15 @@ class $modify(CCTouchDispatcher) {
 
 $on_mod(Loaded) {
 	ErGui::editorUIbottomConstrainPatch->enable();
-	ErGui::disablSelectObjectInEditorUI1->enable();
-	ErGui::disablSelectObjectInEditorUI2->enable();
-	ErGui::disablSelectObjectInEditorUI3->enable();
-	ErGui::disablSelectObjectInEditorUI4->enable();
-	ErGui::disablSelectObjectInEditorUI5->enable();
-	ErGui::disablSelectObjectInEditorUI6->enable();
+
+	GEODE_WINDOWS(
+		ErGui::disablSelectObjectInEditorUI1->enable();
+		ErGui::disablSelectObjectInEditorUI2->enable();
+		ErGui::disablSelectObjectInEditorUI3->enable();
+		ErGui::disablSelectObjectInEditorUI4->enable();
+		ErGui::disablSelectObjectInEditorUI5->enable();
+		ErGui::disablSelectObjectInEditorUI6->enable();
+	);
 	// DEBUG - allows to take a look on fields offsets
 	//ErGui::objectCfg = data;
 	//log::info("Offset DrawGridLayer::m_gridSize = {} bytes", offsetof(DrawGridLayer, DrawGridLayer::m_gridSize));
