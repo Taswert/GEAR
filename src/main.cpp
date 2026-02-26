@@ -37,7 +37,7 @@
 
 using namespace geode::prelude;
 
-
+GEODE_WINDOWS(
 class $modify(CCEGLView) {
 	void pollEvents() {
 		auto& io = ImGui::GetIO();
@@ -139,7 +139,7 @@ class $modify(CCEGLView) {
 		CCEGLView::pollEvents();
 	}
 };
-
+);
 
 class $modify(CCTouchDispatcher) {
 	void touches(CCSet * touches, CCEvent * event, unsigned int type) {

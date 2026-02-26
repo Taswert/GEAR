@@ -23,9 +23,9 @@ void ErGui::renderFooter() {
 	float seconds = std::fmodf(tfp, 60.f);
 	std::string timeStr;
 	if (minutes < 1)
-		timeStr = CCString::createWithFormat("%.2fs", seconds)->m_sString;
+		timeStr = fmt::format("{:2}s", seconds);
 	else
-		timeStr = CCString::createWithFormat("%dm %.1fs", minutes, seconds)->m_sString;
+		timeStr = fmt::format("{}m {:1}s", minutes, seconds);
 
 	//SFXes
 	gd::string sfxIDs = lel->getSFXIDs();
