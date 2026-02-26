@@ -1,7 +1,8 @@
 {
 	"geode": "5.0.1",
 	"gd": {
-		"win": "2.2081"
+		"win": "2.2081",
+		"mac": "2.2081"
 	},
 	"id": "taswert.gear",
 	"name": "GEAR",

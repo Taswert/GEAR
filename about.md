@@ -36,8 +36,8 @@ If you have some questions, feel free to ask in the [Discord server](http://disc
 - ...?
 
 <c-56b3ff>**Special Thanks**</c>:
-- HJFod (Inspiration)
-- Mat ()
+- HJFod
+- Mat
 - RaZooM
 - Alphalaneous
 - Partur
