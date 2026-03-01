@@ -1,4 +1,5 @@
 ﻿#include <Geode/Geode.hpp>
+#include <Geode/binding/CCMenuItemToggler.hpp>
 #include <imgui-cocos.hpp>
 #include <imgui_internal.h>
 
@@ -9,6 +10,7 @@
 
 #include <IconsMaterialDesignIcons.h>
 #include <GearIcons.hpp>
+#include "Geode/cocos/label_nodes/CCLabelBMFont.h"
 #include "Geode/platform/cplatform.h"
 #include "modules/EditGroupModule.hpp"
 #include "modules/SelectFilterModule.hpp"
@@ -33,11 +35,33 @@
 #include <matjson/stl_serialize.hpp>
 
 #include <Geode/Result.hpp>
+#include <Geode/modify/EditorPauseLayer.hpp>
 //#include "AdvancedUndoRedo.hpp"
 
 using namespace geode::prelude;
 
-GEODE_WINDOWS(
+
+class $modify(EditorPauseLayer) {
+	bool init(LevelEditorLayer* layer) {
+		if (!EditorPauseLayer::init(layer)) return false;
+		
+		auto om = static_cast<CCMenu*>(this->getChildByID("options-menu"));
+		if (!om) return true;
+		
+		auto sft = static_cast<CCMenuItemToggler*>(om->getChildByID("select-filter-toggle"));
+		if (!sft) return true;
+
+		bool selectFilterBool = Mod::get()->getSavedValue<bool>("select-filter", false);
+		sft->toggle(selectFilterBool);
+		return true;
+	}
+
+	void toggleSelectFilter(CCObject *sender) {
+		bool selectFilterBool = Mod::get()->getSavedValue<bool>("select-filter", false);
+		Mod::get()->setSavedValue<bool>("select-filter", !selectFilterBool);
+	}
+};
+
 class $modify(CCEGLView) {
 	void pollEvents() {
 		auto& io = ImGui::GetIO();
@@ -139,7 +163,6 @@ class $modify(CCEGLView) {
 		CCEGLView::pollEvents();
 	}
 };
-);
 
 class $modify(CCTouchDispatcher) {
 	void touches(CCSet * touches, CCEvent * event, unsigned int type) {
@@ -171,14 +194,14 @@ class $modify(CCTouchDispatcher) {
 $on_mod(Loaded) {
 	ErGui::editorUIbottomConstrainPatch->enable();
 
-	GEODE_WINDOWS(
+	#ifdef GEODE_IS_WINDOWS
 		ErGui::disablSelectObjectInEditorUI1->enable();
 		ErGui::disablSelectObjectInEditorUI2->enable();
 		ErGui::disablSelectObjectInEditorUI3->enable();
 		ErGui::disablSelectObjectInEditorUI4->enable();
 		ErGui::disablSelectObjectInEditorUI5->enable();
 		ErGui::disablSelectObjectInEditorUI6->enable();
-	);
+	#endif
 	// DEBUG - allows to take a look on fields offsets
 	//ErGui::objectCfg = data;
 	//log::info("Offset DrawGridLayer::m_gridSize = {} bytes", offsetof(DrawGridLayer, DrawGridLayer::m_gridSize));

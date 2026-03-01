@@ -286,7 +286,8 @@ void renderForObject(GameObject* obj) {
 	bool isChanging = false;
 	bool isClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left, false);
 
-	const float INPUT_FLOAT_WIDTH = 30.f * 7.f + ImGui::GetStyle().ItemSpacing.x * 6.f;
+	const float POPUP_INPUT_FLOAT_WIDTH = 30.f * 7.f + ImGui::GetStyle().ItemSpacing.x * 6.f;
+	const float MAIN_ITEM_WIDTH = ErGui::SHORT_INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x;
 	const float INNER_SPACING = ImGui::GetStyle().ItemInnerSpacing.x;
 
 	static float moveStep = 	Mod::get()->getSavedValue<float>("move-step", 30.f);
@@ -305,7 +306,7 @@ void renderForObject(GameObject* obj) {
 	// ----- Position -----
 	static bool moveStepPopupClosed = false;
 	if (ImGui::BeginPopup("MoveStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
 
 		if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 0.5f;	ImGui::SameLine();
@@ -369,7 +370,7 @@ void renderForObject(GameObject* obj) {
 	// ----- Rotation -----
 	static bool rotStepPopupClosed = false;
 	if (ImGui::BeginPopup("RotationStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("RotStep", &rotationStep, 1.f);
 		if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 1.f;		ImGui::SameLine();
 		if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 10.f;	ImGui::SameLine();
@@ -395,7 +396,7 @@ void renderForObject(GameObject* obj) {
 	float oldRotX = rotX;
 	float oldRotY = rotY;
 
-	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x);
+	ImGui::SetNextItemWidth(MAIN_ITEM_WIDTH);
 	if (ErGui::DragFloat("Rotation##Rot", &rot, rotationStep, rotationStep * 5, "%.2f")) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
@@ -446,6 +447,13 @@ void renderForObject(GameObject* obj) {
 		ImGui::OpenPopup("RotationStepPopup");
 	}
 
+	ImGui::Text(" ");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	if (ImGui::Button("Slope Snap", {MAIN_ITEM_WIDTH, 0.f})) {
+		editorUI->transformObjectCall(EditCommand::RotateSnap);
+	}
+	
+
 	if (isActive && isClicked) {
 		addObjectToUndoList(obj, UndoCommand::Transform);
 	}
@@ -469,7 +477,7 @@ void renderForObject(GameObject* obj) {
 	// ----- Scale -----
 	static bool scaleStepPopupClosed = false;
 	if (ImGui::BeginPopup("ScaleStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
 		if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.01f;		ImGui::SameLine();
 		if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.05f;		ImGui::SameLine();
@@ -495,7 +503,7 @@ void renderForObject(GameObject* obj) {
 	float oldScaleX = scaleX;
 	float oldScaleY = scaleY;
 
-	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x);
+	ImGui::SetNextItemWidth(MAIN_ITEM_WIDTH);
 	if (ErGui::DragFloat("Scale##Scale", &scale, scaleStep, scaleStep * 5, "%.2f", 0.01f)) isChanging = true;
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
@@ -570,7 +578,7 @@ void renderForObject(GameObject* obj) {
 	// ----- Skew -----
 	static bool skewStepPopupClosed = false;
 	if (ImGui::BeginPopup("SkewStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("SkewStep", &skewStep, 1.f);
 		if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 1.f;		ImGui::SameLine();
 		if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 5.f;		ImGui::SameLine();
@@ -698,7 +706,8 @@ void renderForArray(CCArray* objArr) {
 	bool isChanging = false;
 	bool isClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left, false);
 
-	const float INPUT_FLOAT_WIDTH = 30.f * 7.f + ImGui::GetStyle().ItemSpacing.x * 6.f;
+	const float POPUP_INPUT_FLOAT_WIDTH = 30.f * 7.f + ImGui::GetStyle().ItemSpacing.x * 6.f;
+	const float MAIN_ITEM_WIDTH = ErGui::SHORT_INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x;
 	const float INNER_SPACING = ImGui::GetStyle().ItemInnerSpacing.x;
 
 
@@ -711,7 +720,7 @@ void renderForArray(CCArray* objArr) {
 	// ----- Position -----
 	static bool moveStepPopupClosed = false;
 	if (ImGui::BeginPopup("MoveStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("MoveStep", &moveStep, 1.f);
 		if (ImGui::Button("0.5##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 0.5f;	ImGui::SameLine();
 		if (ImGui::Button("2##MoveStepPreset", ImVec2({ 30.f, 0.f }))) moveStep = 2.f;		ImGui::SameLine();
@@ -776,7 +785,7 @@ void renderForArray(CCArray* objArr) {
 	// ----- Rotation -----
 	static bool rotStepPopupClosed = false;
 	if (ImGui::BeginPopup("RotStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("RotStep", &rotationStep, 1.f);
 		if (ImGui::Button("1##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 1.f;		ImGui::SameLine();
 		if (ImGui::Button("10##RotateStepPreset", ImVec2({ 30.f, 0.f }))) rotationStep = 10.f;		ImGui::SameLine();
@@ -795,7 +804,7 @@ void renderForArray(CCArray* objArr) {
 	}
 
 	// -- All Rotation
-	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x);
+	ImGui::SetNextItemWidth(MAIN_ITEM_WIDTH);
 	ErGui::DragFloat("Rotation##Rotation", &rotation, rotationStep, rotationStep * 5, "%.2f");
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
@@ -818,6 +827,12 @@ void renderForArray(CCArray* objArr) {
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 		ImGui::OpenPopup("RotStepPopup");
+	}
+
+	ImGui::Text(" ");
+	ImGui::SameLine(ErGui::FIRST_ELEMENT_SAMELINE_SPACING);
+	if (ImGui::Button("Slope Snap", {MAIN_ITEM_WIDTH, 0.f})) {
+		editorUI->transformObjectCall(EditCommand::RotateSnap);
 	}
 	
 	ImGui::Separator();
@@ -869,7 +884,7 @@ void renderForArray(CCArray* objArr) {
 	// ----- Scale -----
 	static bool scaleStepPopupClosed = false;
 	if (ImGui::BeginPopup("ScaleStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("ScaleStep", &scaleStep, 0.25f);
 		if (ImGui::Button("0.01##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.01f;	ImGui::SameLine();
 		if (ImGui::Button("0.05##ScaleStepPreset", ImVec2({ 30.f, 0.f }))) scaleStep = 0.05f;	ImGui::SameLine();
@@ -888,7 +903,7 @@ void renderForArray(CCArray* objArr) {
 	}
 
 	// -- All Scale
-	ImGui::SetNextItemWidth(ErGui::SHORT_INPUT_ITEM_WIDTH * 2.f + ImGui::GetStyle().ItemSpacing.x);
+	ImGui::SetNextItemWidth(MAIN_ITEM_WIDTH);
 	ErGui::DragFloat("Scale##Scale", &scale, scaleStep, scaleStep * 5, "%.2f", 0.01f);
 	if (ImGui::IsItemActive()) isActive = true;
 	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
@@ -992,7 +1007,7 @@ void renderForArray(CCArray* objArr) {
 	// ----- Skew -----
 	static bool skewStepPopupClosed = false;
 	if (ImGui::BeginPopup("SkewStepPopup")) {
-		ImGui::SetNextItemWidth(INPUT_FLOAT_WIDTH);
+		ImGui::SetNextItemWidth(POPUP_INPUT_FLOAT_WIDTH);
 		ImGui::InputFloat("SkewStep", &skewStep, 1.f);
 		if (ImGui::Button("1##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 1.f;			ImGui::SameLine();
 		if (ImGui::Button("5##SkewStepPreset", ImVec2({ 30.f, 0.f }))) skewStep = 5.f;			ImGui::SameLine();

@@ -1,12 +1,11 @@
 {
-	"geode": "5.0.1",
+	"geode": "5.2.0",
 	"gd": {
-		"win": "2.2081",
-		"mac": "2.2081"
+		"win": "2.2081"
 	},
 	"id": "taswert.gear",
 	"name": "GEAR",
-	"version": "v1.1.0-beta.2",
+	"version": "v1.1.0-beta.3",
 	"developers": [ "Taswert", "RaZooM", "Pololak", "RainixGD" ],
 	"description": "Reimagine your Editor UI with ImGui",
 	"links": {
@@ -80,6 +79,21 @@
 			"description": "Apply Buildhelper to selected objects"
 		},
 
+		"layer-free": {
+			"type": "keybind",
+			"name": "Next Free Layer",
+			"default": "Ctrl+Right",
+			"category": "editor",
+			"description": "Go to The Next Free Editor Layer"
+		},
+		"layer-all": {
+			"type": "keybind",
+			"name": "All Layer",
+			"default": "Ctrl+Left",
+			"category": "editor",
+			"description": "Go to The All Editor Layer"
+		},
+
 		"move-obj-up-half": {
 			"type": "keybind",
 			"name": "Move Object Up Half",
@@ -122,6 +136,27 @@
 			"default": "Shift+E",
 			"category": "editor",
 			"description": "Rotate Object(s) 45 degrees (by Default) Clockwise"
+		},
+		"rotation-snap": {
+			"type": "keybind",
+			"name": "Rotation Snap",
+			"default": "",
+			"category": "editor",
+			"description": "Snap selected objects rotation to the near slope"
+		},
+		"select-filter-bind": {
+			"type": "keybind",
+			"name": "Select Filter",
+			"default": "Y",
+			"category": "editor",
+			"description": "Toggles select filter"
+		},
+		"auto-buildhelper-bind": {
+			"type": "keybind",
+			"name": "Auto BuildHelper",
+			"default": "H",
+			"category": "editor",
+			"description": "Toggles auto buildhelper"
 		}
 	},
 	"tags": [

@@ -303,24 +303,26 @@ void ErGui::renderContextMenu() {
 
 	if (ImGui::BeginPopup(contextMenuName.c_str())) {
 		auto editorUI = EditorUI::get();
-		auto selectedObject = editorUI->m_selectedObject;
-		auto selectedObjects = editorUI->m_selectedObjects;
+		auto allSelectedObjects = editorUI->getSelectedObjects();
+		bool renderEditorContext = true;
 
 
 		ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, { 0.f, 0.5f });
 		ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
 
-		if (objectUnderCursor && selectedObjects && selectedObjects->containsObject(objectUnderCursor)) {
+		if (objectUnderCursor && allSelectedObjects->containsObject(objectUnderCursor) && allSelectedObjects->count() > 1) {
+			renderEditorContext = false;
 			ImGui::SeparatorText("Multiple");
 			renderContextForMultipleObjects();
 		}
 
-		if (objectUnderCursor) {
+		if (objectUnderCursor && (allSelectedObjects->count() == 0 || allSelectedObjects->containsObject(objectUnderCursor))) {
+			renderEditorContext = false;
 			ImGui::SeparatorText("Single");
 			renderContextForSingleObject();
 		}
 
-		if (!objectUnderCursor) {
+		if (renderEditorContext) {
 			ImGui::SeparatorText("Editor");
 			renderContextForNoObjects();
 		}

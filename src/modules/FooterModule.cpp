@@ -16,16 +16,19 @@ void ErGui::renderFooter() {
 	ImGui::GetWindowDockNode()->LocalFlags = ImGuiDockNodeFlags_NoTabBar | ImGuiDockNodeFlags_NoDocking;
 
 	auto lel = LevelEditorLayer::get();
-	
+	if (!lel) return;
+
 	//Time + Level Length
-	float tfp = lel->m_drawGridLayer->timeForPos({ getLastObjectXFast() + 340.f, 0 }, 0, 0, 0, 0, 0, 0);	// Crash Potential / DO NOT ABBREVIATE THIS.
+	float lastX = 0.f;
+	if (lel->m_objectCount != 0) float lastX = getLastObjectXFast();
+	float tfp = lel->m_drawGridLayer->timeForPos({ lastX + 340.f, 0 }, 0, 0, 0, 0, 0, 0);	// Crash Potential / DO NOT ABBREVIATE THIS.
 	int minutes = tfp / 60;
 	float seconds = std::fmodf(tfp, 60.f);
 	std::string timeStr;
 	if (minutes < 1)
-		timeStr = fmt::format("{:2}s", seconds);
+		timeStr = fmt::format("{:.2f}s", seconds);
 	else
-		timeStr = fmt::format("{}m {:1}s", minutes, seconds);
+		timeStr = fmt::format("{}m {:.1f}s", minutes, seconds);
 
 	//SFXes
 	gd::string sfxIDs = lel->getSFXIDs();

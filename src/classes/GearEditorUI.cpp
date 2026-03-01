@@ -18,6 +18,7 @@
 #include "myUtils.hpp"
 #include <Geode/Enums.hpp>
 #include <Geode/binding/GJTransformControl.hpp>
+#include <Geode/binding/GameManager.hpp>
 
 //#include <geode.custom-keybinds/include/Keybinds.hpp>
 //using namespace keybinds;
@@ -221,6 +222,9 @@ void GearEditorUI::deleteObjectAndRemoveFromSelected(GameObject* obj, bool noUnd
 bool GearEditorUI::init(LevelEditorLayer * lel) {
 	// Keybinds
 	registerKeybindsEventListeners();
+
+	// Vanilla Select filter disabling
+	GameManager::get()->setGameVariable("0064", false);
 	
 	// Lasso And Swipe
 	ErGui::editorUIDrawNode = CCDrawNode::create();
@@ -256,6 +260,7 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 	hideUIMenu->addChild(hideUIBtn);
 	hideUIMenu->setID("hideUIMenu"_spr);
 	hideUIMenu->setPosition({ 13.f, CCDirector::sharedDirector()->getWinSize().height - 10.f });
+	hideUIMenu->setZOrder(101); // Better Touch Prio compat
 
 	lel->addChild(hideUIMenu);
 

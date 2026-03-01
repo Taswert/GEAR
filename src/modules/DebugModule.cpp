@@ -2,24 +2,28 @@
 #include "Geode/cocos/sprite_nodes/CCSprite.h"
 #include "PropertiesModule.hpp"
 #include "../classes/GearEditorUI.hpp"
+#include "ContextMenuModule.hpp"
 #include <imgui.h>
 
 void ErGui::renderDebugModule() {
 	if (g_showDebugModule) {
+		auto gEui = GearEditorUI::get();
 		ImGui::Begin("Debug");
-		ImGui::Checkbox("EditorUI", &EditorUI::get()->m_bVisible);
+		ImGui::Checkbox("EditorUI", &gEui->m_bVisible);
 		//ImGui::Text("g_selectionVersion: % d", ErGui::g_selectVersion);
 		ImGui::Text("ErGui::showProperties: %d", ErGui::showProperties);
-		ImGui::Text("Is Zooming: %d", GearEditorUI::get()->m_fields->m_isSmoothZooming);
-		ImGui::Text("Zoom Scale: %.3f", EditorUI::get()->m_editorLayer->m_objectLayer->getScale());
-		ImGui::Text("Selected Object address: %p", EditorUI::get()->m_selectedObject);
+		ImGui::Text("Is Zooming: %d", gEui->m_fields->m_isSmoothZooming);
+		ImGui::Text("Zoom Scale: %.3f", gEui->m_editorLayer->m_objectLayer->getScale());
+		ImGui::Text("Selected Object address: %p", gEui->m_selectedObject);
 		ImGui::Text("Pointer to member m_positionX: %p", &GameObject::m_positionX);
 		ImGui::Text("F2 is %s", ImGui::IsKeyDown(ImGuiKey::ImGuiKey_F2) ? "Pressed" : "Not Pressed"); // why are you not working ughh
-		ImGui::Text(fmt::format("m_wasShifting: {}", GearEditorUI::get()->m_fields->m_wasShifting).c_str());
+		ImGui::Text(fmt::format("m_wasShifting: {}", gEui->m_fields->m_wasShifting).c_str());
+		ImGui::Text("Object under cursor: %p", ErGui::objectUnderCursor);
+		ImGui::Text("Last Under Cursor index: %d", gEui->m_fields->m_lastUnderCursorIndex);
 
 		ImGui::Text("--TS--");
-		GJTransformControl* tc = EditorUI::get()->m_transformControl;
-		auto ts = EditorUI::get()->m_transformState;
+		GJTransformControl* tc = gEui->m_transformControl;
+		auto ts = gEui->m_transformState;
 		ImGui::Text(fmt::format("m_transformSkewX: {}, {}", ts.m_transformSkewX.x, ts.m_transformSkewX.y).c_str());
 		ImGui::Text(fmt::format("m_transformSkewY: {}, {}", ts.m_transformSkewY.x, ts.m_transformSkewY.y).c_str());
 		ImGui::Text(fmt::format("m_transformPosition: {}, {}", ts.m_transformPosition.x, ts.m_transformPosition.y).c_str());

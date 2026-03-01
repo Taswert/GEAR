@@ -189,8 +189,12 @@ float ErGui::getFPS() { // stolen from GDH
     return 1.f / avgTime;
 }
 
-float ErGui::getLastObjectXFast() {
+void ErGui::resetLastObjects() {
+    lastObjX = nullptr;
+    lastObjY = nullptr;
+}
 
+float ErGui::getLastObjectXFast() {
     auto lel = LevelEditorLayer::get();
 
     if (lastObjCountX != lel->m_objectCount) {
@@ -215,7 +219,6 @@ float ErGui::getLastObjectXFast() {
 }
 
 float ErGui::getLastObjectYFast() {
-
     auto lel = LevelEditorLayer::get();
 
     if (lastObjCountY != lel->m_objectCount) {

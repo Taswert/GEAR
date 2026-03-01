@@ -193,6 +193,20 @@ void GearEditorUI::registerKeybindsEventListeners() {
 		}
 	});
 
+	// Ctrl + Right
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "layer-free"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			ErGui::nextFreeLayer();
+		}
+	});
+
+	// Ctrl + Left
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "layer-all"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			this->m_editorLayer->m_currentLayer = -1;
+		}
+	});
+
 
 	// Half Move Steps
 	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-up-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
@@ -230,6 +244,31 @@ void GearEditorUI::registerKeybindsEventListeners() {
 	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "rotate-cw-small"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 		if (down) {
 			rotateObjectsByKey(45.f);
+		}
+	});
+	
+
+	// Rotation Snap
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "rotation-snap"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			transformObjectCall(EditCommand::RotateSnap);
+		}
+	});
+
+
+	// Select Filter
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "select-filter-bind"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			bool selectFilterBool = Mod::get()->getSavedValue<bool>("select-filter", false);
+			Mod::get()->setSavedValue<bool>("select-filter", !selectFilterBool);
+		}
+	});
+
+	// Auto buildhelper
+	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "auto-buildhelper-bind"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+		if (down && !repeat) {
+			bool autoBuildHelperBool = Mod::get()->getSavedValue<bool>("auto-buildhelper", false);
+			Mod::get()->setSavedValue<bool>("auto-buildhelper", !autoBuildHelperBool);
 		}
 	});
 }

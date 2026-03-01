@@ -14,6 +14,7 @@ namespace ErGui {
     float getFPS(); // must be called exactly once per frame
     float getLastObjectXFast();
     float getLastObjectYFast();
+    void resetLastObjects();
 
     EditorPauseLayer* getFakePauseLayer();
 

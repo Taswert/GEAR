@@ -2,6 +2,8 @@
 
 
 bool ErGui::selectFilterRealization(GameObject* obj) {
+	if (!Mod::get()->getSavedValue<bool>("select-filter", false)) return true;
+
 	bool isFilterOn = false;
 	bool shouldSelect = false;
 
@@ -98,6 +100,7 @@ bool ErGui::selectFilterRealization(GameObject* obj) {
 }
 
 CCArray* ErGui::selectFilterRealization(CCArray* objArrInRect) {
+	if (!Mod::get()->getSavedValue<bool>("select-filter", false)) return objArrInRect;
 
 	CCArray* shouldSelectArr = CCArray::create();
 	for (auto obj : CCArrayExt<GameObject*>(objArrInRect)) {

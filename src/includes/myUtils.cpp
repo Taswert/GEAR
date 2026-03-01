@@ -352,6 +352,10 @@ namespace ErGui {
 
 		auto contentSize = obj->getScaledContentSize();
 
+		if (obj->m_objectID >= 1886 && obj->m_objectID <= 1888) { // 1886, 1887, 1888 - Glow orbs. For some reason, their contentSize is 0.25f. Why???
+			contentSize = obj->getChildByIndex(0)->getScaledContentSize() * 2.f; // Glow orbs are 2 by 2 sprites, so multiplying the size by 2
+		}
+
 		if (auto txtObj = typeinfo_cast<TextGameObject*>(obj)) {
 			auto txtChildren = txtObj->getChildren();
 			if (txtChildren && txtChildren->count() > 0) {

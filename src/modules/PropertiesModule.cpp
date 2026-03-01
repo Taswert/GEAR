@@ -755,6 +755,7 @@ void renderLevelBrowserSettings() {
 		if (ImGui::Button(fmt::format("Load Level##{}", i).c_str())) {
 			ErGui::getFakePauseLayer()->saveLevel();
 			lel->removeAllObjects();
+			ErGui::resetLastObjects(); // This is needed for fixing getLastObjectX/YFast
 
 			std::string levelString = ZipUtils::decompressString(level->m_levelString, false, 0);
 			// log::info("Loading level: {}", levelString.c_str());

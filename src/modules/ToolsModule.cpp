@@ -137,6 +137,15 @@ void ErGui::renderToolsModule1() {
 		ImGui::SetTooltip("Snap (G)");
 		//SetTooltipWithBind("Snap", "robtop.geometry-dash/toggle-snap");
 	}
+
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+	bool selectFilterBool = Mod::get()->getSavedValue<bool>("select-filter", false);
+	if (ImGui::Selectable(ICON_MDI_FILTER, &selectFilterBool, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
+		Mod::get()->setSavedValue<bool>("select-filter", selectFilterBool);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+		ImGui::SetTooltip("Select Filter");
+	}
 		
 	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
 	
@@ -145,7 +154,7 @@ void ErGui::renderToolsModule1() {
 		Mod::get()->setSavedValue<bool>("auto-buildhelper", autoBuildHelperBool);
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-		ImGui::SetTooltip("AutoBuild Helper");
+		ImGui::SetTooltip("Auto BuildHelper");
 	}
 		
 
@@ -279,17 +288,16 @@ void ErGui::renderToolsModule1() {
 		// }
 	}
 
-	if (mode == PlaybackMode::Playing || mode == PlaybackMode::Paused) {
-		SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
-		if (ImGui::Selectable(ICON_MDI_STOP, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
-			editorUI->onStopPlaytest(nullptr);
-		}
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-			ImGui::SetTooltip("Stop");
-			//SetTooltipWithBind("Stop", "robtop.geometry-dash/playtest");
-		}
+	ImGui::BeginDisabled(!(mode == PlaybackMode::Playing || mode == PlaybackMode::Paused));
+	SameLineInWindow(BTN_SIZE.x, DUMMY_PAD);
+	if (ImGui::Selectable(ICON_MDI_STOP, false, 0, BTN_SIZE, SELECTABLE_ROUNDING)) {
+		editorUI->onStopPlaytest(nullptr);
 	}
-
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled)) {
+		ImGui::SetTooltip("Stop");
+		//SetTooltipWithBind("Stop", "robtop.geometry-dash/playtest");
+	}
+	ImGui::EndDisabled();
 	ImGui::Separator();
 
 	bool showLinkControls = gameManager->getGameVariable("0097");

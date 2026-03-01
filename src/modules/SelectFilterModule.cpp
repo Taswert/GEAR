@@ -1,9 +1,15 @@
 #include "SelectFilterModule.hpp"
 #include "ObjectListModule.hpp"
+#include <imgui.h>
 
 void ErGui::renderSelectFilter() {
 	ImGui::Begin("Filter");
 	ImGui::PushStyleColor(ImGuiCol_Separator, { 0.33f, 0.33f, 0.33f, 1.f });
+
+	bool selectFilterBool = Mod::get()->getSavedValue<bool>("select-filter", false);
+	if (ImGui::Checkbox("Enable Filter", &selectFilterBool)) {
+		Mod::get()->setSavedValue<bool>("select-filter", selectFilterBool);
+	}
 
 	if (ImGui::CollapsingHeader("Main Settings")) {
 		ImGui::Checkbox("Object", &filterByObjects);
