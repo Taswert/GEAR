@@ -8,7 +8,7 @@ using namespace ErGui;
 
 void drawStartPosSettings(GameObject* obj, CCArray* objArr) {
 	auto spObj = static_cast<StartPosObject*>(obj);
-	auto spSettings = spObj->m_startSettings;
+	LevelSettingsObject* spSettings = spObj->m_startSettings;
 
 	ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 	ImGui::Combo("Mode", &spSettings->m_startMode, gameModesItems, IM_ARRAYSIZE(gameModesItems));

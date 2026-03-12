@@ -32,7 +32,6 @@ If you have some questions, feel free to ask in the [Discord server](http://disc
 - Taswert
 - RaZooM
 - Pololak
-- RainixGD
 
 <c-56b3ff>**Special Thanks**</c>:
 - HJFod
@@ -41,6 +40,7 @@ If you have some questions, feel free to ask in the [Discord server](http://disc
 - Alphalaneous
 - Partur
 - Pololak
+- RainixGD
 - Lenzy
 - Emiya
 - Shlyapa

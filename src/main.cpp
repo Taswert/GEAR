@@ -1,17 +1,23 @@
 ﻿#include <Geode/Geode.hpp>
 #include <Geode/binding/CCMenuItemToggler.hpp>
 #include <imgui-cocos.hpp>
+#include <imgui.h>
 #include <imgui_internal.h>
 
 #include <Geode/modify/CustomizeObjectLayer.hpp>
 
 #include <Geode/modify/CCTouchDispatcher.hpp>
 #include <Geode/modify/CCEGLView.hpp>
+#include <Geode/modify/CCKeyboardDispatcher.hpp>
 
 #include <IconsMaterialDesignIcons.h>
 #include <GearIcons.hpp>
+#include "Geode/DefaultInclude.hpp"
 #include "Geode/cocos/label_nodes/CCLabelBMFont.h"
+#include "Geode/cocos/robtop/keyboard_dispatcher/CCKeyboardDelegate.h"
+#include "Geode/cocos/robtop/keyboard_dispatcher/CCKeyboardDispatcher.h"
 #include "Geode/platform/cplatform.h"
+#include "Geode/utils/Keyboard.hpp"
 #include "modules/EditGroupModule.hpp"
 #include "modules/SelectFilterModule.hpp"
 #include "modules/TransformObjectModule.hpp"
@@ -111,7 +117,7 @@ class $modify(CCEGLView) {
 						auto setMoved = CCSet::create();
 						setMoved->addObject(ErGui::rightTouch);
 						CCDirector::sharedDirector()->getTouchDispatcher()->touchesMoved(setMoved, nullptr);
-
+						
 						break;
 					}
 					case WM_RBUTTONUP: {
@@ -164,6 +170,78 @@ class $modify(CCEGLView) {
 	}
 };
 
+ImGuiKey gearCocosToImGuiKey(cocos2d::enumKeyCodes key) {
+	if (key >= KEY_A && key <= KEY_Z) {
+		return static_cast<ImGuiKey>(ImGuiKey_A + (key - KEY_A));
+	}
+	if (key >= KEY_Zero && key <= KEY_Nine) {
+		return static_cast<ImGuiKey>(ImGuiKey_0 + (key - KEY_Zero));
+	}
+	switch (key) {
+		case KEY_Up: return ImGuiKey_UpArrow;
+		case KEY_Down: return ImGuiKey_DownArrow;
+		case KEY_Left: return ImGuiKey_LeftArrow;
+		case KEY_Right: return ImGuiKey_RightArrow;
+
+		case KEY_Control: return ImGuiKey_LeftCtrl;
+		case KEY_LeftWindowsKey: return ImGuiKey_LeftSuper;
+		case KEY_Shift: return ImGuiKey_LeftShift;
+		case KEY_Alt: return ImGuiKey_LeftAlt;
+		case KEY_Enter: return ImGuiKey_Enter;
+
+		case KEY_Home: return ImGuiKey_Home;
+		case KEY_End: return ImGuiKey_End;
+		case KEY_Delete: return ImGuiKey_Delete;
+
+		default: return ImGuiKey_None;
+	}
+}
+
+bool gearShouldBlockInput() {
+	auto& inst = ImGuiCocos::get();
+	return inst.isVisible() && inst.getInputMode() == ImGuiCocos::InputMode::Blocking;
+}
+
+class $modify(CCKeyboardDispatcher) {
+	static void onModify(auto& self) {
+		if (!self.setHookPriorityPre("cocos2d::CCKeyboardDispatcher::dispatchKeyboardMSG", Priority::First)) {
+			log::warn("Failed to set hook priority for dispatchKeyboardMSG");
+		}
+	}
+
+	bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double timestamp){
+		if (!ImGuiCocos::get().isInitialized())
+			return CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat, timestamp);
+
+		// log::info("isKeyDown (cocos2d): {}", isKeyDown);
+		// geode::key
+		const bool shouldEatInput = ImGui::GetIO().WantCaptureKeyboard || gearShouldBlockInput();
+		if (shouldEatInput || !isKeyDown) {
+			const auto imKey = gearCocosToImGuiKey(key);
+			if (imKey != ImGuiKey_None) {
+				ImGui::GetIO().AddKeyEvent(imKey, isKeyDown);
+				// log::info("IsDown: W {}", ImGui::IsKeyDown(ImGuiKey_W));
+				// log::info("IsPressed: W {}", ImGui::IsKeyPressed(ImGuiKey_W));
+			}
+		}
+		if (shouldEatInput) {
+			return false;
+		} else {
+			return CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat, timestamp);
+		}
+	}
+
+	// bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double timestamp){
+    //     auto& io = ImGui::GetIO();
+    //     log::info("Hi from dispatchKeyboardMSG");
+    //     if (io.WantCaptureKeyboard) {
+    //         log::info("Blocked key event. (down: {}, repeat: {})", isKeyDown, isKeyRepeat);
+    //         return false;
+    //     }
+    //     return CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat, timestamp);
+    // }
+};
+
 class $modify(CCTouchDispatcher) {
 	void touches(CCSet * touches, CCEvent * event, unsigned int type) {
 		auto& io = ImGui::GetIO();
@@ -186,10 +264,17 @@ class $modify(CCTouchDispatcher) {
 		if (type == CCTOUCHENDED || type == CCTOUCHCANCELLED) {
 			ErGui::isGameWindowTouching = false;
 		}
-		
+
 		CCTouchDispatcher::touches(touches, event, type);
 	}
 };
+
+// $execute{
+// 	KeyboardInputEvent().listen([](KeyboardInputData& data) {
+//             log::info("Key: {}", CCKeyboardDispatcher::get()->keyToString(data.key));
+//             return ListenerResult::Propagate;
+//         }).leak();
+// }
 
 $on_mod(Loaded) {
 	ErGui::editorUIbottomConstrainPatch->enable();
@@ -270,7 +355,7 @@ $on_mod(Loaded) {
 
 				ErGui::renderDebugModule();
 
-				//ImGui::ShowStyleEditor();
+				// ImGui::ShowStyleEditor();
 
 			}
 			else {

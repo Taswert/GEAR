@@ -3,6 +3,7 @@
 #include "PropertiesModule.hpp"
 #include "../classes/GearEditorUI.hpp"
 #include "ContextMenuModule.hpp"
+#include "razoomUtils.hpp"
 #include <imgui.h>
 
 void ErGui::renderDebugModule() {
@@ -20,6 +21,11 @@ void ErGui::renderDebugModule() {
 		ImGui::Text(fmt::format("m_wasShifting: {}", gEui->m_fields->m_wasShifting).c_str());
 		ImGui::Text("Object under cursor: %p", ErGui::objectUnderCursor);
 		ImGui::Text("Last Under Cursor index: %d", gEui->m_fields->m_lastUnderCursorIndex);
+		ImGui::Text("io.WantCaptureKeyboard: %d", ImGui::GetIO().WantCaptureKeyboard);
+		ImGui::Text("lastObjectX: %p", ErGui::lastObjX);
+		ImGui::Text("lastObjCountX: %d", ErGui::lastObjCountX);
+		ImGui::Text("lastObjectY: %p", ErGui::lastObjY);
+		ImGui::Text("lastObjCountY: %d", ErGui::lastObjCountY);
 
 		ImGui::Text("--TS--");
 		GJTransformControl* tc = gEui->m_transformControl;

@@ -45,7 +45,7 @@ void exitEditor() { // EditorUI is already destroyed here
 }
 
 GearEditorUI::Fields::~Fields() {
-	m_lastUnderCursor->release();
+	m_lastUnderCursor = nullptr;
 	exitEditor();
 }
 
@@ -242,7 +242,6 @@ bool GearEditorUI::init(LevelEditorLayer * lel) {
 	SelectedObjectInfo::init(lel);
 
 	m_fields->m_lastUnderCursor = CCArray::create();
-	m_fields->m_lastUnderCursor->retain();
 
 	this->setVisible(false);
 

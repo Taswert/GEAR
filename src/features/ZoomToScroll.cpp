@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include "../modules/GameWindowModule.hpp"
 #include "TweenFunctions.hpp"
+
 using namespace geode::prelude;
 
 float zoomStart = 0.f;
@@ -39,16 +40,19 @@ namespace ZoomToScroll {
 				elapsedTime = 0.f;
 			}
 
-			self->m_fields->m_zoomCurrent = batchLayer->getScale();
-			self->m_fields->m_positionCurrent = batchLayer->getPosition();
+			float oldScale = batchLayer->getScale();
+			CCPoint oldPosition = batchLayer->getPosition();
+			CCPoint visibleCursor;
+
+			// Good Grid Compat, Marking the grid as dirty
+			self->updateZoom(oldScale);
+
+			self->m_fields->m_zoomCurrent = oldScale;
+			self->m_fields->m_positionCurrent = oldPosition;
 
 			zoomStart = self->m_fields->m_zoomCurrent;
 			positionStart = self->m_fields->m_positionCurrent;
 			self->m_fields->m_isSmoothZooming = true;
-
-			float oldScale = batchLayer->getScale();
-			CCPoint oldPosition = batchLayer->getPosition();
-			CCPoint visibleCursor;
 
 			if (ErGui::isGameWindowHovered)
 				visibleCursor = CCPoint{ ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom.x, ErGui::gameWindowTouchCoordinatesConvertedToWorldForZoom.y };
@@ -74,15 +78,11 @@ namespace ZoomToScroll {
 			CCPoint delta = oldPosition - visibleCursor;
 			CCPoint newPos = visibleCursor + delta * ratio;
 
-			// batchLayer->setScale(newScale);
-			// batchLayer->setPosition(newPos);
 			self->m_fields->m_zoomTarget = newScale;
 			self->m_fields->m_positionTarget = newPos;
-			// редактор вылетел когда я зажал контрол и пытался двигать камеру
 
 			if (self->m_rotationControl)
 				self->m_rotationControl->setScale(1.f / newScale);
-
 			return false;
 		}
 		return true;

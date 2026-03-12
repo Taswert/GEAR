@@ -22,4 +22,6 @@ namespace ErGui {
     inline int lastObjCountY = 0;
     inline GameObject* lastObjX = nullptr;
     inline GameObject* lastObjY = nullptr;
+    inline float maxPositionX = 0.f;
+    inline float maxPositionY = 0.f;
 } // ErGui

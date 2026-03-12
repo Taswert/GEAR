@@ -45,9 +45,13 @@ void moveObjectsByKey(float x, float y) {
 			editorUI->moveObject(obj, { x, y });
 		}
 
+
+		// Crashing...
 		auto tc = editorUI->m_transformControl;
-		tc->setPosition({tc->getPositionX() + x, tc->getPositionY() + y});
-		tc->refreshControl();
+		if (tc) {
+			tc->setPosition({tc->getPositionX() + x, tc->getPositionY() + y});
+			tc->refreshControl();
+		}
 	}
 }
 
@@ -58,7 +62,7 @@ void rotateObjectsByKey(float degrees) {
 		ErGui::addObjectsToUndoList(objArr, UndoCommand::Transform);
 		
 		if (!ErGui::rotateObjectsPositionSnap)
-			editorUI->rotateObjects(objArr, degrees, { 0, 0 });
+			editorUI->rotateObjects(objArr, degrees, editorUI->getGroupCenter(objArr, false));
 		else {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				float rotX = obj->getRotationX();
@@ -89,19 +93,25 @@ void rotateObjectsByKey(float degrees) {
 
 void GearEditorUI::keyDown(cocos2d::enumKeyCodes p0, double timestamp) {
 	editorUIHoldingKeys.insert(p0);
-	EditorUI::keyDown(p0, timestamp);
+
+	if (!ImGui::GetIO().WantCaptureKeyboard) {
+		EditorUI::keyDown(p0, timestamp);
+	}
 }
 
 void GearEditorUI::keyUp(cocos2d::enumKeyCodes p0, double timestamp) {
 	editorUIHoldingKeys.erase(p0);
-	EditorUI::keyUp(p0, timestamp);
+	
+	if (!ImGui::GetIO().WantCaptureKeyboard) {
+		EditorUI::keyUp(p0, timestamp);
+	}
 }
  
 CCPoint GearEditorUI::moveForCommand(EditCommand command) {
 	CCPoint returnPoint;
 	bool posStepToKeybinds = Mod::get()->getSavedValue<bool>("move-step-to-bind", false);
 	float moveStep = posStepToKeybinds ? Mod::get()->getSavedValue<float>("move-step", 30.f) : this->m_gridSize;
-
+	float halfStep = m_gridSize / 2.f;
 	bool customSwitchTriggered = false;
 
 	switch(command) {
@@ -122,6 +132,27 @@ CCPoint GearEditorUI::moveForCommand(EditCommand command) {
 		}
 		case EditCommand::Right: {
 			returnPoint = CCPoint(moveStep, 0.f);
+			customSwitchTriggered = true;
+			break;
+		}
+
+		case EditCommand::HalfUp: {
+			returnPoint = CCPoint(0.f, halfStep);
+			customSwitchTriggered = true;
+			break;
+		}
+		case EditCommand::HalfDown: {
+			returnPoint = CCPoint(0.f, -halfStep);
+			customSwitchTriggered = true;
+			break;
+		}
+		case EditCommand::HalfLeft: {
+			returnPoint = CCPoint(-halfStep, 0.f);
+			customSwitchTriggered = true;
+			break;
+		}
+		case EditCommand::HalfRight: {
+			returnPoint = CCPoint(halfStep, 0.f);
 			customSwitchTriggered = true;
 			break;
 		}
@@ -211,25 +242,29 @@ void GearEditorUI::registerKeybindsEventListeners() {
 	// Half Move Steps
 	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-up-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 		if (down) {
-			moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
+			moveObjectCall(EditCommand::HalfUp);
+			// moveObjectsByKey(0.f, EditorUI::get()->m_gridSize / 2.f);
 		}
 	});
 
 	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-down-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 		if (down) {
-			moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
+			moveObjectCall(EditCommand::HalfDown);
+			// moveObjectsByKey(0.f, -EditorUI::get()->m_gridSize / 2.f);
 		}
 	});
 	
 	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-left-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 		if (down) {
-			moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
+			moveObjectCall(EditCommand::HalfLeft);
+			// moveObjectsByKey(-EditorUI::get()->m_gridSize / 2.f, 0.f);
 		}
 	});
 
 	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "move-obj-right-half"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 		if (down) {
-			moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
+			moveObjectCall(EditCommand::HalfRight);
+			// moveObjectsByKey(EditorUI::get()->m_gridSize / 2.f, 0.f);
 		}
 	});
 	
@@ -249,11 +284,14 @@ void GearEditorUI::registerKeybindsEventListeners() {
 	
 
 	// Rotation Snap
-	addEventListener(KeybindSettingPressedEventV3(Mod::get(), "rotation-snap"), [this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-		if (down && !repeat) {
-			transformObjectCall(EditCommand::RotateSnap);
+	addEventListener(
+		KeybindSettingPressedEventV3(Mod::get(), "rotation-snap"), 
+		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
+			if (down && !repeat) {
+				transformObjectCall(EditCommand::RotateSnap);
+			}
 		}
-	});
+	);
 
 
 	// Select Filter

@@ -1,6 +1,8 @@
 #include "ViewModule.hpp"
 #include "myUtils.hpp"
 #include "razoomUtils.hpp"
+#include <Geode/binding/ButtonSprite.hpp>
+#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
 #include <Geode/modify/EditorUI.hpp>
 #include <Geode/modify/DrawGridLayer.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
@@ -344,6 +346,9 @@ class $modify(DrawGridLayer) {
         m_editorLayer->m_previewMode = tmp;
         m_editorLayer->m_editorUI->m_toolbarHeight = tmp2;
 
+        CCMenuItemSpriteExtra* btn = CCMenuItemSpriteExtra::create(ButtonSprite::create("huy"), nullptr, nullptr);
+        
+
         // orbs
         if (showDashOrbs) {
             auto orbs = reinterpret_cast<DashOrbLevelEditorLayer*>(m_editorLayer)->m_fields->dashOrbs;
@@ -379,4 +384,3 @@ class $modify(DrawGridLayer) {
         }
     }
 };
-

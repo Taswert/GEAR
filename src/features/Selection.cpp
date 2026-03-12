@@ -294,6 +294,10 @@ bool ErGui::ccTouchEnded_Selection(GearEditorUI* editorUI, CCTouch* touch) {
 
 		return true;
 	}
+	// --- Free Move
+	else if (ErGui::beginTouchLocation != touch->getLocation() && GameManager::get()->getGameVariable("0004")) {
+		return true;
+	}
 	// --- Single Touch ccTouchEnded
 	else if (
 		ErGui::beginTouchLocation.x >= touch->getLocation().x - 20.f &&
@@ -301,20 +305,8 @@ bool ErGui::ccTouchEnded_Selection(GearEditorUI* editorUI, CCTouch* touch) {
 		ErGui::beginTouchLocation.y >= touch->getLocation().y - 20.f &&
 		ErGui::beginTouchLocation.y <= touch->getLocation().y + 20.f
 		) {
-		//auto singleSelectedObject = this->m_selectedObject;
-
-		
-		//auto obj = lel->objectAtPosition(touchConverted);
-
-		//ErGui::forEachObject(lel, );
-
-		//if (obj && ErGui::selectFilterRealization(obj)) {
-		//	EditorUI::get()->selectObject(obj, false);
-		//}
-
 
 		auto objArr = editorUI->objectsAtPosition(touch->getLocation());
-
 
 		// Rolling selections
 		CCArray* lastUnderCursor = editorUI->m_fields->m_lastUnderCursor;

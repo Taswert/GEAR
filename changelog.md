@@ -1,3 +1,14 @@
+# 1.1.0-beta.4
+- Fixed Keybind settings in Properties module
+- Fixed ImGui font flash bug, when loading object textures
+- Fixed Free Move snapping
+- Fixed false selection, when using Free Move
+- Fixed keybinds working, while typing in ImGui widgets (Custom Keybinds compatibility)
+- Fixed Z-Layer visually not changing
+- Fixed Good Grid compatibility
+- Temporarily removed Level Browser
+
+
 # 1.1.0-beta.3
 - Added Full Changelog
 - Added Rotation Snap button in Transform module and respective keybind setting (Empty by default)

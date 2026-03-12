@@ -849,7 +849,7 @@ void renderForArray(CCArray* objArr) {
 		// auto tc = editorUI->m_transformControl;
 		// tc->setRotation(tc->getRotation() + rotDelta);
 		if (!rotateObjectsPositionSnap && rotDelta)
-			lel->m_editorUI->rotateObjects(objArr, rotDelta, { 0, 0 });
+			lel->m_editorUI->rotateObjects(objArr, rotDelta, editorUI->getGroupCenter(objArr, false));
 		else {
 			for (auto obj : CCArrayExt<GameObject*>(objArr)) {
 				float rotX = obj->getRotationX();

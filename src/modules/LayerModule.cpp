@@ -5,6 +5,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/LevelEditorLayer.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include "Geode/cocos/robtop/keyboard_dispatcher/CCKeyboardDelegate.h"
 #include "IconsMaterialDesignIcons.h"
 #include "myUtils.hpp"
 #include "Geode/modify/EditorUI.hpp"

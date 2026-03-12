@@ -159,11 +159,11 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 	if (ImGui::CollapsingHeader("Layer & Z-Order")) {
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 4.f, 3.f });
 		for (int i = 0; i < IM_ARRAYSIZE(layerIntItems); i++) {
-			int* objLayer = reinterpret_cast<int*>(&obj->m_zLayer);
+			int& objLayer = reinterpret_cast<int&>(obj->m_zLayer);
 			bool shouldPopStyle = false;
 
 			//Color for selected object
-			if (*objLayer == layerIntItems[i]) {
+			if (objLayer == layerIntItems[i]) {
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.f);
 				ImGui::PushStyleColor(ImGuiCol_Border, { 1.f, 1.f, 0.5f, 1.f });
 				ImGui::PushStyleColor(ImGuiCol_Button, {
@@ -175,7 +175,8 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 			}
 
 			if (ImGui::Button(layerTypeItems[i], { 26, 20 })) {
-				*objLayer = layerIntItems[i];
+				objLayer = layerIntItems[i];
+				obj->m_updateParents = 1;
 			}
 
 			//Pop color for selected object

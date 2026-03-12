@@ -18,7 +18,7 @@ struct GearEditorUI : public geode::Modify<GearEditorUI, EditorUI> {
 public:
 	struct Fields {
 		// Selection Rolling
-		CCArray* m_lastUnderCursor = nullptr;
+		Ref<CCArray> m_lastUnderCursor = nullptr;
 		int m_lastUnderCursorIndex = 0;
 
 		// Smooth Zooming

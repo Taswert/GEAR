@@ -348,9 +348,6 @@ void ErGui::renderToolsModule1() {
 		}
 	}
 
-
-	
-
 	ImGui::PopStyleColor();
 
 	ImGui::End();
@@ -375,6 +372,7 @@ void ErGui::renderToolsModule2() {
 
 	auto gameManager = GameManager::sharedState();
 	auto editorUI = EditorUI::get();
+	auto mod = Mod::get();
 
 	switch (editorUI->m_selectedMode) {
 		case 1: //Delete
@@ -459,8 +457,8 @@ void ErGui::renderToolsModule2() {
 		}
 		case 2: //Build
 		{
-			int color1 = Mod::get()->template getSavedValue<int>("build-color-1");
-			int color2 = Mod::get()->template getSavedValue<int>("build-color-2");
+			int color1 = mod->template getSavedValue<int>("build-color-1");
+			int color2 = mod->template getSavedValue<int>("build-color-2");
 
 			auto effectManager = gameManager->m_levelEditorLayer->m_effectManager;
 			auto ccMyColor1 = effectManager->getColorSprite(color1);
@@ -476,9 +474,9 @@ void ErGui::renderToolsModule2() {
 			}
 
 			ImGui::SameLine();
-			bool enableColorBuild1 = Mod::get()->getSavedValue<bool>("enable-build-color-1");
+			bool enableColorBuild1 = mod->getSavedValue<bool>("enable-build-color-1");
 			if (ImGui::Checkbox("##ENABLE-COLOR-BUILD-1", &enableColorBuild1)) {
-				Mod::get()->setSavedValue("enable-build-color-1", enableColorBuild1);
+				mod->setSavedValue("enable-build-color-1", enableColorBuild1);
 			}
 
 			ImGui::SameLine();
@@ -514,13 +512,13 @@ void ErGui::renderToolsModule2() {
 			}
 
 			ImGui::SameLine();
-			bool enableColorBuild2 = Mod::get()->getSavedValue<bool>("enable-build-color-2");
+			bool enableColorBuild2 = mod->getSavedValue<bool>("enable-build-color-2");
 			if (ImGui::Checkbox("##ENABLE-COLOR-BUILD-2", &enableColorBuild2)) {
-				Mod::get()->setSavedValue("enable-build-color-2", enableColorBuild2);
+				mod->setSavedValue("enable-build-color-2", enableColorBuild2);
 			}
 
-			Mod::get()->setSavedValue("build-color-1", color1);
-			Mod::get()->setSavedValue("build-color-2", color2);
+			mod->setSavedValue("build-color-1", color1);
+			mod->setSavedValue("build-color-2", color2);
 
 			
 
@@ -549,7 +547,7 @@ void ErGui::renderToolsModule2() {
 			ImGui::SameLine();
 
 
-			int selectMode = Mod::get()->getSavedValue<int>("select-mode", 1);
+			int selectMode = mod->getSavedValue<int>("select-mode", 1);
 
 			if (ImGui::Selectable(ICON_GEAR_ADDITIVE_MODE, selectMode == 1, 0, BTN_SIZE, SELECTABLE_ROUNDING))
 				selectMode = 1;
@@ -567,7 +565,7 @@ void ErGui::renderToolsModule2() {
 				ImGui::SetTooltip("Intersective Mode");
 			
 
-			Mod::get()->setSavedValue("select-mode", selectMode);
+			mod->setSavedValue("select-mode", selectMode);
 			break;
 		}
 		case 4: //Zoom
@@ -587,21 +585,21 @@ void ErGui::renderToolsModule2() {
 			ImGui::SameLine();
 
 			
-			float gridSize = Mod::get()->template getSavedValue<float>("grid-size", 30.f);
+			float gridSize = mod->template getSavedValue<float>("grid-size", 30.f);
 			ImGui::SetNextItemWidth(ErGui::INPUT_ITEM_WIDTH);
 			if (ImGui::DragFloat("Grid Size", &gridSize, 0.5f) && gridSize >= 0.1f) {
-				Mod::get()->setSavedValue("grid-size", gridSize);
+				mod->setSavedValue("grid-size", gridSize);
 				editorUI->updateGridNodeSize();
 			}
 			
-			if (ImGui::Button("1##GridSizePreset"))		{ gridSize = 1.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine();
-			if (ImGui::Button("5##GridSizePreset"))		{ gridSize = 5.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine();
-			if (ImGui::Button("7.5##GridSizePreset"))	{ gridSize = 7.5f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.25 of block
-			if (ImGui::Button("10##GridSizePreset"))	{ gridSize = 10.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.33 of block
-			if (ImGui::Button("15##GridSizePreset"))	{ gridSize = 15.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.5 of block
-			if (ImGui::Button("30##GridSizePreset"))	{ gridSize = 30.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 1 block
-			if (ImGui::Button("90##GridSizePreset"))	{ gridSize = 90.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 3 blocks
-			if (ImGui::Button("150##GridSizePreset"))	{ gridSize = 150.f; Mod::get()->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 5 blocks
+			if (ImGui::Button("1##GridSizePreset"))		{ gridSize = 1.f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine();
+			if (ImGui::Button("5##GridSizePreset"))		{ gridSize = 5.f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine();
+			if (ImGui::Button("7.5##GridSizePreset"))	{ gridSize = 7.5f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.25 of block
+			if (ImGui::Button("10##GridSizePreset"))		{ gridSize = 10.f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.33 of block
+			if (ImGui::Button("15##GridSizePreset"))		{ gridSize = 15.f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 0.5 of block
+			if (ImGui::Button("30##GridSizePreset"))		{ gridSize = 30.f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 1 block
+			if (ImGui::Button("90##GridSizePreset"))		{ gridSize = 90.f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 3 blocks
+			if (ImGui::Button("150##GridSizePreset"))	{ gridSize = 150.f; mod->setSavedValue("grid-size", gridSize); editorUI->updateGridNodeSize(); } ImGui::SameLine(); // 5 blocks
 			ImGui::Text("Grid Presets");
 			break;
 		}

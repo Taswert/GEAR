@@ -771,8 +771,211 @@ void renderLevelBrowserSettings() {
 	// }
 }
 
+std::unordered_map<ImGuiKey, enumKeyCodes> imguiKeyToCocos = {
+    { ImGuiKey::ImGuiKey_Backspace, KEY_Backspace },
+    { ImGuiKey::ImGuiKey_Tab, KEY_Tab },
+    // { "Clear", KEY_Clear },
+    { ImGuiKey::ImGuiKey_Enter, KEY_Enter },
+    { ImGuiKey::ImGuiMod_Shift, KEY_Shift },
+    { ImGuiKey::ImGuiMod_Ctrl, KEY_Control },
+    { ImGuiKey::ImGuiMod_Alt, KEY_Alt },
+    { ImGuiKey::ImGuiKey_Pause, KEY_Pause },
+    { ImGuiKey::ImGuiKey_CapsLock, KEY_CapsLock },
+    { ImGuiKey::ImGuiKey_Escape, KEY_Escape },
+    { ImGuiKey::ImGuiKey_Space, KEY_Space },
+    { ImGuiKey::ImGuiKey_PageUp, KEY_PageUp },
+    { ImGuiKey::ImGuiKey_PageDown, KEY_PageDown },
+    { ImGuiKey::ImGuiKey_End, KEY_End },
+    { ImGuiKey::ImGuiKey_Home, KEY_Home },
+    { ImGuiKey::ImGuiKey_LeftArrow, KEY_Left },
+    { ImGuiKey::ImGuiKey_UpArrow, KEY_Up },
+    { ImGuiKey::ImGuiKey_RightArrow, KEY_Right },
+    { ImGuiKey::ImGuiKey_DownArrow, KEY_Down },
+    // { ImGuiKey::ImGuiKey_Select, KEY_Select },
+    // { ImGuiKey::ImGuiKey_Print, KEY_Print },
+    // { ImGuiKey::ImGuiKey_Execute, KEY_Execute },
+    { ImGuiKey::ImGuiKey_PrintScreen, KEY_PrintScreen },
+    { ImGuiKey::ImGuiKey_Insert, KEY_Insert },
+    { ImGuiKey::ImGuiKey_Delete, KEY_Delete },
+    // { ImGuiKey::ImGuiKey_Help, KEY_Help },
+    { ImGuiKey::ImGuiKey_0, KEY_Zero },
+    { ImGuiKey::ImGuiKey_1, KEY_One },
+    { ImGuiKey::ImGuiKey_2, KEY_Two },
+    { ImGuiKey::ImGuiKey_3, KEY_Three },
+    { ImGuiKey::ImGuiKey_4, KEY_Four },
+    { ImGuiKey::ImGuiKey_5, KEY_Five },
+    { ImGuiKey::ImGuiKey_6, KEY_Six },
+    { ImGuiKey::ImGuiKey_7, KEY_Seven },
+    { ImGuiKey::ImGuiKey_8, KEY_Eight },
+    { ImGuiKey::ImGuiKey_9, KEY_Nine },
+    { ImGuiKey::ImGuiKey_A, KEY_A },
+    { ImGuiKey::ImGuiKey_B, KEY_B },
+    { ImGuiKey::ImGuiKey_C, KEY_C },
+    { ImGuiKey::ImGuiKey_D, KEY_D },
+    { ImGuiKey::ImGuiKey_E, KEY_E },
+    { ImGuiKey::ImGuiKey_F, KEY_F },
+    { ImGuiKey::ImGuiKey_G, KEY_G },
+    { ImGuiKey::ImGuiKey_H, KEY_H },
+    { ImGuiKey::ImGuiKey_I, KEY_I },
+    { ImGuiKey::ImGuiKey_J, KEY_J },
+    { ImGuiKey::ImGuiKey_K, KEY_K },
+    { ImGuiKey::ImGuiKey_L, KEY_L },
+    { ImGuiKey::ImGuiKey_M, KEY_M },
+    { ImGuiKey::ImGuiKey_N, KEY_N },
+    { ImGuiKey::ImGuiKey_O, KEY_O },
+    { ImGuiKey::ImGuiKey_P, KEY_P },
+    { ImGuiKey::ImGuiKey_Q, KEY_Q },
+    { ImGuiKey::ImGuiKey_R, KEY_R },
+    { ImGuiKey::ImGuiKey_S, KEY_S },
+    { ImGuiKey::ImGuiKey_T, KEY_T },
+    { ImGuiKey::ImGuiKey_U, KEY_U },
+    { ImGuiKey::ImGuiKey_V, KEY_V },
+    { ImGuiKey::ImGuiKey_W, KEY_W },
+    { ImGuiKey::ImGuiKey_X, KEY_X },
+    { ImGuiKey::ImGuiKey_Y, KEY_Y },
+    { ImGuiKey::ImGuiKey_Z, KEY_Z },
+    { ImGuiKey::ImGuiKey_LeftSuper, KEY_LeftWindowsKey },
+    { ImGuiKey::ImGuiKey_RightSuper, KEY_RightWindowsKey },
+    // { ImGuiKey::ImGuiKey_ApplicationsKey, KEY_ApplicationsKey },
+    // { ImGuiKey::ImGuiKey_Sleep, KEY_Sleep },
+    { ImGuiKey::ImGuiKey_Keypad0, KEY_NumPad0 },
+    { ImGuiKey::ImGuiKey_Keypad1, KEY_NumPad1 },
+    { ImGuiKey::ImGuiKey_Keypad2, KEY_NumPad2 },
+    { ImGuiKey::ImGuiKey_Keypad3, KEY_NumPad3 },
+    { ImGuiKey::ImGuiKey_Keypad4, KEY_NumPad4 },
+    { ImGuiKey::ImGuiKey_Keypad5, KEY_NumPad5 },
+    { ImGuiKey::ImGuiKey_Keypad6, KEY_NumPad6 },
+    { ImGuiKey::ImGuiKey_Keypad7, KEY_NumPad7 },
+    { ImGuiKey::ImGuiKey_Keypad8, KEY_NumPad8 },
+    { ImGuiKey::ImGuiKey_Keypad9, KEY_NumPad9 },
+    { ImGuiKey::ImGuiKey_KeypadMultiply, KEY_Multiply },
+    { ImGuiKey::ImGuiKey_KeypadAdd, KEY_Add },
+    // { ImGuiKey::ImGuiKey_KeypadEqual, KEY_Seperator }, // what
+    { ImGuiKey::ImGuiKey_KeypadSubtract, KEY_Subtract },
+    { ImGuiKey::ImGuiKey_KeypadDecimal, KEY_Decimal },
+    { ImGuiKey::ImGuiKey_KeypadDivide, KEY_Divide },
+    { ImGuiKey::ImGuiKey_F1, KEY_F1 },
+    { ImGuiKey::ImGuiKey_F2, KEY_F2 },
+    { ImGuiKey::ImGuiKey_F3, KEY_F3 },
+    { ImGuiKey::ImGuiKey_F4, KEY_F4 },
+    { ImGuiKey::ImGuiKey_F5, KEY_F5 },
+    { ImGuiKey::ImGuiKey_F6, KEY_F6 },
+    { ImGuiKey::ImGuiKey_F7, KEY_F7 },
+    { ImGuiKey::ImGuiKey_F8, KEY_F8 },
+    { ImGuiKey::ImGuiKey_F9, KEY_F9 },
+    { ImGuiKey::ImGuiKey_F10, KEY_F10 },
+    { ImGuiKey::ImGuiKey_F11, KEY_F11 },
+    { ImGuiKey::ImGuiKey_F12, KEY_F12 },
+    { ImGuiKey::ImGuiKey_F13, KEY_F13 },
+    { ImGuiKey::ImGuiKey_F14, KEY_F14 },
+    { ImGuiKey::ImGuiKey_F15, KEY_F15 },
+    { ImGuiKey::ImGuiKey_F16, KEY_F16 },
+    { ImGuiKey::ImGuiKey_F17, KEY_F17 },
+    { ImGuiKey::ImGuiKey_F18, KEY_F18 },
+    { ImGuiKey::ImGuiKey_F19, KEY_F19 },
+    { ImGuiKey::ImGuiKey_F20, KEY_F20 },
+    { ImGuiKey::ImGuiKey_F21, KEY_F21 },
+    { ImGuiKey::ImGuiKey_F22, KEY_F22 },
+    { ImGuiKey::ImGuiKey_F23, KEY_F23 },
+    { ImGuiKey::ImGuiKey_F24, KEY_F24 },
+    { ImGuiKey::ImGuiKey_NumLock, KEY_Numlock },
+    { ImGuiKey::ImGuiKey_ScrollLock, KEY_ScrollLock },
+    { ImGuiKey::ImGuiKey_LeftShift, KEY_LeftShift },
+    { ImGuiKey::ImGuiKey_RightShift, KEY_RightShift },
+    { ImGuiKey::ImGuiKey_LeftCtrl, KEY_LeftControl },
+    { ImGuiKey::ImGuiKey_RightCtrl, KEY_RightControl },
+    // { ImGuiKey::ImGuiKey_LeftMenu, KEY_LeftMenu },
+    // { ImGuiKey::ImGuiKey_RightMenu, KEY_RightMenu },
+    { ImGuiKey::ImGuiKey_AppBack, KEY_BrowserBack },
+    { ImGuiKey::ImGuiKey_AppForward, KEY_BrowserForward },
+    // { ImGuiKey::ImGuiKey_BrowserRefresh, KEY_BrowserRefresh },
+    // { ImGuiKey::ImGuiKey_BrowserStop, KEY_BrowserStop },
+    // { ImGuiKey::ImGuiKey_BrowserSearch, KEY_BrowserSearch },
+    // { ImGuiKey::ImGuiKey_BrowserFavorites, KEY_BrowserFavorites },
+    // { ImGuiKey::ImGuiKey_BrowserHome, KEY_BrowserHome },
+    // { ImGuiKey::ImGuiKey_VolumeMute, KEY_VolumeMute },
+    // { ImGuiKey::ImGuiKey_VolumeDown, KEY_VolumeDown },
+    // { ImGuiKey::ImGuiKey_VolumeUp, KEY_VolumeUp },
+    // { ImGuiKey::ImGuiKey_NextTrack, KEY_NextTrack },
+    // { ImGuiKey::ImGuiKey_PreviousTrack, KEY_PreviousTrack },
+    // { ImGuiKey::ImGuiKey_StopMedia, KEY_StopMedia },
+    // { ImGuiKey::ImGuiKey_PlayPause, KEY_PlayPause },
+    // { ImGuiKey::ImGuiKey_LaunchMail, KEY_LaunchMail },
+    // { ImGuiKey::ImGuiKey_SelectMedia, KEY_SelectMedia },
+    // { ImGuiKey::ImGuiKey_LaunchApp1, KEY_LaunchApp1 },
+    // { ImGuiKey::ImGuiKey_LaunchApp2, KEY_LaunchApp2 },
+    // { ImGuiKey::ImGuiKey_OEM1, KEY_OEM1 },
+    // { ImGuiKey::ImGuiKey_OEMPlus, KEY_OEMPlus },
+    // { ImGuiKey::ImGuiKey_OEMComma, KEY_OEMComma },
+    // { ImGuiKey::ImGuiKey_OEMMinus, KEY_OEMMinus },
+    // { ImGuiKey::ImGuiKey_OEMPeriod, KEY_OEMPeriod },
+    // { ImGuiKey::ImGuiKey_OEM2, KEY_OEM2 },
+    // { ImGuiKey::ImGuiKey_OEM3, KEY_OEM3 },
+    // { ImGuiKey::ImGuiKey_OEM4, KEY_OEM4 },
+    // { ImGuiKey::ImGuiKey_OEM5, KEY_OEM5 },
+    // { ImGuiKey::ImGuiKey_OEM6, KEY_OEM6 },
+    // { ImGuiKey::ImGuiKey_OEM7, KEY_OEM7 },
+    // { ImGuiKey::ImGuiKey_OEM8, KEY_OEM8 },
+    // { ImGuiKey::ImGuiKey_OEM102, KEY_OEM102 },
+    // { ImGuiKey::ImGuiKey_Process, KEY_Process },
+    // { ImGuiKey::ImGuiKey_Packet, KEY_Packet },
+    // { ImGuiKey::ImGuiKey_Attn, KEY_Attn },
+    // { ImGuiKey::ImGuiKey_CrSel, KEY_CrSel },
+    // { ImGuiKey::ImGuiKey_ExSel, KEY_ExSel },
+    // { ImGuiKey::ImGuiKey_EraseEOF, KEY_EraseEOF },
+    // { ImGuiKey::ImGuiKey_Play, KEY_Play },
+    // { ImGuiKey::ImGuiKey_Zoom, KEY_Zoom },
+    // { ImGuiKey::ImGuiKey_PA1, KEY_PA1 },
+    // { ImGuiKey::ImGuiKey_OEMClear, KEY_OEMClear },
+    // { ImGuiKey::ImGuiKey_GamepadDpadUp, KEY_ArrowUp }, WHAAAAAT
+    // { ImGuiKey::ImGuiKey_GamepadDpadDown, KEY_ArrowDown },
+    // { ImGuiKey::ImGuiKey_GamepadDpadLeft, KEY_ArrowLeft },
+    // { ImGuiKey::ImGuiKey_GamepadDpadRight, KEY_ArrowRight },
+    { ImGuiKey::ImGuiKey_GamepadFaceDown, CONTROLLER_A },
+    { ImGuiKey::ImGuiKey_GamepadFaceRight, CONTROLLER_B },
+    { ImGuiKey::ImGuiKey_GamepadFaceUp, CONTROLLER_Y },
+    { ImGuiKey::ImGuiKey_GamepadFaceLeft, CONTROLLER_X },
+    { ImGuiKey::ImGuiKey_GamepadStart, CONTROLLER_Start },
+    { ImGuiKey::ImGuiKey_GamepadBack, CONTROLLER_Back },
+    { ImGuiKey::ImGuiKey_GamepadR1, CONTROLLER_RB },
+    { ImGuiKey::ImGuiKey_GamepadL1, CONTROLLER_LB },
+    { ImGuiKey::ImGuiKey_GamepadR2, CONTROLLER_RT },
+    { ImGuiKey::ImGuiKey_GamepadL2, CONTROLLER_LT },
+    { ImGuiKey::ImGuiKey_GamepadDpadUp, CONTROLLER_Up },
+    { ImGuiKey::ImGuiKey_GamepadDpadDown, CONTROLLER_Down },
+    { ImGuiKey::ImGuiKey_GamepadDpadLeft, CONTROLLER_Left },
+    { ImGuiKey::ImGuiKey_GamepadDpadRight, CONTROLLER_Right },
+    { ImGuiKey::ImGuiKey_GamepadLStickUp, CONTROLLER_LTHUMBSTICK_UP },
+    { ImGuiKey::ImGuiKey_GamepadLStickDown, CONTROLLER_LTHUMBSTICK_DOWN },
+    { ImGuiKey::ImGuiKey_GamepadLStickLeft, CONTROLLER_LTHUMBSTICK_LEFT },
+    { ImGuiKey::ImGuiKey_GamepadLStickRight, CONTROLLER_LTHUMBSTICK_RIGHT },
+    { ImGuiKey::ImGuiKey_GamepadRStickUp, CONTROLLER_RTHUMBSTICK_UP },
+    { ImGuiKey::ImGuiKey_GamepadRStickDown, CONTROLLER_RTHUMBSTICK_DOWN },
+    { ImGuiKey::ImGuiKey_GamepadRStickLeft, CONTROLLER_RTHUMBSTICK_LEFT },
+    { ImGuiKey::ImGuiKey_GamepadRStickRight, CONTROLLER_RTHUMBSTICK_RIGHT },
+    { ImGuiKey::ImGuiKey_GraveAccent, KEY_GraveAccent },
+    // { ImGuiKey::ImGuiKey_OEMEqual, KEY_OEMEqual },
+    { ImGuiKey::ImGuiKey_LeftBracket, KEY_LeftBracket },
+    { ImGuiKey::ImGuiKey_RightBracket, KEY_RightBracket },
+    { ImGuiKey::ImGuiKey_Backslash, KEY_Backslash },
+    { ImGuiKey::ImGuiKey_Semicolon, KEY_Semicolon },
+    { ImGuiKey::ImGuiKey_Apostrophe, KEY_Apostrophe },
+    { ImGuiKey::ImGuiKey_Slash, KEY_Slash },
+    { ImGuiKey::ImGuiKey_KeypadEnter, KEY_NumEnter },
+    // { ImGuiKey::ImGuiKey_World1, KEY_World1 },
+    // { ImGuiKey::ImGuiKey_World2, KEY_World2 },
+    // { ImGuiKey::ImGuiKey_Mouse4, MOUSE_4 },
+    // { ImGuiKey::ImGuiKey_Mouse5, MOUSE_5 },
+    // { ImGuiKey::ImGuiKey_Mouse6, MOUSE_6 },
+    // { ImGuiKey::ImGuiKey_Mouse7, MOUSE_7 },
+    // { ImGuiKey::ImGuiKey_Mouse8, MOUSE_8 },
+    { ImGuiKey::ImGuiKey_None, KEY_None },
+    // { ImGuiKey::ImGuiKey_Unknown, KEY_Unknown }
+};
+
 void renderKeybindsSettings() {
 	auto mod = Mod::get();
+	static auto ck = Loader::get()->getLoadedMod("geode.custom-keybinds");
 
 	// I think, I am doing this not by the inteded way...
 	bool foundKeybinds = false;
@@ -786,43 +989,80 @@ void renderKeybindsSettings() {
 
 
 		auto setting = mod->getSetting(str);
-		ImGui::Text(setting->getDisplayName().c_str());
+		auto keybindName = setting->getDisplayName();
+		ImGui::Text(keybindName.c_str());
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip(setting->getDescription()->c_str());
 		ImGui::SameLine(200.f);
 
-		std::string keybindsStr = "";
 		std::vector<geode::Keybind> keybindVector = mod->getSettingValue<std::vector<geode::Keybind>>(str);
+
+
+
 		for (Keybind keybind : keybindVector) {
-			keybindsStr.append(keybind.toString());
-			// Keep this for better times, cause now it's just doesn't work
-		}
-		ImGui::Text(keybindsStr.c_str());
+			auto removeKeybindPopupName = fmt::format("Remove Keybind##{}", keybind.toString());
 
-		ImGui::SameLine(300.f);
-
-		// Oh, sooo, what should I do here???
-		// Pretty funny situation here, huh
-		if (ImGui::BeginPopupModal("Set Keybind")) {
-			// geode::KeyboardInputData // KeybindSettingV3 // cocos2d::enumKeyCodes // Keybind //
-			for (ImGuiKey key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_NamedKey_END; static_cast<ImGuiKey>(key+1)) {
-				if (!ImGui::IsKeyPressed(key)) continue;
+			if (ImGui::BeginPopupModal(removeKeybindPopupName.c_str())) {
+				ImGui::Text(fmt::format("Are you sure, you want to remove the {} bind?", keybind.toString()).c_str());
+				if (ImGui::Button("Remove")) {
+					keybindVector.erase(std::remove(keybindVector.begin(), keybindVector.end(), keybind), keybindVector.end());
+					mod->setSettingValue<std::vector<geode::Keybind>>(str, keybindVector);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Cancel")) {
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
 			}
-			ImGui::Text("Press any key or combination to set a new keybind.");
-			// ImGui::Text("New keybind: %s", );
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+				ImGui::SetTooltip("Remove bind");
+			}
+			
+			if (ImGui::Button(keybind.toString().c_str())) {
+				ImGui::OpenPopup(removeKeybindPopupName.c_str());
+			}
+			ImGui::SameLine();
+		}
+
+		auto setKeybindPopupName = fmt::format("Set Keybind##{}", keybindName);
+		if (ImGui::BeginPopupModal(setKeybindPopupName.c_str())) {
+			static Keybind newKeybind;
+			auto dispatcher = CCDirector::get()->getKeyboardDispatcher();
+
+			auto shift = dispatcher->getShiftKeyPressed() ? KeyboardModifier::Shift : KeyboardModifier::None; 
+			auto ctrl = dispatcher->getControlKeyPressed() ? KeyboardModifier::Control : KeyboardModifier::None;
+			auto alt = dispatcher->getAltKeyPressed() ? KeyboardModifier::Alt : KeyboardModifier::None;
+			auto cmd = dispatcher->getCommandKeyPressed() ? KeyboardModifier::Super : KeyboardModifier::None;
+			newKeybind.modifiers = shift + ctrl + alt + cmd;
+
+			for (ImGuiKey key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_NamedKey_END; key = static_cast<ImGuiKey>(key+1)) {
+				if (!ImGui::IsKeyDown(key)) continue;
+				if (key == ImGuiKey_MouseLeft || key == ImGuiKey_MouseRight || key == ImGuiKey_MouseMiddle) continue;
+				newKeybind.key = imguiKeyToCocos[key];
+			}
+
+			ImGui::Text("Press any key or combination to set a new keybind...");
+			ImGui::Text("New keybind: %s", newKeybind.toString().c_str());
 			if (ImGui::Button("Save")) {
-				//
+				if (std::find(keybindVector.begin(), keybindVector.end(), newKeybind) == keybindVector.end()) {
+					keybindVector.push_back(newKeybind);
+					mod->setSettingValue<std::vector<geode::Keybind>>(str, keybindVector);
+				}
+				newKeybind = Keybind();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Cancel")) {
+				newKeybind = Keybind();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
 		}
 
-		if (ImGui::Button("Set")) {
-			ImGui::OpenPopup("Set Keybind");
+		auto plusLabel = fmt::format("+##{}", keybindName);
+		if (ImGui::Button(plusLabel.c_str())) {
+			ImGui::OpenPopup(setKeybindPopupName.c_str());
 		}
 	}
 }
@@ -848,8 +1088,10 @@ void ErGui::renderPropertiesModule() {
 		if (ImGui::Selectable("Object Info",		selectedTab == P_OBJECT_INFO)) selectedTab = P_OBJECT_INFO;
 		if (ImGui::Selectable("Draws",				selectedTab == P_DRAWS)) selectedTab = P_DRAWS;
 		if (ImGui::Selectable("Keybinds",			selectedTab == P_KEYBINDS)) selectedTab = P_KEYBINDS;
+		#ifdef GEAR_DEBUG
 		if (ImGui::Selectable("Level Browser",		selectedTab == P_LEVEL_BROWSER)) selectedTab = P_LEVEL_BROWSER;
 		if (ImGui::Selectable("Debug",				selectedTab == P_DEBUG)) selectedTab = P_DEBUG;
+		#endif
 		ImGui::EndChild();
 
 		ImGui::SameLine();

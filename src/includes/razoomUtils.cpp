@@ -1,4 +1,5 @@
 #include "razoomUtils.hpp"
+#include "Geode/cocos/platform/win32/CCGL.h"
 #include <numeric>
 
 
@@ -118,10 +119,16 @@ namespace {
 
 
     CCSprite* renderSprites(CCSprite* sprites, float size) {
+        // Evil ImGui font flash fix
+        glPushAttrib(GL_COLOR_BUFFER_BIT);
+
         auto renderer = CCRenderTexture::create(size, size);
         renderer->begin();
         sprites->visit();
         renderer->end();
+
+        glPopAttrib();
+
         return renderer->getSprite();
     }
 
