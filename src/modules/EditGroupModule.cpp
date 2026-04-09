@@ -284,7 +284,12 @@ void renderForObject(GameObject* obj, LevelEditorLayer* lel) {
 		ImGui::SeparatorText("Parent & Physics");
 		ImGui::Checkbox("Group Parent", &obj->m_hasGroupParent);
 		ImGui::SameLine(160);
-		ImGui::Checkbox("No Touch", &obj->m_isNoTouch);
+		if (ImGui::Checkbox("No Touch", &obj->m_isNoTouch)) {
+			lel->removeObjectFromSection(obj);
+			obj->setType(obj->m_savedObjectType);
+			obj->saveActiveColors();
+			lel->addToSection(obj);
+		}
 
 		ImGui::Checkbox("Area Parent", &obj->m_hasAreaParent);
 		ImGui::SameLine(160);

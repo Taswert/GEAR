@@ -82,6 +82,11 @@ void renderContextForSingleObject() {
 		ImGui::CloseCurrentPopup();
 	}
 
+	if (ImGui::Selectable("Select Object to Build")) {
+		if (selectedObject) editorUI->m_selectedObjectIndex = selectedObject->m_objectID;
+		ImGui::CloseCurrentPopup();
+	}
+
 	ImGui::Dummy({ 5.f, 5.f });
 	if (ImGui::Selectable("Duplicate Object##Single")) {
 		editorUI->deselectAll();
